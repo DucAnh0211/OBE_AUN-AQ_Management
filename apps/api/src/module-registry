@@ -1,0 +1,9 @@
+Backend module registry placeholder
+
+Modules:
+- curriculum
+- accreditation
+- reporting
+
+Only public module contracts may be wired here. No business logic belongs in
+this composition root.

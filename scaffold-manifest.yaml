@@ -1,0 +1,10 @@
+version: 1
+architecture: vertical-module-monorepo
+modules:
+  - { id: curriculum, owner: SV1, layers: [frontend, backend, ai] }
+  - { id: accreditation, owner: SV4, layers: [frontend, backend, ai] }
+  - { id: reporting, owner: SV5, layers: [frontend, backend, ai] }
+shared: [frontend, backend, ai, contracts]
+compose_apps: [web, api, ai-service]
+deployment_units: [web, api, ai-service]
+scaffold_only: true
