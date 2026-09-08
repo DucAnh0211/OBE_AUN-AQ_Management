@@ -1,9 +1,9 @@
 Backend module registry placeholder
 
 Modules:
-- curriculum
-- accreditation
-- reporting
+- curriculum: modules/common/curriculum/backend (SV4 + SV5)
+- accreditation: modules/sv4/accreditation/backend (SV4)
+- reporting: modules/sv5/reporting/backend (SV5)
 
 Only public module contracts may be wired here. No business logic belongs in
 this composition root.

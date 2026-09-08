@@ -1,3 +1,8 @@
-"""AI module registry placeholder; concrete imports are added after approval."""
+"""AI registry for the SV4 and SV5 modules; Curriculum intentionally has no AI."""
 
-MODULE_IDS = ("curriculum", "accreditation", "reporting")
+MODULES = {
+    "accreditation": "modules.sv4.accreditation.ai",
+    "reporting": "modules.sv5.reporting.ai",
+}
+
+MODULE_IDS = tuple(MODULES)

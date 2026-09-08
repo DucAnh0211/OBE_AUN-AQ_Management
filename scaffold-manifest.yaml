@@ -1,10 +1,25 @@
 version: 1
 architecture: vertical-module-monorepo
 modules:
-  - { id: curriculum, owner: SV1, layers: [frontend, backend, ai] }
-  - { id: accreditation, owner: SV4, layers: [frontend, backend, ai] }
-  - { id: reporting, owner: SV5, layers: [frontend, backend, ai] }
-shared: [frontend, backend, ai, contracts]
+  - id: curriculum
+    path: modules/common/curriculum
+    responsibility: common
+    owners: [SV4, SV5]
+    layers: [frontend, backend]
+  - id: accreditation
+    path: modules/sv4/accreditation
+    responsibility: individual
+    owners: [SV4]
+    layers: [frontend, backend, ai]
+  - id: reporting
+    path: modules/sv5/reporting
+    responsibility: individual
+    owners: [SV5]
+    layers: [frontend, backend, ai]
+shared:
+  path: shared
+  owners: [SV4, SV5]
+  areas: [frontend, backend, ai, contracts]
 compose_apps: [web, api, ai-service]
 deployment_units: [web, api, ai-service]
 scaffold_only: true

@@ -18,18 +18,20 @@ lưu file. Các dependency và business code sẽ chỉ được thêm sau khi s
 
 ## Phân công module
 
-| Module | Owner | Phạm vi |
-| --- | --- | --- |
-| curriculum | SV1 | CTĐT, Course, PLO/CLO và Mapping Advisor |
-| accreditation | SV4 | AUN, Evidence, Ingestion, Retrieval và Gap Analysis |
-| reporting | SV5 | Chat, Citation, Report và Export |
+| Nhóm thư mục | Module | Owner | Phạm vi |
+| --- | --- | --- | --- |
+| `modules/common` | curriculum | SV4 + SV5 | CTĐT, Course, PLO/CLO và Mapping thủ công; không có AI |
+| `modules/sv4` | accreditation | SV4 | AUN, Evidence, Ingestion, Retrieval và Gap Analysis |
+| `modules/sv5` | reporting | SV5 | Chat, Citation, Report và Export |
 
-Code dùng chung nằm trong shared. Các thư mục apps chỉ là composition root,
-không chứa business logic.
+Curriculum đã bỏ toàn bộ capability AI; phần nghiệp vụ không dùng AI được SV4
+và SV5 cùng phát triển. Code kỹ thuật dùng chung nằm trong `shared`; các thư mục
+`apps` chỉ là composition root, không chứa business logic.
 
 ## Quy tắc phụ thuộc
 
-- Module chỉ dùng shared/contracts và public exports của module khác.
+- Module chỉ dùng `shared/contracts` và public exports của module khác.
+- Public contract của `modules/common/curriculum` cần được cả SV4 và SV5 review.
 - Không truy cập repository hoặc bảng nội bộ xuyên module.
 - AI chỉ đề xuất; mọi quyết định nghiệp vụ cần người dùng xác nhận và được audit.
 - Không lưu file binary lớn trong database.
