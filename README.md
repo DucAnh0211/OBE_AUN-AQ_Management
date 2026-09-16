@@ -1,47 +1,81 @@
-# OBE & AUN-QA Management tích hợp AI
+# OBE & AUN-QA Management
 
-Scaffold ban đầu của hệ thống quản lý Outcome-Based Education (OBE), hồ sơ
-kiểm định AUN-QA và khai thác tri thức có căn cứ bằng AI.
+Hệ thống quản lý Outcome-Based Education (OBE), chương trình đào tạo, minh chứng
+kiểm định AUN-QA và báo cáo có căn cứ.
+
+## Trạng thái hiện tại
+
+Repository đã được khởi tạo thành ứng dụng chạy được:
+
+- Backend: ASP.NET Core 10 modular monolith.
+- Frontend: React 19, TypeScript và Vite.
+- Database: PostgreSQL; schema và seed CTĐT V1 nằm trong `infra/postgres`.
+- Các module: Curriculum, Accreditation và Reporting.
+
+Backend hiện cung cấp health check, module registry và endpoint khung của từng
+module. Kết nối database và CRUD nghiệp vụ sẽ được triển khai ở các bước tiếp theo.
+
+## Yêu cầu môi trường
+
+- .NET SDK 10.0.401 trở lên trong dòng 10.0.
+- Node.js 24 trở lên và npm.
+- PostgreSQL 17 cho phần dữ liệu đã seed.
+
+## Chạy backend
+
+Từ thư mục gốc repository:
+
+```powershell
+dotnet build ObeAunQa.slnx
+dotnet run --project apps/api/ObeAunQa.Api.csproj --launch-profile http
+```
+
+API chạy tại `http://localhost:5099`. Các endpoint kiểm tra:
+
+- `GET /health`
+- `GET /api/modules`
+- `GET /api/curriculum/health`
+- `GET /api/accreditation/health`
+- `GET /api/reporting/health`
+
+## Chạy frontend
+
+Mở một terminal khác:
+
+```powershell
+Set-Location apps/web
+npm install
+npm run dev
+```
+
+Web chạy tại `http://localhost:5173` và mặc định gọi API tại
+`http://localhost:5099`. Sao chép `apps/web/.env.example` thành
+`apps/web/.env.local` nếu cần thay địa chỉ API.
 
 ## Kiến trúc
 
-Dự án dùng vertical-module monorepo và được ghép thành đúng ba đơn vị triển
-khai:
+```text
+apps/
+  api/                         ASP.NET Core composition root
+  web/                         React composition root
+modules/
+  common/curriculum/           CTĐT, học phần, PLO, CLO, mapping
+  sv4/accreditation/           AUN-QA, minh chứng, ingestion, gap analysis
+  sv5/reporting/               Chat, trích dẫn, báo cáo, export
+shared/
+  backend/                     Contract kỹ thuật dùng chung
+  frontend/                    Type dùng chung
+infra/postgres/                Schema, import template và kiểm tra dữ liệu
+```
 
-- Web App dùng chung.
-- Backend API dạng modular monolith.
-- AI Service dùng chung cho ingestion, retrieval và generation.
+Các thư mục trong `apps` chỉ ghép module và cấu hình host. Business logic nằm
+trong module tương ứng; module khác chỉ truy cập public contract của nhau.
 
-PostgreSQL + pgvector là nguồn dữ liệu nghiệp vụ và vector; MinIO/S3-compatible
-lưu file. Các dependency và business code sẽ chỉ được thêm sau khi scaffold
-được duyệt.
+## Build kiểm tra
 
-## Phân công module
+```powershell
+dotnet build ObeAunQa.slnx
 
-| Nhóm thư mục | Module | Owner | Phạm vi |
-| --- | --- | --- | --- |
-| `modules/common` | curriculum | SV4 + SV5 | CTĐT, Course, PLO/CLO và Mapping thủ công; không có AI |
-| `modules/sv4` | accreditation | SV4 | AUN, Evidence, Ingestion, Retrieval và Gap Analysis |
-| `modules/sv5` | reporting | SV5 | Chat, Citation, Report và Export |
-
-Curriculum đã bỏ toàn bộ capability AI; phần nghiệp vụ không dùng AI được SV4
-và SV5 cùng phát triển. Code kỹ thuật dùng chung nằm trong `shared`; các thư mục
-`apps` chỉ là composition root, không chứa business logic.
-
-## Quy tắc phụ thuộc
-
-- Module chỉ dùng `shared/contracts` và public exports của module khác.
-- Public contract của `modules/common/curriculum` cần được cả SV4 và SV5 review.
-- Không truy cập repository hoặc bảng nội bộ xuyên module.
-- AI chỉ đề xuất; mọi quyết định nghiệp vụ cần người dùng xác nhận và được audit.
-- Không lưu file binary lớn trong database.
-
-## Trạng thái
-
-Repository đang ở giai đoạn scaffold-only: chưa cài dependency, chưa có entity,
-API, UI hay cấu hình triển khai chạy thật.
-
-## Bước tiếp theo
-
-Chốt framework backend, phiên bản AUN-QA, quy tắc đủ minh chứng và template báo
-cáo; sau đó mới khởi tạo stack cụ thể cho từng composition root.
+Set-Location apps/web
+npm run build
+```

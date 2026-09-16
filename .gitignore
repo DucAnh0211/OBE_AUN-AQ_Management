@@ -23,6 +23,8 @@ __pycache__/
 target/
 bin/
 obj/
+.dotnet/
+.nuget/
 
 # Editors and operating systems
 .idea/
@@ -33,3 +35,7 @@ Thumbs.db
 # Logs and local scratch files
 *.log
 tmp/
+
+scripts
+outputs
+documents

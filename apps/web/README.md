@@ -1,7 +1,24 @@
-# Web composition root
+# Web App
 
-Ứng dụng web duy nhất của hệ thống. Thư mục này chỉ bootstrap router, design
-system và đăng ký frontend public entry point của ba module theo các nhóm
-`common`, `sv4` và `sv5`; không chứa business logic.
+React/Vite composition root dùng chung cho ba module Curriculum, Accreditation
+và Reporting.
 
-Trạng thái hiện tại: placeholder, chưa khởi tạo React/Vite và chưa có dependency.
+## Chạy development
+
+```powershell
+Set-Location apps/web
+npm install
+npm run dev
+```
+
+Mở `http://localhost:5173`.
+
+## Kiểm tra production build
+
+```powershell
+npm run build
+npm run preview
+```
+
+Biến `VITE_API_URL` xác định địa chỉ backend. Giá trị mặc định là
+`http://localhost:5099`; xem `.env.example`.

@@ -1,8 +1,23 @@
-# Backend API composition root
+# Backend API
 
-Backend API duy nhất của hệ thống, được triển khai theo modular monolith. Thư
-mục này chỉ wiring public backend entry point của ba module và hạ tầng dùng
-chung; không chứa business logic.
+ASP.NET Core API là composition root duy nhất của backend modular monolith.
 
-Framework backend chưa được chốt, vì vậy các placeholder trong src chưa gắn
-đuôi ngôn ngữ và chưa có dependency.
+## Chạy
+
+Từ thư mục gốc repository:
+
+```powershell
+dotnet run --project apps/api/ObeAunQa.Api.csproj --launch-profile http
+```
+
+Địa chỉ mặc định: `http://localhost:5099`.
+
+`Program.cs` chỉ đăng ký CORS, health check và public entry point của ba module.
+Entity, use case, repository và endpoint nghiệp vụ phải nằm trong thư mục module.
+
+Connection string PostgreSQL được đọc từ `ConnectionStrings:Postgres`. Khi cần
+ghi đè bằng biến môi trường trong PowerShell:
+
+```powershell
+$env:ConnectionStrings__Postgres = "Host=localhost;Port=5432;Database=obe_aunqa;Username=postgres;Password=YOUR_PASSWORD"
+```
