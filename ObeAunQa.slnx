@@ -9,6 +9,9 @@
   <Folder Name="/modules/common/curriculum/backend/">
     <Project Path="modules/common/curriculum/backend/ObeAunQa.Modules.Curriculum.csproj" />
   </Folder>
+  <Folder Name="/modules/common/curriculum/backend/tests/">
+    <Project Path="modules/common/curriculum/backend/tests/ObeAunQa.Modules.Curriculum.Tests.csproj" />
+  </Folder>
   <Folder Name="/modules/sv4/" />
   <Folder Name="/modules/sv4/accreditation/" />
   <Folder Name="/modules/sv4/accreditation/backend/">

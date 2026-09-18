@@ -19,5 +19,10 @@ Connection string PostgreSQL được đọc từ `ConnectionStrings:Postgres`. 
 ghi đè bằng biến môi trường trong PowerShell:
 
 ```powershell
-$env:ConnectionStrings__Postgres = "Host=localhost;Port=5432;Database=obe_aunqa;Username=postgres;Password=YOUR_PASSWORD"
+$env:ConnectionStrings__Postgres = "Host=localhost;Port=5432;Database=obe_management;Username=postgres;Password=YOUR_PASSWORD"
 ```
+
+Trước khi gọi API Curriculum, chạy `infra/postgres/004_curriculum_crud.sql` sau
+schema và seed V1. Swagger UI được phục vụ tại `/swagger`, OpenAPI JSON tại
+`/openapi/v1.json`; các request mẫu
+nằm trong `ObeAunQa.Api.http`.

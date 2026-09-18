@@ -1,0 +1,84 @@
+@host = http://localhost:5099
+@programId = 1
+@versionId = 1
+@programCourseId = 1
+
+### OpenAPI
+GET {{host}}/openapi/v1.json
+
+### Danh sách CTĐT
+GET {{host}}/api/curriculum/programs?page=1&pageSize=20
+
+### Tạo CTĐT
+POST {{host}}/api/curriculum/programs
+Content-Type: application/json
+
+{
+  "code": "SE",
+  "name": "Kỹ thuật phần mềm"
+}
+
+### Chi tiết CTĐT
+GET {{host}}/api/curriculum/programs/{{programId}}
+
+### Cập nhật CTĐT
+PUT {{host}}/api/curriculum/programs/{{programId}}
+Content-Type: application/json
+
+{
+  "name": "Khoa học máy tính"
+}
+
+### Tạo V2 và sao chép riêng danh sách học phần từ V1
+POST {{host}}/api/curriculum/programs/{{programId}}/versions
+Content-Type: application/json
+
+{
+  "versionCode": "V2",
+  "sourceVersionId": 1
+}
+
+### Danh sách phiên bản
+GET {{host}}/api/curriculum/programs/{{programId}}/versions
+
+### Chi tiết phiên bản
+GET {{host}}/api/curriculum/program-versions/{{versionId}}
+
+### Thêm học phần vào phiên bản draft
+POST {{host}}/api/curriculum/program-versions/{{versionId}}/courses
+Content-Type: application/json
+
+{
+  "institutionalCode": null,
+  "name": "Nhập môn lập trình",
+  "credits": 3,
+  "semester": "Kỳ 1",
+  "displayOrder": 1
+}
+
+### Danh sách học phần
+GET {{host}}/api/curriculum/program-versions/{{versionId}}/courses?page=1&pageSize=20
+
+### Cập nhật học phần
+PUT {{host}}/api/curriculum/program-versions/{{versionId}}/courses/{{programCourseId}}
+Content-Type: application/json
+
+{
+  "institutionalCode": "CS101",
+  "name": "Nhập môn lập trình",
+  "credits": 3,
+  "semester": "Kỳ 1",
+  "displayOrder": 1
+}
+
+### Công bố phiên bản
+POST {{host}}/api/curriculum/program-versions/{{versionId}}/publish
+
+### Xóa mềm học phần
+DELETE {{host}}/api/curriculum/program-versions/{{versionId}}/courses/{{programCourseId}}
+
+### Xóa mềm phiên bản
+DELETE {{host}}/api/curriculum/program-versions/{{versionId}}
+
+### Xóa mềm CTĐT
+DELETE {{host}}/api/curriculum/programs/{{programId}}

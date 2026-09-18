@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import type { FrontendModuleDefinition } from "../../../shared/frontend/module";
+import {
+  CurriculumProgramsPage,
+  ProgramCoursesPage,
+  ProgramVersionsPage,
+} from "./curriculum/CurriculumPages";
 import { webModules } from "./module-registry";
 
 type ApiState = "checking" | "online" | "offline";
@@ -102,7 +107,7 @@ export function App() {
           <span className="brand__mark">OA</span>
           <span>
             <strong>OBE · AUN-QA</strong>
-            <small>Academic Quality Platform</small>
+            <small>Nền tảng quản lý chất lượng đào tạo</small>
           </span>
         </Link>
         <nav aria-label="Điều hướng chính">
@@ -116,11 +121,13 @@ export function App() {
       <main>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/curriculum/programs/:programId" element={<ProgramVersionsPage />} />
+          <Route path="/curriculum/versions/:versionId" element={<ProgramCoursesPage />} />
           {webModules.map((module) => (
             <Route
               key={module.id}
               path={module.route}
-              element={<ModulePage module={module} />}
+              element={module.id === "curriculum" ? <CurriculumProgramsPage /> : <ModulePage module={module} />}
             />
           ))}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,5 +1,7 @@
 # Nạp dữ liệu PLO–CLO 59 môn vào PostgreSQL
 
+Xem hướng dẫn đầy đủ để dựng lại database, seed V1 và sinh dữ liệu PLO–CLO V2 tại [HUONG_DAN_SINH_DU_LIEU_DATABASE.md](HUONG_DAN_SINH_DU_LIEU_DATABASE.md).
+
 Các lệnh dưới đây chạy trong PowerShell tại thư mục gốc của repository. Cần một
 PostgreSQL server đang chạy và `psql` có trong `PATH`. Khi dùng `-U postgres`,
 `psql` sẽ hỏi mật khẩu; không ghi mật khẩu vào lệnh hoặc tệp SQL.
@@ -45,7 +47,17 @@ Lệnh tạo/ cập nhật dữ liệu theo khóa duy nhất, rồi kiểm tra s
 kết CLO–PLO. Nếu kiểm tra thất bại, transaction bị hủy. Chạy lại cùng seed không
 tạo bản ghi trùng.
 
-## 5. Xem kết quả
+## 5. Bổ sung schema phục vụ CRUD API
+
+```powershell
+psql -h localhost -U postgres -d obe_management -v ON_ERROR_STOP=1 -f infra/postgres/004_curriculum_crud.sql
+```
+
+Migration bổ sung trạng thái phiên bản, xóa mềm, timestamps và snapshot thông tin
+học phần. Migration không sửa bảng hoặc dữ liệu PLO, CLO và mapping; có thể chạy
+lại an toàn.
+
+## 6. Xem kết quả
 
 ```powershell
 psql -h localhost -U postgres -d obe_management -v ON_ERROR_STOP=1 -f infra/postgres/003_verify_curriculum.sql
@@ -59,6 +71,37 @@ Truy vấn cuối giữ đúng bốn môn nguồn dưới ngưỡng tín chỉ �
 Tệp Excel/DOCX không được lưu binary trong PostgreSQL. Bảng `source_documents`
 chỉ giữ tên và hash; khi có MinIO thì cập nhật `object_key` sau khi tải tệp lên.
 
-Repository hiện chưa có PostgreSQL server, `psql` hay backend database đang
-chạy trong môi trường phát triển này, nên các tệp SQL đã được kiểm tra cấu trúc
-và JSON nhưng chưa được thực thi trực tiếp trên PostgreSQL tại đây.
+Schema, seed và migration CRUD đã được kiểm tra trên PostgreSQL 17 với dữ liệu V1.
+
+## 7. Sinh lại PLO/CLO cho V2
+
+Sinh JSON, báo cáo kiểm tra và seed SQL từ dữ liệu V1:
+
+```powershell
+python .\scripts\regenerate_plo_clo_v2.py
+```
+
+Nạp V2 vào database; lệnh sẽ yêu cầu nhập mật khẩu PostgreSQL:
+
+```powershell
+& "F:\Postgre17\bin\psql.exe" `
+  -h localhost `
+  -p 5432 `
+  -U postgres `
+  -d obe_management `
+  -W `
+  -v ON_ERROR_STOP=1 `
+  -f .\outputs\plo_clo_v2_20260917\seed_plo_clo_v2.sql
+```
+
+Seed tạo V2 ở trạng thái `draft`, sao chép 59 học phần từ V1 và thay thế toàn
+bộ PLO/CLO/mapping của riêng V2 trong một transaction. V1 không bị thay đổi.
+
+Kiểm tra dữ liệu sau khi seed:
+
+```powershell
+& "F:\Postgre17\bin\psql.exe" `
+  -h localhost -p 5432 -U postgres -d obe_management -W `
+  -v ON_ERROR_STOP=1 `
+  -f .\infra\postgres\006_verify_plo_clo_v2.sql
+```

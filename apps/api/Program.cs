@@ -4,6 +4,9 @@ using ObeAunQa.Modules.Reporting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? ["http://localhost:5173"];
@@ -16,14 +19,24 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod());
 });
 
+builder.Services.AddProblemDetails();
+builder.Services.AddOpenApi();
 builder.Services
-    .AddCurriculumModule()
+    .AddCurriculumModule(builder.Configuration)
     .AddAccreditationModule()
     .AddReportingModule();
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
 app.UseCors();
+app.MapOpenApi();
+app.UseSwaggerUI(options =>
+{
+    options.RoutePrefix = "swagger";
+    options.SwaggerEndpoint("/openapi/v1.json", "OBE & AUN-QA API v1");
+    options.DocumentTitle = "OBE & AUN-QA API";
+});
 
 app.MapGet("/", () => Results.Ok(new
 {

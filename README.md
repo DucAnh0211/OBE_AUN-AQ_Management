@@ -12,8 +12,9 @@ Repository đã được khởi tạo thành ứng dụng chạy được:
 - Database: PostgreSQL; schema và seed CTĐT V1 nằm trong `infra/postgres`.
 - Các module: Curriculum, Accreditation và Reporting.
 
-Backend hiện cung cấp health check, module registry và endpoint khung của từng
-module. Kết nối database và CRUD nghiệp vụ sẽ được triển khai ở các bước tiếp theo.
+Backend đã kết nối PostgreSQL và cung cấp CRUD cho CTĐT, phiên bản CTĐT và học
+phần. Các module Accreditation, Reporting và API PLO/CLO tiếp tục được phát triển
+ở các bước sau.
 
 ## Yêu cầu môi trường
 
@@ -27,6 +28,7 @@ Từ thư mục gốc repository:
 
 ```powershell
 dotnet build ObeAunQa.slnx
+$env:ConnectionStrings__Postgres = "Host=localhost;Port=5432;Database=obe_management;Username=postgres;Password=YOUR_PASSWORD"
 dotnet run --project apps/api/ObeAunQa.Api.csproj --launch-profile http
 ```
 
@@ -37,6 +39,10 @@ API chạy tại `http://localhost:5099`. Các endpoint kiểm tra:
 - `GET /api/curriculum/health`
 - `GET /api/accreditation/health`
 - `GET /api/reporting/health`
+
+Swagger UI: `http://localhost:5099/swagger`. OpenAPI JSON:
+`http://localhost:5099/openapi/v1.json`. Các request mẫu nằm trong
+`apps/api/ObeAunQa.Api.http`.
 
 ## Chạy frontend
 
@@ -51,6 +57,9 @@ npm run dev
 Web chạy tại `http://localhost:5173` và mặc định gọi API tại
 `http://localhost:5099`. Sao chép `apps/web/.env.example` thành
 `apps/web/.env.local` nếu cần thay địa chỉ API.
+
+Mở `http://localhost:5173/curriculum` để quản lý CTĐT, phiên bản và học phần
+bằng giao diện tiếng Việt.
 
 ## Kiến trúc
 
@@ -75,6 +84,7 @@ trong module tương ứng; module khác chỉ truy cập public contract của 
 
 ```powershell
 dotnet build ObeAunQa.slnx
+dotnet test ObeAunQa.slnx
 
 Set-Location apps/web
 npm run build
