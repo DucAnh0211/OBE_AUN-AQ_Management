@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
+import { apiBaseUrl } from "../../../shared/frontend/api-config";
 import type { FrontendModuleDefinition } from "../../../shared/frontend/module";
 import {
   CurriculumProgramsPage,
@@ -10,15 +11,13 @@ import { webModules } from "./module-registry";
 
 type ApiState = "checking" | "online" | "offline";
 
-const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5099";
-
 function Dashboard() {
   const [apiState, setApiState] = useState<ApiState>("checking");
 
   useEffect(() => {
     const controller = new AbortController();
 
-    fetch(`${apiUrl}/health`, { signal: controller.signal })
+    fetch(`${apiBaseUrl}/health`, { signal: controller.signal })
       .then((response) => {
         if (!response.ok) {
           throw new Error("API unavailable");

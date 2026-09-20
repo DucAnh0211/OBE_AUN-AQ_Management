@@ -6,16 +6,9 @@ import type {
   ProgramCourse,
   ProgramVersion,
 } from "./types";
+import { apiBaseUrl } from "../../../../shared/frontend/api-config";
 
-type CurriculumImportMeta = ImportMeta & {
-  readonly env: {
-    readonly VITE_API_URL?: string;
-  };
-};
-
-const configuredApiUrl = (import.meta as CurriculumImportMeta).env.VITE_API_URL;
-
-export const apiBaseUrl = (configuredApiUrl ?? "http://localhost:5099").replace(/\/$/, "");
+export { apiBaseUrl } from "../../../../shared/frontend/api-config";
 export const swaggerUrl = `${apiBaseUrl}/swagger`;
 
 export class ApiError extends Error {

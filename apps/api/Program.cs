@@ -1,6 +1,7 @@
 using ObeAunQa.Modules.Accreditation;
 using ObeAunQa.Modules.Curriculum;
 using ObeAunQa.Modules.Reporting;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +52,14 @@ app.MapGet("/health", () => Results.Ok(new
     checkedAtUtc = DateTimeOffset.UtcNow
 }));
 
+app.MapGet("/health/live", () => Results.Ok(new
+{
+    status = "healthy",
+    checkedAtUtc = DateTimeOffset.UtcNow
+}));
+
+app.MapGet("/health/ready", CheckReadinessAsync);
+
 app.MapGet("/api/modules", () => Results.Ok(new[]
 {
     CurriculumModule.Descriptor,
@@ -63,5 +72,33 @@ app.MapAccreditationModule();
 app.MapReportingModule();
 
 app.Run();
+
+static async Task<IResult> CheckReadinessAsync(
+    NpgsqlDataSource dataSource,
+    ILogger<Program> logger,
+    CancellationToken cancellationToken)
+{
+    try
+    {
+        await using var connection = await dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand("SELECT 1", connection);
+        await command.ExecuteScalarAsync(cancellationToken);
+
+        return Results.Ok(new
+        {
+            status = "ready",
+            database = "available",
+            checkedAtUtc = DateTimeOffset.UtcNow
+        });
+    }
+    catch (Exception exception)
+    {
+        logger.LogWarning(exception, "PostgreSQL readiness check failed.");
+        return Results.Problem(
+            statusCode: StatusCodes.Status503ServiceUnavailable,
+            title: "Service unavailable",
+            detail: "PostgreSQL is not ready.");
+    }
+}
 
 public partial class Program;

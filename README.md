@@ -61,6 +61,17 @@ Web chạy tại `http://localhost:5173` và mặc định gọi API tại
 Mở `http://localhost:5173/curriculum` để quản lý CTĐT, phiên bản và học phần
 bằng giao diện tiếng Việt.
 
+## Chạy toàn bộ bằng Docker
+
+```powershell
+Copy-Item .env.example .env
+docker compose up --build
+```
+
+Docker Compose chạy PostgreSQL, tự seed V1/V2, khởi động API và phục vụ frontend
+qua Nginx tại `http://localhost:8080`. Xem hướng dẫn đầy đủ tại
+[`docs/DOCKER.md`](docs/DOCKER.md).
+
 ## Kiến trúc
 
 ```text
