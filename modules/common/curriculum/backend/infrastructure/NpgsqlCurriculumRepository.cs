@@ -5,7 +5,7 @@ using ObeAunQa.Modules.Curriculum.Domain;
 
 namespace ObeAunQa.Modules.Curriculum.Infrastructure;
 
-public sealed class NpgsqlCurriculumRepository(NpgsqlDataSource dataSource)
+public sealed partial class NpgsqlCurriculumRepository(NpgsqlDataSource dataSource)
     : ICurriculumRepository
 {
     private const string ProgramProjection = """

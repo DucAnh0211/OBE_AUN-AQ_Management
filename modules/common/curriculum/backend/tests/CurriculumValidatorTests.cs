@@ -66,4 +66,29 @@ public sealed class CurriculumValidatorTests
 
         Assert.Equal(3, result.TotalPages);
     }
+
+    [Fact]
+    public void LearningOutcome_NormalizesCodeAndOptionalLevel()
+    {
+        var result = CurriculumValidator.LearningOutcome(
+            " plo1 ",
+            "  Vận dụng kiến thức chuyên môn  ",
+            " c3 ");
+
+        Assert.Equal("PLO1", result.Code);
+        Assert.Equal("Vận dụng kiến thức chuyên môn", result.Statement);
+        Assert.Equal("C3", result.LevelCode);
+    }
+
+    [Theory]
+    [InlineData("Z", "I")]
+    [InlineData("X", "Z")]
+    public void CoursePloMapping_RejectsUnknownCodes(string weightCode, string progressionCode)
+    {
+        var exception = Assert.Throws<CurriculumValidationException>(() =>
+            CurriculumValidator.CoursePloMapping(
+                new CreateCoursePloMappingRequest(1, weightCode, progressionCode, null, null)));
+
+        Assert.NotEmpty(exception.Errors);
+    }
 }

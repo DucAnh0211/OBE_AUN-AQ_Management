@@ -91,14 +91,14 @@ Số liệu V2 hiện tại:
 
 Phần Curriculum mới hoàn thành API và giao diện cho CTĐT, phiên bản và học phần. Các phần sau vẫn cần làm:
 
-- [ ] API xem danh sách PLO theo phiên bản CTĐT.
-- [ ] API CRUD PLO trong phiên bản nháp.
-- [ ] API xem CLO theo học phần.
-- [ ] API CRUD CLO trong phiên bản nháp.
-- [ ] API quản lý mapping học phần-PLO.
-- [ ] API quản lý mapping CLO-PLO.
-- [ ] API kiểm tra số PLO theo tín chỉ.
-- [ ] API xem điểm cân bằng PLO.
+- [x] API xem danh sách PLO theo phiên bản CTĐT.
+- [x] API CRUD PLO trong phiên bản nháp.
+- [x] API xem CLO theo học phần.
+- [x] API CRUD CLO trong phiên bản nháp.
+- [x] API quản lý mapping học phần-PLO.
+- [x] API quản lý mapping CLO-PLO.
+- [x] API kiểm tra số PLO theo tín chỉ.
+- [x] API xem điểm cân bằng PLO.
 - [ ] Màn hình danh sách PLO.
 - [ ] Màn hình CLO theo học phần.
 - [ ] Màn hình ma trận học phần-PLO.

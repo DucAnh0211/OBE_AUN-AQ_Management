@@ -2,7 +2,7 @@ using ObeAunQa.Modules.Curriculum.Domain;
 
 namespace ObeAunQa.Modules.Curriculum.Application;
 
-public sealed class CurriculumService(ICurriculumRepository repository)
+public sealed partial class CurriculumService(ICurriculumRepository repository)
 {
     public Task<PagedResult<ProgramResponse>> GetProgramsAsync(
         int page,

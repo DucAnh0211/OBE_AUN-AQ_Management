@@ -12,9 +12,10 @@ Repository đã được khởi tạo thành ứng dụng chạy được:
 - Database: PostgreSQL; schema và seed CTĐT V1 nằm trong `infra/postgres`.
 - Các module: Curriculum, Accreditation và Reporting.
 
-Backend đã kết nối PostgreSQL và cung cấp CRUD cho CTĐT, phiên bản CTĐT và học
-phần. Các module Accreditation, Reporting và API PLO/CLO tiếp tục được phát triển
-ở các bước sau.
+Backend đã kết nối PostgreSQL và cung cấp CRUD cho CTĐT, phiên bản CTĐT, học
+phần, PLO, CLO và các mapping học phần–PLO/CLO–PLO. API kiểm tra quy tắc số PLO
+theo tín chỉ và độ cân bằng PLO cũng đã sẵn sàng. Các module Accreditation và
+Reporting tiếp tục được phát triển ở các bước sau.
 
 ## Yêu cầu môi trường
 

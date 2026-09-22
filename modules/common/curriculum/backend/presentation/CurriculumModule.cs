@@ -85,6 +85,8 @@ public static class CurriculumModule
             "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}",
             ArchiveProgramCourseAsync);
 
+        group.MapOutcomeEndpoints();
+
         return endpoints;
     }
 

@@ -60,6 +60,44 @@ public sealed class CurriculumServiceTests
                 CancellationToken.None));
     }
 
+    [Fact]
+    public async Task CreatePlo_RejectsFinalizedVersion()
+    {
+        var repository = new TestRepository
+        {
+            Version = CreateVersion(CurriculumStatuses.Finalized)
+        };
+        var service = new CurriculumService(repository);
+
+        var exception = await Assert.ThrowsAsync<CurriculumConflictException>(() =>
+            service.CreatePloAsync(
+                1,
+                new CreatePloRequest("PLO1", "Vận dụng kiến thức chuyên môn", "C3"),
+                CancellationToken.None));
+
+        Assert.Equal("version_not_editable", exception.Code);
+        Assert.Null(repository.ReceivedLearningOutcome);
+    }
+
+    [Fact]
+    public async Task CreatePlo_NormalizesInputForDraftVersion()
+    {
+        var repository = new TestRepository
+        {
+            Version = CreateVersion(CurriculumStatuses.Draft)
+        };
+        var service = new CurriculumService(repository);
+
+        var result = await service.CreatePloAsync(
+            1,
+            new CreatePloRequest(" plo1 ", "  Vận dụng kiến thức chuyên môn  ", " c3 "),
+            CancellationToken.None);
+
+        Assert.Equal(11, result.Id);
+        Assert.Equal("PLO1", repository.ReceivedLearningOutcome?.Code);
+        Assert.Equal("C3", repository.ReceivedLearningOutcome?.LevelCode);
+    }
+
     private static ProgramVersionResponse CreateVersion(string status)
     {
         return new ProgramVersionResponse(
@@ -81,6 +119,8 @@ public sealed class CurriculumServiceTests
         public required ProgramVersionResponse Version { get; init; }
 
         public NormalizedCourse? ReceivedCourse { get; private set; }
+
+        public NormalizedLearningOutcome? ReceivedLearningOutcome { get; private set; }
 
         public Task<ProgramVersionResponse?> GetProgramVersionAsync(
             long id,
@@ -180,6 +220,123 @@ public sealed class CurriculumServiceTests
         public Task<bool> ArchiveProgramCourseAsync(
             long versionId,
             long programCourseId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<PloResponse>> GetPlosAsync(
+            long versionId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<PloResponse?> GetPloAsync(
+            long versionId,
+            long ploId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<PloResponse> CreatePloAsync(
+            long versionId,
+            NormalizedLearningOutcome plo,
+            CancellationToken cancellationToken)
+        {
+            ReceivedLearningOutcome = plo;
+            return Task.FromResult(new PloResponse(
+                11,
+                versionId,
+                plo.Code,
+                plo.Statement,
+                plo.LevelCode,
+                "manual"));
+        }
+
+        public Task<PloResponse?> UpdatePloAsync(
+            long versionId,
+            long ploId,
+            NormalizedLearningOutcome plo,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<bool> DeletePloAsync(
+            long versionId,
+            long ploId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<CloResponse>> GetClosAsync(
+            long versionId,
+            long programCourseId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<CloResponse?> GetCloAsync(
+            long versionId,
+            long programCourseId,
+            long cloId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<CloResponse> CreateCloAsync(
+            long versionId,
+            long programCourseId,
+            NormalizedLearningOutcome clo,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<CloResponse?> UpdateCloAsync(
+            long versionId,
+            long programCourseId,
+            long cloId,
+            NormalizedLearningOutcome clo,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<bool> DeleteCloAsync(
+            long versionId,
+            long programCourseId,
+            long cloId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<CoursePloMappingResponse>> GetCoursePloMappingsAsync(
+            long versionId,
+            long programCourseId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<CoursePloMappingResponse> CreateCoursePloMappingAsync(
+            long versionId,
+            long programCourseId,
+            NormalizedCoursePloMapping mapping,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<CoursePloMappingResponse?> UpdateCoursePloMappingAsync(
+            long versionId,
+            long programCourseId,
+            long mappingId,
+            NormalizedCoursePloMappingUpdate mapping,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<bool> DeleteCoursePloMappingAsync(
+            long versionId,
+            long programCourseId,
+            long mappingId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<CloPloMappingResponse>> GetCloPloMappingsAsync(
+            long versionId,
+            long programCourseId,
+            long cloId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<CloPloMappingResponse> CreateCloPloMappingAsync(
+            long versionId,
+            long programCourseId,
+            long cloId,
+            long coursePloId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<bool> DeleteCloPloMappingAsync(
+            long versionId,
+            long programCourseId,
+            long cloId,
+            long coursePloId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<CoursePloCreditCheckResponse>> GetPloCreditChecksAsync(
+            long versionId,
+            CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<PloBalanceItemResponse>> GetPloBalanceAsync(
+            long versionId,
             CancellationToken cancellationToken) => throw new NotSupportedException();
     }
 }

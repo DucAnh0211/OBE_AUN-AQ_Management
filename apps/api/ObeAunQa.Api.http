@@ -2,6 +2,9 @@
 @programId = 1
 @versionId = 1
 @programCourseId = 1
+@ploId = 1
+@cloId = 1
+@coursePloId = 1
 
 ### OpenAPI
 GET {{host}}/openapi/v1.json
@@ -82,3 +85,71 @@ DELETE {{host}}/api/curriculum/program-versions/{{versionId}}
 
 ### Xóa mềm CTĐT
 DELETE {{host}}/api/curriculum/programs/{{programId}}
+
+### Danh sách PLO theo phiên bản
+GET {{host}}/api/curriculum/program-versions/{{versionId}}/plos
+
+### Tạo PLO trong phiên bản draft
+POST {{host}}/api/curriculum/program-versions/{{versionId}}/plos
+Content-Type: application/json
+
+{
+  "code": "PLO6",
+  "statement": "Vận dụng kiến thức chuyên môn để giải quyết vấn đề.",
+  "levelCode": "C3"
+}
+
+### Cập nhật PLO trong phiên bản draft
+PUT {{host}}/api/curriculum/program-versions/{{versionId}}/plos/{{ploId}}
+Content-Type: application/json
+
+{
+  "code": "PLO1",
+  "statement": "Vận dụng kiến thức chuyên môn để giải quyết vấn đề phức tạp.",
+  "levelCode": "C4"
+}
+
+### Danh sách CLO theo học phần
+GET {{host}}/api/curriculum/program-versions/{{versionId}}/courses/{{programCourseId}}/clos
+
+### Tạo CLO trong học phần của phiên bản draft
+POST {{host}}/api/curriculum/program-versions/{{versionId}}/courses/{{programCourseId}}/clos
+Content-Type: application/json
+
+{
+  "code": "CLO1",
+  "statement": "Trình bày được các khái niệm nền tảng của học phần.",
+  "levelCode": "C2"
+}
+
+### Danh sách mapping học phần-PLO
+GET {{host}}/api/curriculum/program-versions/{{versionId}}/courses/{{programCourseId}}/plo-mappings
+
+### Tạo mapping học phần-PLO
+POST {{host}}/api/curriculum/program-versions/{{versionId}}/courses/{{programCourseId}}/plo-mappings
+Content-Type: application/json
+
+{
+  "ploId": {{ploId}},
+  "weightCode": "X",
+  "progressionCode": "I",
+  "fit": "direct",
+  "fitReason": "Học phần trực tiếp phát triển PLO."
+}
+
+### Danh sách mapping CLO-PLO
+GET {{host}}/api/curriculum/program-versions/{{versionId}}/courses/{{programCourseId}}/clos/{{cloId}}/plo-mappings
+
+### Tạo mapping CLO-PLO
+POST {{host}}/api/curriculum/program-versions/{{versionId}}/courses/{{programCourseId}}/clos/{{cloId}}/plo-mappings
+Content-Type: application/json
+
+{
+  "coursePloId": {{coursePloId}}
+}
+
+### Kiểm tra số PLO tối thiểu theo tín chỉ
+GET {{host}}/api/curriculum/program-versions/{{versionId}}/plo-credit-check
+
+### Xem điểm cân bằng PLO
+GET {{host}}/api/curriculum/program-versions/{{versionId}}/plo-balance

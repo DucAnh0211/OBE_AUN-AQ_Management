@@ -100,6 +100,104 @@ public static partial class CurriculumValidator
             displayOrder);
     }
 
+    public static NormalizedLearningOutcome LearningOutcome(
+        string? code,
+        string? statement,
+        string? levelCode)
+    {
+        var errors = new Dictionary<string, string[]>();
+        var normalizedCode = NormalizeCode(code, "code", errors);
+        var normalizedStatement = NormalizeRequiredText(statement, "statement", 2, 2000, errors);
+        var normalizedLevelCode = NormalizeOptional(levelCode)?.ToUpperInvariant();
+        if (normalizedLevelCode?.Length > 50)
+        {
+            errors["levelCode"] = ["Mức độ không được vượt quá 50 ký tự."];
+        }
+
+        ThrowIfInvalid(errors);
+        return new NormalizedLearningOutcome(
+            normalizedCode,
+            normalizedStatement,
+            normalizedLevelCode);
+    }
+
+    public static NormalizedCoursePloMapping CoursePloMapping(
+        CreateCoursePloMappingRequest request)
+    {
+        var errors = new Dictionary<string, string[]>();
+        if (request.PloId <= 0)
+        {
+            errors["ploId"] = ["Mã định danh PLO phải lớn hơn 0."];
+        }
+
+        var values = CoursePloMappingValues(
+            request.WeightCode,
+            request.ProgressionCode,
+            request.Fit,
+            request.FitReason,
+            errors);
+        ThrowIfInvalid(errors);
+        return new NormalizedCoursePloMapping(
+            request.PloId,
+            values.WeightCode,
+            values.ProgressionCode,
+            values.Fit,
+            values.FitReason);
+    }
+
+    public static NormalizedCoursePloMappingUpdate CoursePloMapping(
+        UpdateCoursePloMappingRequest request)
+    {
+        var errors = new Dictionary<string, string[]>();
+        var values = CoursePloMappingValues(
+            request.WeightCode,
+            request.ProgressionCode,
+            request.Fit,
+            request.FitReason,
+            errors);
+        ThrowIfInvalid(errors);
+        return new NormalizedCoursePloMappingUpdate(
+            values.WeightCode,
+            values.ProgressionCode,
+            values.Fit,
+            values.FitReason);
+    }
+
+    private static (string WeightCode, string ProgressionCode, string? Fit, string? FitReason)
+        CoursePloMappingValues(
+            string? weightCode,
+            string? progressionCode,
+            string? fit,
+            string? fitReason,
+            IDictionary<string, string[]> errors)
+    {
+        var normalizedWeight = NormalizeOptional(weightCode)?.ToUpperInvariant() ?? string.Empty;
+        if (normalizedWeight is not ("X" or "Y"))
+        {
+            errors["weightCode"] = ["Trọng số chỉ nhận X hoặc Y."];
+        }
+
+        var normalizedProgression = NormalizeOptional(progressionCode)?.ToUpperInvariant() ?? string.Empty;
+        if (normalizedProgression is not ("I" or "R" or "E"))
+        {
+            errors["progressionCode"] = ["Mức tiến triển chỉ nhận I, R hoặc E."];
+        }
+
+        var normalizedFit = NormalizeOptional(fit);
+        if (normalizedFit?.Length > 100)
+        {
+            errors["fit"] = ["Mức phù hợp không được vượt quá 100 ký tự."];
+        }
+
+        var normalizedReason = NormalizeOptional(fitReason);
+        if (normalizedReason?.Length > 1000)
+        {
+            errors["fitReason"] = ["Lý do phù hợp không được vượt quá 1000 ký tự."];
+        }
+
+        return (normalizedWeight, normalizedProgression, normalizedFit, normalizedReason);
+    }
+
     private static string NormalizeCode(
         string? value,
         string field,
@@ -159,3 +257,21 @@ public sealed record NormalizedCourse(
     int Credits,
     string Semester,
     int? DisplayOrder);
+
+public sealed record NormalizedLearningOutcome(
+    string Code,
+    string Statement,
+    string? LevelCode);
+
+public sealed record NormalizedCoursePloMapping(
+    long PloId,
+    string WeightCode,
+    string ProgressionCode,
+    string? Fit,
+    string? FitReason);
+
+public sealed record NormalizedCoursePloMappingUpdate(
+    string WeightCode,
+    string ProgressionCode,
+    string? Fit,
+    string? FitReason);
