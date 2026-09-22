@@ -17,6 +17,9 @@
   <Folder Name="/modules/sv4/accreditation/backend/">
     <Project Path="modules/sv4/accreditation/backend/ObeAunQa.Modules.Accreditation.csproj" />
   </Folder>
+  <Folder Name="/modules/sv4/accreditation/backend/tests/">
+    <Project Path="modules/sv4/accreditation/backend/tests/ObeAunQa.Modules.Accreditation.Tests.csproj" />
+  </Folder>
   <Folder Name="/modules/sv5/" />
   <Folder Name="/modules/sv5/reporting/" />
   <Folder Name="/modules/sv5/reporting/backend/">
