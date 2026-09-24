@@ -17,5 +17,9 @@ run_sql /sql/004_curriculum_crud.sql
 run_sql /sql/seeds/004_seed_plo_clo_v2.sql
 run_sql /sql/003_verify_curriculum.sql
 run_sql /sql/006_verify_plo_clo_v2.sql
+run_sql /sql/007_accreditation.sql
+run_sql /sql/008_verify_accreditation.sql
+run_sql /sql/009_accreditation_vi.sql
+run_sql /sql/010_verify_accreditation_vi.sql
 
-echo "PostgreSQL curriculum bootstrap completed successfully."
+echo "PostgreSQL curriculum and accreditation bootstrap completed successfully."
