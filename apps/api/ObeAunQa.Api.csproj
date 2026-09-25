@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\shared\backend\ObeAunQa.SharedKernel.csproj" />
     <ProjectReference Include="..\..\modules\common\curriculum\backend\ObeAunQa.Modules.Curriculum.csproj" />
+    <ProjectReference Include="..\..\modules\common\identity\backend\ObeAunQa.Modules.Identity.csproj" />
     <ProjectReference Include="..\..\modules\sv4\accreditation\backend\ObeAunQa.Modules.Accreditation.csproj" />
     <ProjectReference Include="..\..\modules\sv5\reporting\backend\ObeAunQa.Modules.Reporting.csproj" />
   </ItemGroup>

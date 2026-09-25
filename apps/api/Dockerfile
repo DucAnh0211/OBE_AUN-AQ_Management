@@ -5,6 +5,7 @@ COPY Directory.Build.props global.json NuGet.Config ObeAunQa.slnx ./
 COPY apps/api/ObeAunQa.Api.csproj apps/api/
 COPY shared/backend/ObeAunQa.SharedKernel.csproj shared/backend/
 COPY modules/common/curriculum/backend/ObeAunQa.Modules.Curriculum.csproj modules/common/curriculum/backend/
+COPY modules/common/identity/backend/ObeAunQa.Modules.Identity.csproj modules/common/identity/backend/
 COPY modules/sv4/accreditation/backend/ObeAunQa.Modules.Accreditation.csproj modules/sv4/accreditation/backend/
 COPY modules/sv5/reporting/backend/ObeAunQa.Modules.Reporting.csproj modules/sv5/reporting/backend/
 
@@ -13,6 +14,7 @@ RUN dotnet restore apps/api/ObeAunQa.Api.csproj
 COPY apps/api/ apps/api/
 COPY shared/backend/ shared/backend/
 COPY modules/common/curriculum/backend/ modules/common/curriculum/backend/
+COPY modules/common/identity/backend/ modules/common/identity/backend/
 COPY modules/sv4/accreditation/backend/ modules/sv4/accreditation/backend/
 COPY modules/sv5/reporting/backend/ modules/sv5/reporting/backend/
 

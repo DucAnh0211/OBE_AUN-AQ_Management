@@ -28,6 +28,20 @@ services:
       start_period: 30s
       retries: 12
 
+  migrate:
+    image: postgres:17-alpine
+    restart: "no"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-obe_management}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - ./infra/postgres:/sql:ro
+    command: ["/bin/sh", "/sql/docker-migrate.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+
   api:
     build:
       context: .
@@ -40,11 +54,17 @@ services:
         Host=db;Port=5432;Database=${POSTGRES_DB:-obe_management};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       Cors__AllowedOrigins__0: http://localhost:5173
       Cors__AllowedOrigins__1: ${CORS_ORIGIN:-http://localhost:8080}
+      Jwt__Issuer: ObeAunQa.Api
+      Jwt__Audience: ObeAunQa.Web
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?Set JWT_SIGNING_KEY in .env}
+      BootstrapAdmin__Email: ${BOOTSTRAP_ADMIN_EMAIL:?Set BOOTSTRAP_ADMIN_EMAIL in .env}
+      BootstrapAdmin__Password: ${BOOTSTRAP_ADMIN_PASSWORD:?Set BOOTSTRAP_ADMIN_PASSWORD in .env}
+      BootstrapAdmin__FullName: ${BOOTSTRAP_ADMIN_FULL_NAME:-Quản trị viên}
     ports:
       - "${API_PORT:-5099}:8080"
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test:
         - CMD

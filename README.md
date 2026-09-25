@@ -30,8 +30,27 @@ Từ thư mục gốc repository:
 ```powershell
 dotnet build ObeAunQa.slnx
 $env:ConnectionStrings__Postgres = "Host=localhost;Port=5432;Database=obe_management;Username=postgres;Password=YOUR_PASSWORD"
+$env:BootstrapAdmin__Email = "admin@example.edu.vn"
+$env:BootstrapAdmin__Password = "ChangeMe123"
+$env:BootstrapAdmin__FullName = "Quản trị viên"
 dotnet run --project apps/api/ObeAunQa.Api.csproj --launch-profile http
 ```
+
+Ở lần chạy đầu, API tạo một admin từ các biến `BootstrapAdmin__*` và bắt buộc đổi
+mật khẩu sau khi đăng nhập. Khóa ký JWT dùng giá trị development trong
+`appsettings.Development.json`; môi trường Production bắt buộc cấu hình
+`Jwt__SigningKey` tối thiểu 32 ký tự.
+
+Với database đã tồn tại từ trước, áp dụng migration phân quyền trước khi chạy API:
+
+```powershell
+psql -U postgres -d obe_management -f infra/postgres/011_security.sql
+psql -U postgres -d obe_management -f infra/postgres/012_verify_security.sql
+```
+
+Các vai trò hiện có là `admin`, `lecturer` và `student`. Admin quản lý tài khoản và
+phân công tại `/admin/users`; giảng viên chỉnh sửa CLO/CLO–PLO của học phần được
+giao; sinh viên chỉ đọc phiên bản đã công bố của CTĐT được gán.
 
 API chạy tại `http://localhost:5099`. Các endpoint kiểm tra:
 

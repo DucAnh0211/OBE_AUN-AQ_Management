@@ -1,5 +1,8 @@
 import type { FrontendModuleDefinition } from "../../../../shared/frontend/module";
 
+export { AccreditationApiError, accreditationApi } from "./api";
+export type * from "./types";
+
 export const accreditationFrontend: FrontendModuleDefinition = {
   id: "accreditation",
   label: "Kiểm định AUN-QA",
