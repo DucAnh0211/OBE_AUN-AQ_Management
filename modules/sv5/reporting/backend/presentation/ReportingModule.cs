@@ -22,7 +22,8 @@ public static class ReportingModule
 
     public static IEndpointRouteBuilder MapReportingModule(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup(Descriptor.ApiPrefix);
+        var group = endpoints.MapGroup(Descriptor.ApiPrefix)
+            .RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
         group.MapGet("/health", () => Results.Ok(new ModuleHealth(
             Descriptor.Key,

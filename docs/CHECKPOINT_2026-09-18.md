@@ -99,11 +99,11 @@ Phần Curriculum mới hoàn thành API và giao diện cho CTĐT, phiên bản
 - [x] API quản lý mapping CLO-PLO.
 - [x] API kiểm tra số PLO theo tín chỉ.
 - [x] API xem điểm cân bằng PLO.
-- [ ] Màn hình danh sách PLO.
-- [ ] Màn hình CLO theo học phần.
-- [ ] Màn hình ma trận học phần-PLO.
-- [ ] Màn hình ma trận CLO-PLO.
-- [ ] Giao diện cảnh báo dữ liệu không hợp lệ.
+- [x] Màn hình danh sách PLO.
+- [x] Màn hình CLO theo học phần.
+- [x] Màn hình ma trận học phần-PLO.
+- [x] Màn hình ma trận CLO-PLO.
+- [x] Giao diện cảnh báo dữ liệu không hợp lệ.
 
 Điều kiện để Curriculum được coi là hoàn thành: SV4 và SV5 có thể đọc CTĐT, học phần, PLO, CLO và mapping thông qua public API mà không truy cập trực tiếp bảng nội bộ.
 

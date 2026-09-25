@@ -1,8 +1,11 @@
 using ObeAunQa.Modules.Curriculum.Domain;
+using ObeAunQa.SharedKernel;
 
 namespace ObeAunQa.Modules.Curriculum.Application;
 
-public sealed partial class CurriculumService(ICurriculumRepository repository)
+public sealed partial class CurriculumService(
+    ICurriculumRepository repository,
+    IAssignmentCloneService? assignmentCloner = null)
 {
     public Task<PagedResult<ProgramResponse>> GetProgramsAsync(
         int page,
@@ -74,17 +77,21 @@ public sealed partial class CurriculumService(ICurriculumRepository repository)
             ?? throw new CurriculumNotFoundException("phiên bản chương trình đào tạo", id);
     }
 
-    public Task<ProgramVersionResponse> CreateProgramVersionAsync(
+    public async Task<ProgramVersionResponse> CreateProgramVersionAsync(
         long programId,
         CreateProgramVersionRequest request,
         CancellationToken cancellationToken)
     {
         var versionCode = CurriculumValidator.VersionCode(request.VersionCode);
-        return repository.CreateProgramVersionAsync(
+        var created = await repository.CreateProgramVersionAsync(
             programId,
             versionCode,
             request.SourceVersionId,
             cancellationToken);
+        if (request.SourceVersionId is not null && assignmentCloner is not null)
+            await assignmentCloner.CopyLecturerAssignmentsAsync(
+                request.SourceVersionId.Value,created.Id,cancellationToken);
+        return created;
     }
 
     public async Task<ProgramVersionResponse> UpdateProgramVersionAsync(

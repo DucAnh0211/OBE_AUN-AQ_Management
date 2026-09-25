@@ -17,6 +17,15 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
+Hoặc chạy ngay bằng cấu hình demo trong `.env.example` mà không cần tạo `.env`:
+
+```powershell
+docker compose --env-file .env.example up --build --detach
+```
+
+Tài khoản đăng nhập demo lấy từ `BOOTSTRAP_ADMIN_EMAIL` và
+`BOOTSTRAP_ADMIN_PASSWORD`. Hệ thống yêu cầu đổi mật khẩu ngay lần đăng nhập đầu.
+
 Đổi `POSTGRES_PASSWORD` trong `.env` trước khi chia sẻ hoặc dùng ngoài máy cá nhân.
 
 Docker sẽ tự động:
@@ -27,15 +36,14 @@ Docker sẽ tự động:
 4. Áp dụng migration CRUD.
 5. Nạp V2 với dữ liệu PLO-CLO đã cân bằng.
 6. Chạy các truy vấn kiểm tra.
-7. Khởi động API rồi mới khởi động web.
+7. Chạy service `migrate` để bảo đảm schema phân quyền tồn tại khi dùng lại volume cũ.
+8. Khởi động API rồi mới khởi động web.
 
 Các địa chỉ mặc định:
 
 | Thành phần | Địa chỉ |
 |---|---|
 | Web | <http://localhost:8080> |
-| Swagger | <http://localhost:5099/swagger> |
-| Swagger qua web proxy | <http://localhost:8080/swagger> |
 | API readiness | <http://localhost:5099/health/ready> |
 | PostgreSQL | `localhost:5432` |
 
@@ -53,6 +61,7 @@ Xem log:
 ```powershell
 docker compose logs --follow
 docker compose logs --follow db
+docker compose logs migrate
 docker compose logs --follow api
 ```
 
@@ -98,10 +107,11 @@ docker compose --profile ai down
 ```powershell
 Invoke-RestMethod http://localhost:5099/health/live
 Invoke-RestMethod http://localhost:5099/health/ready
-Invoke-RestMethod http://localhost:5099/api/curriculum/programs
 Invoke-WebRequest http://localhost:8080
-Invoke-WebRequest http://localhost:8080/swagger
 ```
+
+Các API nghiệp vụ yêu cầu đăng nhập. Kiểm tra nhanh qua giao diện web tại
+<http://localhost:8080>.
 
 Kiểm tra số lượng V1 và V2 trong PostgreSQL:
 

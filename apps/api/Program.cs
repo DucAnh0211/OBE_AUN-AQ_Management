@@ -1,5 +1,6 @@
 using ObeAunQa.Modules.Accreditation;
 using ObeAunQa.Modules.Curriculum;
+using ObeAunQa.Modules.Identity;
 using ObeAunQa.Modules.Reporting;
 using Npgsql;
 
@@ -17,12 +18,14 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
-            .AllowAnyMethod());
+            .AllowAnyMethod()
+            .AllowCredentials());
 });
 
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 builder.Services
+    .AddIdentityModule(builder.Configuration)
     .AddCurriculumModule(builder.Configuration)
     .AddAccreditationModule()
     .AddReportingModule();
@@ -31,34 +34,39 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseCors();
-app.MapOpenApi();
-app.UseSwaggerUI(options =>
+app.UseAuthentication();
+app.UseAuthorization();
+if (app.Environment.IsDevelopment())
 {
-    options.RoutePrefix = "swagger";
-    options.SwaggerEndpoint("/openapi/v1.json", "OBE & AUN-QA API v1");
-    options.DocumentTitle = "OBE & AUN-QA API";
-});
+    app.MapOpenApi().AllowAnonymous();
+    app.UseSwaggerUI(options =>
+    {
+        options.RoutePrefix = "swagger";
+        options.SwaggerEndpoint("/openapi/v1.json", "OBE & AUN-QA API v1");
+        options.DocumentTitle = "OBE & AUN-QA API";
+    });
+}
 
 app.MapGet("/", () => Results.Ok(new
 {
     service = "OBE & AUN-QA API",
     version = "0.1.0",
     environment = app.Environment.EnvironmentName
-}));
+})).AllowAnonymous();
 
 app.MapGet("/health", () => Results.Ok(new
 {
     status = "healthy",
     checkedAtUtc = DateTimeOffset.UtcNow
-}));
+})).AllowAnonymous();
 
 app.MapGet("/health/live", () => Results.Ok(new
 {
     status = "healthy",
     checkedAtUtc = DateTimeOffset.UtcNow
-}));
+})).AllowAnonymous();
 
-app.MapGet("/health/ready", CheckReadinessAsync);
+app.MapGet("/health/ready", CheckReadinessAsync).AllowAnonymous();
 
 app.MapGet("/api/modules", () => Results.Ok(new[]
 {
@@ -70,6 +78,7 @@ app.MapGet("/api/modules", () => Results.Ok(new[]
 app.MapCurriculumModule();
 app.MapAccreditationModule();
 app.MapReportingModule();
+app.MapIdentityModule();
 
 app.Run();
 

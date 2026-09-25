@@ -58,32 +58,32 @@ public static class CurriculumModule
         }));
 
         group.MapGet("/programs", GetProgramsAsync);
-        group.MapPost("/programs", CreateProgramAsync);
+        group.MapPost("/programs", CreateProgramAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         group.MapGet("/programs/{programId:long:min(1)}", GetProgramAsync)
             .WithName("GetCurriculumProgram");
-        group.MapPut("/programs/{programId:long:min(1)}", UpdateProgramAsync);
-        group.MapDelete("/programs/{programId:long:min(1)}", ArchiveProgramAsync);
+        group.MapPut("/programs/{programId:long:min(1)}", UpdateProgramAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapDelete("/programs/{programId:long:min(1)}", ArchiveProgramAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
         group.MapGet("/programs/{programId:long:min(1)}/versions", GetProgramVersionsAsync);
-        group.MapPost("/programs/{programId:long:min(1)}/versions", CreateProgramVersionAsync);
+        group.MapPost("/programs/{programId:long:min(1)}/versions", CreateProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         group.MapGet("/program-versions/{versionId:long:min(1)}", GetProgramVersionAsync)
             .WithName("GetCurriculumProgramVersion");
-        group.MapPut("/program-versions/{versionId:long:min(1)}", UpdateProgramVersionAsync);
-        group.MapPost("/program-versions/{versionId:long:min(1)}/publish", PublishProgramVersionAsync);
-        group.MapDelete("/program-versions/{versionId:long:min(1)}", ArchiveProgramVersionAsync);
+        group.MapPut("/program-versions/{versionId:long:min(1)}", UpdateProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPost("/program-versions/{versionId:long:min(1)}/publish", PublishProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapDelete("/program-versions/{versionId:long:min(1)}", ArchiveProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
         group.MapGet("/program-versions/{versionId:long:min(1)}/courses", GetProgramCoursesAsync);
-        group.MapPost("/program-versions/{versionId:long:min(1)}/courses", CreateProgramCourseAsync);
+        group.MapPost("/program-versions/{versionId:long:min(1)}/courses", CreateProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         group.MapGet(
                 "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}",
                 GetProgramCourseAsync)
             .WithName("GetCurriculumProgramCourse");
         group.MapPut(
             "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}",
-            UpdateProgramCourseAsync);
+            UpdateProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         group.MapDelete(
             "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}",
-            ArchiveProgramCourseAsync);
+            ArchiveProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
         group.MapOutcomeEndpoints();
 
@@ -92,18 +92,27 @@ public static class CurriculumModule
 
     private static async Task<IResult> GetProgramsAsync(
         CurriculumService service,
+        ICurrentUser currentUser,
+        IAccessControlService access,
         CancellationToken cancellationToken,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery(Name = "q")] string? search = null,
         [FromQuery] bool includeArchived = false)
     {
-        return Results.Ok(await service.GetProgramsAsync(
-            page,
-            pageSize,
-            search,
-            includeArchived,
-            cancellationToken));
+        if (currentUser.Role == SystemRoles.Admin)
+            return Results.Ok(await service.GetProgramsAsync(page,pageSize,search,includeArchived,cancellationToken));
+        var allowed = (await access.GetReadableProgramIdsAsync(cancellationToken)).ToHashSet();
+        var all = new List<ProgramResponse>();
+        for (var fetchPage=1;;fetchPage++)
+        {
+            var batch=await service.GetProgramsAsync(fetchPage,100,search,false,cancellationToken);
+            all.AddRange(batch.Items.Where(x=>allowed.Contains(x.Id)));
+            if(fetchPage>=batch.TotalPages) break;
+        }
+        page=Math.Max(1,page); pageSize=Math.Clamp(pageSize,1,100);
+        var items=all.Skip((page-1)*pageSize).Take(pageSize).ToList();
+        return Results.Ok(PagedResult<ProgramResponse>.Create(items,page,pageSize,all.Count));
     }
 
     private static async Task<IResult> CreateProgramAsync(
@@ -121,8 +130,10 @@ public static class CurriculumModule
     private static async Task<IResult> GetProgramAsync(
         long programId,
         CurriculumService service,
+        IAccessControlService access,
         CancellationToken cancellationToken)
     {
+        if (!await access.CanReadProgramAsync(programId,cancellationToken)) return Results.Forbid();
         return Results.Ok(await service.GetProgramAsync(programId, cancellationToken));
     }
 
@@ -150,13 +161,21 @@ public static class CurriculumModule
     private static async Task<IResult> GetProgramVersionsAsync(
         long programId,
         CurriculumService service,
+        ICurrentUser currentUser,
+        IAccessControlService access,
         CancellationToken cancellationToken,
         [FromQuery] bool includeArchived = false)
     {
-        return Results.Ok(await service.GetProgramVersionsAsync(
+        if (!await access.CanReadProgramAsync(programId,cancellationToken)) return Results.Forbid();
+        var versions = await service.GetProgramVersionsAsync(
             programId,
-            includeArchived,
-            cancellationToken));
+            currentUser.Role == SystemRoles.Admin && includeArchived,
+            cancellationToken);
+        if (currentUser.Role == SystemRoles.Admin) return Results.Ok(versions);
+        var readable = new List<ProgramVersionResponse>();
+        foreach (var version in versions)
+            if (await access.CanReadVersionAsync(version.Id,cancellationToken)) readable.Add(version);
+        return Results.Ok(readable);
     }
 
     private static async Task<IResult> CreateProgramVersionAsync(
@@ -178,8 +197,10 @@ public static class CurriculumModule
     private static async Task<IResult> GetProgramVersionAsync(
         long versionId,
         CurriculumService service,
+        IAccessControlService access,
         CancellationToken cancellationToken)
     {
+        if (!await access.CanReadVersionAsync(versionId,cancellationToken)) return Results.Forbid();
         return Results.Ok(await service.GetProgramVersionAsync(versionId, cancellationToken));
     }
 
@@ -215,6 +236,8 @@ public static class CurriculumModule
     private static async Task<IResult> GetProgramCoursesAsync(
         long versionId,
         CurriculumService service,
+        ICurrentUser currentUser,
+        IAccessControlService access,
         CancellationToken cancellationToken,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -222,14 +245,21 @@ public static class CurriculumModule
         [FromQuery] string? semester = null,
         [FromQuery] bool includeArchived = false)
     {
-        return Results.Ok(await service.GetProgramCoursesAsync(
-            versionId,
-            page,
-            pageSize,
-            search,
-            semester,
-            includeArchived,
-            cancellationToken));
+        if (!await access.CanReadVersionAsync(versionId,cancellationToken)) return Results.Forbid();
+        if (currentUser.Role == SystemRoles.Admin || currentUser.Role == SystemRoles.Student)
+            return Results.Ok(await service.GetProgramCoursesAsync(versionId,page,pageSize,search,semester,
+                currentUser.Role == SystemRoles.Admin && includeArchived,cancellationToken));
+        var allowed = (await access.GetReadableCourseIdsAsync(versionId,cancellationToken)).ToHashSet();
+        var all = new List<ProgramCourseResponse>();
+        for(var fetchPage=1;;fetchPage++)
+        {
+            var batch=await service.GetProgramCoursesAsync(versionId,fetchPage,100,search,semester,false,cancellationToken);
+            all.AddRange(batch.Items.Where(x=>allowed.Contains(x.Id)));
+            if(fetchPage>=batch.TotalPages) break;
+        }
+        page=Math.Max(1,page); pageSize=Math.Clamp(pageSize,1,100);
+        var items=all.Skip((page-1)*pageSize).Take(pageSize).ToList();
+        return Results.Ok(PagedResult<ProgramCourseResponse>.Create(items,page,pageSize,all.Count));
     }
 
     private static async Task<IResult> CreateProgramCourseAsync(
@@ -252,8 +282,10 @@ public static class CurriculumModule
         long versionId,
         long programCourseId,
         CurriculumService service,
+        IAccessControlService access,
         CancellationToken cancellationToken)
     {
+        if (!await access.CanReadCourseAsync(programCourseId,cancellationToken)) return Results.Forbid();
         return Results.Ok(await service.GetProgramCourseAsync(
             versionId,
             programCourseId,

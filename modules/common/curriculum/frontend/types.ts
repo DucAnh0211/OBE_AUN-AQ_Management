@@ -56,6 +56,44 @@ export type CourseInput = {
   displayOrder: number | null;
 };
 
+export type Plo = { id:number; programVersionId:number; code:string; statement:string; levelCode:string|null; provenance:string };
+export type Clo = { id:number; programCourseId:number; code:string; statement:string; levelCode:string|null; provenance:string; status:string };
+export type CoursePloMapping = { id:number; programVersionId:number; programCourseId:number; ploId:number; ploCode:string; weightCode:string; progressionCode:string; provenance:string; fit:string|null; fitReason:string|null };
+export type CloPloMapping = { cloId:number; cloCode:string; coursePloId:number; ploId:number; ploCode:string };
+
+export type CoursePloCreditCheck = {
+  programCourseId: number;
+  institutionalCode: string | null;
+  courseName: string;
+  credits: number;
+  requiredPloCount: number;
+  actualPloCount: number;
+  isValid: boolean;
+};
+
+export type PloCreditCheck = {
+  programVersionId: number;
+  maximumRequiredPloCount: number;
+  isValid: boolean;
+  violationCount: number;
+  courses: CoursePloCreditCheck[];
+};
+
+export type PloBalanceItem = {
+  ploCode: string;
+  score: number;
+  meanScore: number;
+  deviation: number | null;
+  exceedsTwentyPercent: boolean;
+};
+
+export type PloBalance = {
+  programVersionId: number;
+  allowedDeviation: number;
+  isBalanced: boolean;
+  items: PloBalanceItem[];
+};
+
 export type ProblemDetails = {
   title?: string;
   detail?: string;

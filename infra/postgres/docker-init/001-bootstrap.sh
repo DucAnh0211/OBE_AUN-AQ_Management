@@ -21,5 +21,7 @@ run_sql /sql/007_accreditation.sql
 run_sql /sql/008_verify_accreditation.sql
 run_sql /sql/009_accreditation_vi.sql
 run_sql /sql/010_verify_accreditation_vi.sql
+run_sql /sql/011_security.sql
+run_sql /sql/012_verify_security.sql
 
 echo "PostgreSQL curriculum and accreditation bootstrap completed successfully."
