@@ -1,0 +1,1300 @@
+{
+  "Code": "AUN-QA-PROGRAMME",
+  "Status": "published",
+  "Version": "4.0",
+  "SourceUrl": "https://www.aunsec.org/application/files/2816/7290/3752/Guide_to_AUN-QA_Assessment_at_Programme_Level_Version_4.0_4.pdf",
+  "AunCriteria": [
+    {
+      "Code": "1",
+      "DisplayOrder": 1,
+      "AunRequirements": [
+        {
+          "Code": "1.1",
+          "SourcePage": 63,
+          "DisplayOrder": 1,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that the expected learning outcomes are appropriately formulated in accordance with an established learning taxonomy, are aligned to the vision and mission of the university, and are known to all stakeholders.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Kết quả học tập mong đợi của CTĐT được xây dựng theo thang đo tư duy được lựa chọn, tương thích với tầm nhìn và sứ mạng của CSGD, được phổ biến đến các bên liên quan.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "1.2",
+          "SourcePage": 63,
+          "DisplayOrder": 2,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that the expected learning outcomes for all courses are appropriately formulated and are aligned to the expected learning outcomes of the programme.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Kết quả học tập mong đợi của tất cả các học phần được xây dựng phù hợp và tương thích với kết quả học tập mong đợi của CTĐT.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "1.3",
+          "SourcePage": 63,
+          "DisplayOrder": 3,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that the expected learning outcomes consist of both generic outcomes (related to written and oral communication, problem-solving, information technology, teambuilding skills, etc) and subject specific outcomes (related to knowledge and skills of the study discipline).",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Kết quả học tập mong đợi của CTĐT bao gồm các chuẩn tổng quát (liên quan đến kỹ năng giao tiếp trực tiếp hay qua văn bản, giải quyết vấn đề, sử dụng công nghệ thông tin, làm việc nhóm…) và chuẩn chuyên ngành (liên quan đến kiến thức và kỹ năng của ngành đào tạo).",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "1.4",
+          "SourcePage": 63,
+          "DisplayOrder": 4,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that the requirements of the stakeholders, especially the external stakeholders, are gathered, and that these are reflected in the expected learning outcomes.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Yêu cầu của các bên liên quan, đặc biệt là đối tượng bên ngoài được thu thập và chuyển tải vào kết quả học tập mong đợi.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "1.5",
+          "SourcePage": 63,
+          "DisplayOrder": 5,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that the expected learning outcomes are achieved by the students by the time they graduate.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "CTĐT thể hiện người học đạt được kết quả học tập mong đợi tại thời điểm tốt nghiệp.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        }
+      ],
+      "AunCriterionTranslations": [
+        {
+          "Title": "Expected Learning Outcomes",
+          "Description": null,
+          "LanguageCode": "en",
+          "TranslationSource": "AUN-QA Guide v4.0",
+          "TranslationStatus": "official"
+        },
+        {
+          "Title": "Kết quả học tập mong đợi",
+          "Description": null,
+          "LanguageCode": "vi",
+          "TranslationSource": "Khoa học máy tính SAR",
+          "TranslationStatus": "draft"
+        }
+      ]
+    },
+    {
+      "Code": "2",
+      "DisplayOrder": 2,
+      "AunRequirements": [
+        {
+          "Code": "2.1",
+          "SourcePage": 63,
+          "DisplayOrder": 1,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The specifications of the programme and all its courses are shown to be comprehensive, up-to-date, and made available and communicated to all stakeholders.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Bản mô tả CTĐT và đề cương tất cả các học phần đầy đủ thông tin, cập nhật, được công bố công khai và các bên liên quan dễ dàng tiếp cận.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "2.2",
+          "SourcePage": 63,
+          "DisplayOrder": 2,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The design of the curriculum is shown to be constructively aligned with achieving the expected learning outcomes.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Chương trình dạy học được thiết kế tương thích với kết quả học tập mong đợi.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "2.3",
+          "SourcePage": 63,
+          "DisplayOrder": 3,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The design of the curriculum is shown to include feedback from stakeholders, especially external stakeholders.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Thông tin phản hồi của các bên liên quan, đặc biệt là các đối tượng bên ngoài, được sử dụng làm căn cứ để thiết kế và phát triển CTDH.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "2.4",
+          "SourcePage": 63,
+          "DisplayOrder": 4,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The contribution made by each course in achieving the expected learning outcomes is shown to be clear.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Mức độ đóng góp của mỗi học phần trong việc đạt được kết quả học tập mong đợi được xác định rõ ràng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "2.5",
+          "SourcePage": 63,
+          "DisplayOrder": 5,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The curriculum to show that all its courses are logically structured, properly sequenced (progression from basic to intermediate to specialised courses), and are integrated.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "CTDH có cấu trúc logic, trình tự hợp lý (các học phần được sắp xếp từ kiến thức cơ bản đến cơ sở và chuyên ngành) và có tính tích hợp.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "2.6",
+          "SourcePage": 64,
+          "DisplayOrder": 6,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The curriculum to have option(s) for students to pursue major and/or minor specialisations.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "CTDH cho phép người học lựa chọn chuyên ngành chính và/hoặc các chuyên ngành phụ.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "2.7",
+          "SourcePage": 64,
+          "DisplayOrder": 7,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that its curriculum is reviewed periodically following an established procedure and that it remains up-to-date and relevant to industry.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "CTDH được rà soát định kỳ theo quy trình để đảm bảo tính cập nhật và đáp ứng yêu cầu của thị trường lao động.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        }
+      ],
+      "AunCriterionTranslations": [
+        {
+          "Title": "Programme Structure and Content",
+          "Description": null,
+          "LanguageCode": "en",
+          "TranslationSource": "AUN-QA Guide v4.0",
+          "TranslationStatus": "official"
+        },
+        {
+          "Title": "Cấu trúc và nội dung chương trình dạy học",
+          "Description": null,
+          "LanguageCode": "vi",
+          "TranslationSource": "Khoa học máy tính SAR",
+          "TranslationStatus": "draft"
+        }
+      ]
+    },
+    {
+      "Code": "3",
+      "DisplayOrder": 3,
+      "AunRequirements": [
+        {
+          "Code": "3.1",
+          "SourcePage": 64,
+          "DisplayOrder": 1,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The educational philosophy is shown to be articulated and communicated to all stakeholders. It is also shown to be reflected in the teaching and learning activities.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Triết lý giáo dục được tuyên bố rõ ràng, được phổ biến đến tất cả các bên liên quan và được chuyển tải vào các hoạt động dạy và học.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "3.2",
+          "SourcePage": 64,
+          "DisplayOrder": 2,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The teaching and learning activities are shown to allow students to participate responsibly in the learning process.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các hoạt động dạy và học tạo điều kiện cho người học tham gia quá trình học một cách có trách nhiệm.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "3.3",
+          "SourcePage": 64,
+          "DisplayOrder": 3,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The teaching and learning activities are shown to involve active learning by the students.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các hoạt động dạy và học được triển khai theo hướng tạo điều kiện cho người học học tập chủ động.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "3.4",
+          "SourcePage": 64,
+          "DisplayOrder": 4,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The teaching and learning activities are shown to promote learning, learning how to learn, and instilling in students a commitment for life-long learning (e.g., commitment to critical inquiry, information-processing skills, and a willingness to experiment with new ideas and practices).",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các hoạt động dạy và học khuyến khích người học học tập, học phương pháp học và thấm nhuần yêu cầu học tập suốt đời (VD: tư duy phản biện, kỹ năng xử lý thông tin và sẵn lòng thử nghiệm các ý tưởng và cách làm mới).",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "3.5",
+          "SourcePage": 64,
+          "DisplayOrder": 5,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The teaching and learning activities are shown to inculcate in students, new ideas, creative thought, innovation, and an entrepreneurial mindset.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các hoạt động dạy và học giúp người học thấm nhuần tầm quan trọng của việc đưa ra các sáng kiến, tư duy sáng tạo, đổi mới và tinh thần khởi nghiệp.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "3.6",
+          "SourcePage": 64,
+          "DisplayOrder": 6,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The teaching and learning processes are shown to be continuously improved to ensure their relevance to the needs of industry and are aligned to the expected learning outcomes.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Quá trình dạy và học được cải tiến liên tục để đảm bảo đáp ứng nhu cầu của thị trường lao động và tương thích với kết quả học tập mong đợi.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        }
+      ],
+      "AunCriterionTranslations": [
+        {
+          "Title": "Teaching and Learning Approach",
+          "Description": null,
+          "LanguageCode": "en",
+          "TranslationSource": "AUN-QA Guide v4.0",
+          "TranslationStatus": "official"
+        },
+        {
+          "Title": "Phương thức dạy và học",
+          "Description": null,
+          "LanguageCode": "vi",
+          "TranslationSource": "Khoa học máy tính SAR",
+          "TranslationStatus": "draft"
+        }
+      ]
+    },
+    {
+      "Code": "4",
+      "DisplayOrder": 4,
+      "AunRequirements": [
+        {
+          "Code": "4.1",
+          "SourcePage": 64,
+          "DisplayOrder": 1,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "A variety of assessment methods are shown to be used and are shown to be constructively aligned to achieving the expected learning outcomes and the teaching and learning objectives.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các phương pháp đánh giá kết quả học tập của người học được sử dụng đa dạng; được thiết kế phù hợp với kết quả học tập mong đợi và các mục tiêu đào tạo.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "4.2",
+          "SourcePage": 64,
+          "DisplayOrder": 2,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The assessment and assessment-appeal policies are shown to be explicit, communicated to students, and applied consistently.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các chính sách về đánh giá kết quả học tập, phúc khảo được phát biểu rõ ràng, phổ biến đến người học và được triển khai nhất quán.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "4.3",
+          "SourcePage": 64,
+          "DisplayOrder": 3,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The assessment standards and procedures for student progression and degree completion, are shown to be explicit, communicated to students, and applied consistently.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các tiêu chuẩn và quy trình liên quan đến đánh giá kết quả học tập của người học trong suốt quá trình theo học và khi hoàn thành chương trình được phát biểu rõ ràng, phổ biến đến người học và được triển khai nhất quán.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "4.4",
+          "SourcePage": 64,
+          "DisplayOrder": 4,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The assessments methods are shown to include rubrics, marking schemes, timelines, and regulations, and these are shown to ensure validity, reliability, and fairness in assessment.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các phương pháp đánh giá kết quả học tập của người học bao gồm bảng tiêu chí đánh giá, thang điểm, các mốc thời gian và các quy định được sử dụng để đảm bảo độ giá trị, độ tin cậy và sự công bằng của hoạt động kiểm tra đánh giá.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "4.5",
+          "SourcePage": 65,
+          "DisplayOrder": 5,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The assessment methods are shown to measure the achievement of the expected learning outcomes of the programme and its courses.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các phương pháp đánh giá giúp đo lường mức độ đạt được kết quả học tập của CTĐT và mỗi học phần.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "4.6",
+          "SourcePage": 65,
+          "DisplayOrder": 6,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "Feedback of student assessment is shown to be provided in a timely manner.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Thông tin phản hồi kết quả đánh giá kết quả học tập được gửi kịp thời.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "4.7",
+          "SourcePage": 65,
+          "DisplayOrder": 7,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The student assessment and its processes are shown to be continuously reviewed and improved to ensure their relevance to the needs of industry and alignment to the expected learning outcomes.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Hoạt động đánh giá kết quả học tập của người học và các quy trình có liên quan được rà soát và cải tiến liên tục để đảm bảo sự phù hợp với nhu cầu của thị trường lao động và tương thích với kết quả học tập mong đợi.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        }
+      ],
+      "AunCriterionTranslations": [
+        {
+          "Title": "Student Assessment",
+          "Description": null,
+          "LanguageCode": "en",
+          "TranslationSource": "AUN-QA Guide v4.0",
+          "TranslationStatus": "official"
+        },
+        {
+          "Title": "Đánh giá kết quả học tập",
+          "Description": null,
+          "LanguageCode": "vi",
+          "TranslationSource": "Khoa học máy tính SAR",
+          "TranslationStatus": "draft"
+        }
+      ]
+    },
+    {
+      "Code": "5",
+      "DisplayOrder": 5,
+      "AunRequirements": [
+        {
+          "Code": "5.1",
+          "SourcePage": 65,
+          "DisplayOrder": 1,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that academic staff planning (including succession, promotion, re-deployment, termination, and retirement plans) is carried out to ensure that the quality and quantity of the academic staff fulfil the needs for education, research, and service.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Việc quy hoạch đội ngũ GV (bao gồm các kế hoạch kế nhiệm, nâng bậc/thăng chức, bố trí lại, chấm dứt hợp đồng và cho nghỉ hưu) được thực hiện nhằm đảm bảo đội ngũ GV đáp ứng nhu cầu các hoạt động đào tạo, nghiên cứu khoa học, phục vụ cộng đồng về cả số lượng và chất lượng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "5.2",
+          "SourcePage": 65,
+          "DisplayOrder": 2,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that staff workload is measured and monitored to improve the quality of education, research, and service.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Tải trọng công việc của GV được đo lường và giám sát để cải tiến chất lượng các hoạt động đào tạo, nghiên cứu khoa học, phục vụ cộng đồng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "5.3",
+          "SourcePage": 65,
+          "DisplayOrder": 3,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that the competences of the academic staff are determined, evaluated, and communicated.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Năng lực của GV được xác định, được đánh giá và được phổ biến thông tin.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "5.4",
+          "SourcePage": 65,
+          "DisplayOrder": 4,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that the duties allocated to the academic staff are appropriate to qualifications, experience, and aptitude.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "GV được phân công nhiệm vụ phù hợp với trình độ, kinh nghiệm và khả năng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "5.5",
+          "SourcePage": 65,
+          "DisplayOrder": 5,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that promotion of the academic staff is based on a merit system which accounts for teaching, research, and service.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Có hệ thống đánh giá để khen thưởng GV, trong đó có xem xét hoạt động giảng dạy, nghiên cứu và phục vụ cộng đồng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "5.6",
+          "SourcePage": 65,
+          "DisplayOrder": 6,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that the rights and privileges, benefits, roles and relationships, and accountability of the academic staff, taking into account professional ethics and their academic freedom, are well defined and understood.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các quyền, đặc quyền, quyền lợi, vai trò, mối quan hệ và trách nhiệm giải trình của GV được xác định và hiểu rõ, trong đó có xem xét đến quyền tự do học thuật và đạo đức nghề nghiệp.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "5.7",
+          "SourcePage": 65,
+          "DisplayOrder": 7,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that the training and developmental needs of the academic staff are systematically identified, and that appropriate training and development activities are implemented to fulfil the identified needs.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Có hệ thống xác định nhu cầu về đào tạo, phát triển chuyên môn của GV và các hoạt động đào tạo, tập huấn phù hợp được triển khai để đáp ứng những nhu cầu này.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "5.8",
+          "SourcePage": 65,
+          "DisplayOrder": 8,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The programme to show that performance management including reward and recognition is implemented to assess academic staff teaching and research quality.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Công tác quản lý để đánh giá chất lượng giảng dạy, nghiên cứu khoa học và phục vụ cộng đồng của giảng viên, nghiên cứu viên bao gồm cả việc khen thưởng và công nhận được triển khai.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        }
+      ],
+      "AunCriterionTranslations": [
+        {
+          "Title": "Academic Staff",
+          "Description": null,
+          "LanguageCode": "en",
+          "TranslationSource": "AUN-QA Guide v4.0",
+          "TranslationStatus": "official"
+        },
+        {
+          "Title": "Đội ngũ giảng viên",
+          "Description": null,
+          "LanguageCode": "vi",
+          "TranslationSource": "Khoa học máy tính SAR",
+          "TranslationStatus": "draft"
+        }
+      ]
+    },
+    {
+      "Code": "6",
+      "DisplayOrder": 6,
+      "AunRequirements": [
+        {
+          "Code": "6.1",
+          "SourcePage": 66,
+          "DisplayOrder": 1,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The student intake policy, admission criteria, and admission procedures to the programme are shown to be clearly defined, communicated, published, and up-to-date.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Chính sách tuyển sinh, tiêu chí tuyển chọn và quy trình tiếp nhận người học vào chương trình được xác định rõ ràng, được ban hành, phổ biến rộng rãi và cập nhật.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "6.2",
+          "SourcePage": 66,
+          "DisplayOrder": 2,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "Both short-term and long-term planning of academic and non-academic support services are shown to be carried out to ensure sufficiency and quality of support services for teaching, research, and community service.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Công tác quy hoạch ngắn hạn và dài hạn đối với đội ngũ cán bộ hỗ trợ (học thuật, phi học thuật) được triển khai nhằm đảm bảo đáp ứng nhu cầu của hoạt động đào tạo, nghiên cứu và phục vụ cộng đồng cả về chất lượng và số lượng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "6.3",
+          "SourcePage": 66,
+          "DisplayOrder": 3,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "An adequate system is shown to exist for student progress, academic performance, and workload monitoring. Student progress, academic performance, and workload are shown to be systematically recorded and monitored. Feedback to students and corrective actions are made where necessary.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Có hệ thống phù hợp để giám sát tiến độ học tập, kết quả học và tải trọng học tập của người học. Tiến độ học tập, kết quả học tập và tải trọng học tập của người học được ghi nhận và giám sát một cách có hệ thống; có phản hồi tới người học và có các hoạt động khắc phục được triển khai khi cần.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "6.4",
+          "SourcePage": 66,
+          "DisplayOrder": 4,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "Co-curricular activities, student competition, and other student support services are shown to be available to improve learning experience and employability.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các hoạt động tư vấn học tập, các hoạt động ngoại khóa, thi đua và những dịch vụ hỗ trợ khác được triển khai nhằm giúp nâng cao chất lượng học tập và khả năng tìm được việc làm cho người học.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "6.5",
+          "SourcePage": 66,
+          "DisplayOrder": 5,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The competences of the support staff rendering student services are shown to be identified for recruitment and deployment. These competences are shown to be evaluated to ensure their continued relevance to stakeholders needs. Roles and relationships are shown to be well-defined to ensure smooth delivery of the services.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Năng lực của cán bộ hỗ trợ triển khai các dịch vụ dành cho người học được xác định rõ trong tiêu chí tuyển dụng và phân công nhiệm vụ. Các năng lực này được đánh giá để đảm bảo phù hợp với nhu cầu của các bên liên quan. Vai trò và mối liên hệ được xác định rõ để đảm bảo các dịch vụ được triển khai nhịp nhàng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "6.6",
+          "SourcePage": 66,
+          "DisplayOrder": 6,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "Student support services are shown to be subjected to evaluation, benchmarking, and enhancement.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các dịch vụ hỗ trợ người học được đánh giá, đối sánh và cải tiến chất lượng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        }
+      ],
+      "AunCriterionTranslations": [
+        {
+          "Title": "Student Support Services",
+          "Description": null,
+          "LanguageCode": "en",
+          "TranslationSource": "AUN-QA Guide v4.0",
+          "TranslationStatus": "official"
+        },
+        {
+          "Title": "Các dịch vụ hỗ trợ người học",
+          "Description": null,
+          "LanguageCode": "vi",
+          "TranslationSource": "Khoa học máy tính SAR",
+          "TranslationStatus": "draft"
+        }
+      ]
+    },
+    {
+      "Code": "7",
+      "DisplayOrder": 7,
+      "AunRequirements": [
+        {
+          "Code": "7.1",
+          "SourcePage": 66,
+          "DisplayOrder": 1,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The physical resources to deliver the curriculum, including equipment, material, and information technology, are shown to be sufficient.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Có đủ các nguồn lực cơ sở vật chất bao gồm các trang thiết bị, tài nguyên học tập và hệ thống công nghệ thông tin để vận hành chương trình.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "7.2",
+          "SourcePage": 66,
+          "DisplayOrder": 2,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The laboratories and equipment are shown to be up-to-date, readily available, and effectively deployed.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các phòng thí nghiệm và trang thiết bị được cập nhật, sẵn có và được sử dụng hiệu quả.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "7.3",
+          "SourcePage": 66,
+          "DisplayOrder": 3,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "A digital library is shown to be set-up, in keeping with progress in information and communication technology.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Có thư viện điện tử được cập nhật thường xuyên bắt kịp với những tiến bộ về công nghệ thông tin-truyền thông.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "7.4",
+          "SourcePage": 66,
+          "DisplayOrder": 4,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The information technology systems are shown to be set up to meet the needs of staff and students.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Có hệ thống công nghệ thông tin đáp ứng nhu cầu của cán bộ GV và người học.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "7.5",
+          "SourcePage": 66,
+          "DisplayOrder": 5,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The university is shown to provide a highly accessible computer and network infrastructure that enables the campus community to fully exploit information technology for teaching, research, service, and administration.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Cán bộ, GV và người học dễ dàng tiếp cận với hệ thống mạng và máy tính trong khuôn viên của trường để có thể khai thác tối đa công nghệ thông tin phục vụ các hoạt động giảng dạy, nghiên cứu, phục vụ cộng đồng và quản lý hành chính.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "7.6",
+          "SourcePage": 67,
+          "DisplayOrder": 6,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The environmental, health, and safety standards and access for people with special needs are shown to be defined and implemented.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Các tiêu chuẩn về môi trường, sức khỏe và an toàn được xác định và thực hiện; có lưu ý đến các nhu cầu đặc thù của người khuyết tật.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "7.7",
+          "SourcePage": 67,
+          "DisplayOrder": 7,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The university is shown to provide a physical, social, and psychological environment that is conducive for education, research, and personal well-being.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "CSGD cung cấp môi trường tâm lý, xã hội, cảnh quan thuận lợi cho hoạt động đào tạo, nghiên cứu và tạo sự thoải mái cho người học.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "7.8",
+          "SourcePage": 67,
+          "DisplayOrder": 8,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The competences of the support staff rendering services related to facilities are shown to be identified and evaluated to ensure that their skills remain relevant to stakeholder needs.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Năng lực của cán bộ hỗ trợ tham gia các dịch vụ liên quan đến cơ sở vật chất và trang thiết bị được xác định rõ và đánh giá nhằm đảm bảo những kỹ năng đáp ứng nhu cầu các bên liên quan.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "7.9",
+          "SourcePage": 67,
+          "DisplayOrder": 9,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The quality of the facilities (library, laboratory, IT, and student services) are shown to be subjected to evaluation and enhancement.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Chất lượng các cơ sở vật chất (như thư viện, phòng thực hành, thí nghiệm, CNTT và các dịch vụ dành cho người học) được đánh giá và cải tiến.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        }
+      ],
+      "AunCriterionTranslations": [
+        {
+          "Title": "Facilities and Infrastructure",
+          "Description": null,
+          "LanguageCode": "en",
+          "TranslationSource": "AUN-QA Guide v4.0",
+          "TranslationStatus": "official"
+        },
+        {
+          "Title": "Cơ sở hạ tầng và trang thiết bị",
+          "Description": null,
+          "LanguageCode": "vi",
+          "TranslationSource": "Khoa học máy tính SAR",
+          "TranslationStatus": "draft"
+        }
+      ]
+    },
+    {
+      "Code": "8",
+      "DisplayOrder": 8,
+      "AunRequirements": [
+        {
+          "Code": "8.1",
+          "SourcePage": 67,
+          "DisplayOrder": 1,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "The pass rate, dropout rate, and average time to graduate are shown to be established, monitored, and benchmarked for improvement.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Tỷ lệ đậu, tỷ lệ thôi học và thời gian tốt nghiệp trung bình được thiết lập, theo dõi, đối sánh để cải tiến chất lượng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "8.2",
+          "SourcePage": 67,
+          "DisplayOrder": 2,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "Employability as well as self-employment, entrepreneurship, and advancement to further studies, are shown to be established, monitored, and benchmarked for improvement.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Tình hình việc làm cũng như số liệu về tự kinh doanh, khởi nghiệp và tiếp tục học cao hơn của người học được thiết lập, theo dõi, đối sánh để cải tiến chất lượng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "8.3",
+          "SourcePage": 67,
+          "DisplayOrder": 3,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "Research and creative work output and activities carried out by the academic staff and students, are shown to be established, monitored, and benchmarked for improvement.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Dữ liệu về hoạt động nghiên cứu khoa học và các sản phẩm, hoạt động sáng chế do GV và người học thực hiện được thiết lập, theo dõi, đối sánh để cải tiến chất lượng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "8.4",
+          "SourcePage": 67,
+          "DisplayOrder": 4,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "Data are provided to show directly the achievement of the programme outcomes, which are established and monitored.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Có dữ liệu về mức độ đạt được kết quả học tập mong đợi CTĐT của người học. Dữ liệu này được thiết lập và theo dõi.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        },
+        {
+          "Code": "8.5",
+          "SourcePage": 67,
+          "DisplayOrder": 5,
+          "AunRequirementTranslations": [
+            {
+              "Guidance": null,
+              "Statement": "Satisfaction level of the various stakeholders are shown to be established, monitored, and benchmarked for improvement.",
+              "LanguageCode": "en",
+              "TranslationSource": "AUN-QA Programme Assessment Guide v4.0 (October 2020), Appendix A",
+              "TranslationStatus": "official"
+            },
+            {
+              "Guidance": null,
+              "Statement": "Mức độ hài lòng của các bên liên quan cần được thiết lập, theo dõi, đối sánh để cải tiến chất lượng.",
+              "LanguageCode": "vi",
+              "TranslationSource": "SAR Khoa học máy tính do đơn vị cung cấp; bản tiếng Việt tham khảo, không phải bản dịch chính thức của AUN",
+              "TranslationStatus": "draft"
+            }
+          ]
+        }
+      ],
+      "AunCriterionTranslations": [
+        {
+          "Title": "Output and Outcomes",
+          "Description": null,
+          "LanguageCode": "en",
+          "TranslationSource": "AUN-QA Guide v4.0",
+          "TranslationStatus": "official"
+        },
+        {
+          "Title": "Đầu ra và kết quả đạt được",
+          "Description": null,
+          "LanguageCode": "vi",
+          "TranslationSource": "Khoa học máy tính SAR",
+          "TranslationStatus": "draft"
+        }
+      ]
+    }
+  ],
+  "SourceTitle": "Guide to AUN-QA Assessment at Programme Level Version 4.0",
+  "AssessmentLevel": "programme",
+  "DefaultLanguage": "vi"
+}

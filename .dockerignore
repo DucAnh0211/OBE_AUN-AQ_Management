@@ -4,6 +4,7 @@
 .env
 .env.*
 !.env.example
+**/reporting-access.local.json
 
 **/node_modules
 **/dist

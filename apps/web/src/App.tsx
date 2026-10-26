@@ -20,6 +20,7 @@ import {
   PloListPage,
 } from "./curriculum/OutcomeManagementPages";
 import { webModules } from "./module-registry";
+import { ReportingPage } from "../../../modules/sv5/reporting/frontend";
 
 type ApiState = "checking" | "online" | "offline";
 
@@ -160,7 +161,7 @@ export function App() {
               ? <CurriculumProgramsPage />
               : module.id === "accreditation"
                 ? <AccreditationFrameworksPage />
-                : <ModulePage module={module} />
+                : module.id === "reporting" ? <ReportingPage /> : <ModulePage module={module} />
           } />)}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

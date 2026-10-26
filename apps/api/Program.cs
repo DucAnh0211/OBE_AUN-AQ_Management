@@ -2,9 +2,12 @@ using ObeAunQa.Modules.Accreditation;
 using ObeAunQa.Modules.Curriculum;
 using ObeAunQa.Modules.Identity;
 using ObeAunQa.Modules.Reporting;
-using Npgsql;
+using Microsoft.EntityFrameworkCore;
+using ObeAunQa.Modules.Curriculum.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("reporting-access.local.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -27,15 +30,24 @@ builder.Services.AddOpenApi();
 builder.Services
     .AddIdentityModule(builder.Configuration)
     .AddCurriculumModule(builder.Configuration)
-    .AddAccreditationModule()
-    .AddReportingModule();
+    .AddAccreditationModule(builder.Configuration)
+    .AddReportingModule(builder.Configuration);
 
 var app = builder.Build();
 
+app.Use(async (context, next) => {
+    if (context.Request.Path.StartsWithSegments("/api/reporting"))
+        context.Response.OnStarting(() => {
+            context.Response.Headers.CacheControl = "no-store";
+            return Task.CompletedTask;
+        });
+    await next(context);
+});
 app.UseExceptionHandler();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi().AllowAnonymous();
@@ -83,15 +95,14 @@ app.MapIdentityModule();
 app.Run();
 
 static async Task<IResult> CheckReadinessAsync(
-    NpgsqlDataSource dataSource,
+    CurriculumDbContext database,
     ILogger<Program> logger,
     CancellationToken cancellationToken)
 {
     try
     {
-        await using var connection = await dataSource.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand("SELECT 1", connection);
-        await command.ExecuteScalarAsync(cancellationToken);
+        if (!await database.Database.CanConnectAsync(cancellationToken))
+            throw new InvalidOperationException("Database is unavailable.");
 
         return Results.Ok(new
         {

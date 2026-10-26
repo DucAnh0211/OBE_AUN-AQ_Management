@@ -31,9 +31,14 @@
   <Folder Name="/modules/sv5/reporting/" />
   <Folder Name="/modules/sv5/reporting/backend/">
     <Project Path="modules/sv5/reporting/backend/ObeAunQa.Modules.Reporting.csproj" />
+    <Project Path="modules/sv5/reporting/backend/tests/ObeAunQa.Modules.Reporting.Tests.csproj" />
   </Folder>
   <Folder Name="/shared/" />
   <Folder Name="/shared/backend/">
     <Project Path="shared/backend/ObeAunQa.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/tools/" />
+  <Folder Name="/tools/database/">
+    <Project Path="tools/database/ObeAunQa.Database.csproj" />
   </Folder>
 </Solution>

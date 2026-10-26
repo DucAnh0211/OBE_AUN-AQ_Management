@@ -35,6 +35,8 @@ Thumbs.db
 # Logs and local scratch files
 *.log
 tmp/
+.npm-cache/
+reporting-access.local.json
 
 scripts
 outputs

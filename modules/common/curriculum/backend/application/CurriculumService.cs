@@ -3,8 +3,14 @@ using ObeAunQa.SharedKernel;
 
 namespace ObeAunQa.Modules.Curriculum.Application;
 
-public sealed partial class CurriculumService(
-    ICurriculumRepository repository,
+public sealed partial class CurriculumService(IProgramRepository programRepository,
+    IProgramVersionRepository programVersionRepository,
+    IProgramCourseRepository programCourseRepository,
+    IPloRepository ploRepository,
+    ICloRepository cloRepository,
+    ICoursePloMappingRepository coursePloMappingRepository,
+    ICloPloMappingRepository cloPloMappingRepository,
+    ICurriculumAnalysisRepository curriculumAnalysisRepository,
     IAssignmentCloneService? assignmentCloner = null)
 {
     public Task<PagedResult<ProgramResponse>> GetProgramsAsync(
@@ -15,7 +21,7 @@ public sealed partial class CurriculumService(
         CancellationToken cancellationToken)
     {
         var query = CurriculumValidator.ListQuery(page, pageSize, search);
-        return repository.GetProgramsAsync(
+        return programRepository.GetProgramsAsync(
             query.Page,
             query.PageSize,
             query.Search,
@@ -27,7 +33,7 @@ public sealed partial class CurriculumService(
         long id,
         CancellationToken cancellationToken)
     {
-        return await repository.GetProgramAsync(id, cancellationToken)
+        return await programRepository.GetProgramAsync(id, cancellationToken)
             ?? throw new CurriculumNotFoundException("chương trình đào tạo", id);
     }
 
@@ -36,7 +42,7 @@ public sealed partial class CurriculumService(
         CancellationToken cancellationToken)
     {
         var program = CurriculumValidator.Program(request);
-        return repository.CreateProgramAsync(program.Code, program.Name, cancellationToken);
+        return programRepository.CreateProgramAsync(program.Code, program.Name, cancellationToken);
     }
 
     public async Task<ProgramResponse> UpdateProgramAsync(
@@ -45,13 +51,13 @@ public sealed partial class CurriculumService(
         CancellationToken cancellationToken)
     {
         var name = CurriculumValidator.ProgramName(request);
-        return await repository.UpdateProgramAsync(id, name, cancellationToken)
+        return await programRepository.UpdateProgramAsync(id, name, cancellationToken)
             ?? throw new CurriculumNotFoundException("chương trình đào tạo", id);
     }
 
     public async Task ArchiveProgramAsync(long id, CancellationToken cancellationToken)
     {
-        if (!await repository.ArchiveProgramAsync(id, cancellationToken))
+        if (!await programRepository.ArchiveProgramAsync(id, cancellationToken))
         {
             throw new CurriculumNotFoundException("chương trình đào tạo", id);
         }
@@ -63,7 +69,7 @@ public sealed partial class CurriculumService(
         CancellationToken cancellationToken)
     {
         _ = await GetProgramAsync(programId, cancellationToken);
-        return await repository.GetProgramVersionsAsync(
+        return await programVersionRepository.GetProgramVersionsAsync(
             programId,
             includeArchived,
             cancellationToken);
@@ -73,7 +79,7 @@ public sealed partial class CurriculumService(
         long id,
         CancellationToken cancellationToken)
     {
-        return await repository.GetProgramVersionAsync(id, cancellationToken)
+        return await programVersionRepository.GetProgramVersionAsync(id, cancellationToken)
             ?? throw new CurriculumNotFoundException("phiên bản chương trình đào tạo", id);
     }
 
@@ -83,7 +89,7 @@ public sealed partial class CurriculumService(
         CancellationToken cancellationToken)
     {
         var versionCode = CurriculumValidator.VersionCode(request.VersionCode);
-        var created = await repository.CreateProgramVersionAsync(
+        var created = await programVersionRepository.CreateProgramVersionAsync(
             programId,
             versionCode,
             request.SourceVersionId,
@@ -103,7 +109,7 @@ public sealed partial class CurriculumService(
         EnsureDraft(current);
         var versionCode = CurriculumValidator.VersionCode(request.VersionCode);
 
-        return await repository.UpdateProgramVersionAsync(id, versionCode, cancellationToken)
+        return await programVersionRepository.UpdateProgramVersionAsync(id, versionCode, cancellationToken)
             ?? throw new CurriculumNotFoundException("phiên bản chương trình đào tạo", id);
     }
 
@@ -113,14 +119,14 @@ public sealed partial class CurriculumService(
     {
         var current = await GetProgramVersionAsync(id, cancellationToken);
         EnsureDraft(current);
-        return await repository.PublishProgramVersionAsync(id, cancellationToken);
+        return await programVersionRepository.PublishProgramVersionAsync(id, cancellationToken);
     }
 
     public async Task ArchiveProgramVersionAsync(
         long id,
         CancellationToken cancellationToken)
     {
-        if (!await repository.ArchiveProgramVersionAsync(id, cancellationToken))
+        if (!await programVersionRepository.ArchiveProgramVersionAsync(id, cancellationToken))
         {
             throw new CurriculumNotFoundException("phiên bản chương trình đào tạo", id);
         }
@@ -146,7 +152,7 @@ public sealed partial class CurriculumService(
             });
         }
 
-        return await repository.GetProgramCoursesAsync(
+        return await programCourseRepository.GetProgramCoursesAsync(
             versionId,
             query.Page,
             query.PageSize,
@@ -162,7 +168,7 @@ public sealed partial class CurriculumService(
         CancellationToken cancellationToken)
     {
         _ = await GetProgramVersionAsync(versionId, cancellationToken);
-        return await repository.GetProgramCourseAsync(
+        return await programCourseRepository.GetProgramCourseAsync(
                 versionId,
                 programCourseId,
                 cancellationToken)
@@ -184,7 +190,7 @@ public sealed partial class CurriculumService(
             request.DisplayOrder,
             requireDisplayOrder: false);
 
-        return await repository.CreateProgramCourseAsync(versionId, course, cancellationToken);
+        return await programCourseRepository.CreateProgramCourseAsync(versionId, course, cancellationToken);
     }
 
     public async Task<ProgramCourseResponse> UpdateProgramCourseAsync(
@@ -203,7 +209,7 @@ public sealed partial class CurriculumService(
             request.DisplayOrder,
             requireDisplayOrder: true);
 
-        return await repository.UpdateProgramCourseAsync(
+        return await programCourseRepository.UpdateProgramCourseAsync(
                 versionId,
                 programCourseId,
                 course,
@@ -218,7 +224,7 @@ public sealed partial class CurriculumService(
     {
         var version = await GetProgramVersionAsync(versionId, cancellationToken);
         EnsureDraft(version);
-        if (!await repository.ArchiveProgramCourseAsync(
+        if (!await programCourseRepository.ArchiveProgramCourseAsync(
                 versionId,
                 programCourseId,
                 cancellationToken))
@@ -229,7 +235,7 @@ public sealed partial class CurriculumService(
 
     private static void EnsureDraft(ProgramVersionResponse version)
     {
-        if (!string.Equals(version.Status, CurriculumStatuses.Draft, StringComparison.Ordinal))
+        if (!VersionRules.CanEdit(version.Status, version.ArchivedAt))
         {
             throw new CurriculumConflictException(
                 "version_not_editable",

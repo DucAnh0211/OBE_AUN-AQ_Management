@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using ObeAunQa.Modules.Accreditation.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -14,8 +17,10 @@ public static class AccreditationModule
         "accreditation", "Kiểm định AUN-QA", "SV4 - Đức Anh", "/api/accreditation",
         "Quản lý phiên bản khung AUN-QA, tiêu chí và yêu cầu đánh giá.");
 
-    public static IServiceCollection AddAccreditationModule(this IServiceCollection services)
+    public static IServiceCollection AddAccreditationModule(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddDbContext<AccreditationDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("Postgres"), p => p.MigrationsHistoryTable("__EFMigrationsHistory", "accreditation")));
+        services.AddScoped<IAccreditationRepository, EfAccreditationRepository>();
         services.AddScoped<AccreditationService>();
         services.AddExceptionHandler<AccreditationExceptionHandler>();
         return services;

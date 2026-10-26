@@ -12,7 +12,7 @@ public sealed class CurriculumServiceTests
         {
             Version = CreateVersion(CurriculumStatuses.Finalized)
         };
-        var service = new CurriculumService(repository);
+        var service = new CurriculumService(repository, repository, repository, repository, repository, repository, repository, repository);
 
         var exception = await Assert.ThrowsAsync<CurriculumConflictException>(() =>
             service.CreateProgramCourseAsync(
@@ -31,7 +31,7 @@ public sealed class CurriculumServiceTests
         {
             Version = CreateVersion(CurriculumStatuses.Draft)
         };
-        var service = new CurriculumService(repository);
+        var service = new CurriculumService(repository, repository, repository, repository, repository, repository, repository, repository);
 
         var result = await service.CreateProgramCourseAsync(
             1,
@@ -51,7 +51,7 @@ public sealed class CurriculumServiceTests
         {
             Version = CreateVersion(CurriculumStatuses.Finalized)
         };
-        var service = new CurriculumService(repository);
+        var service = new CurriculumService(repository, repository, repository, repository, repository, repository, repository, repository);
 
         await Assert.ThrowsAsync<CurriculumConflictException>(() =>
             service.UpdateProgramVersionAsync(
@@ -67,7 +67,7 @@ public sealed class CurriculumServiceTests
         {
             Version = CreateVersion(CurriculumStatuses.Finalized)
         };
-        var service = new CurriculumService(repository);
+        var service = new CurriculumService(repository, repository, repository, repository, repository, repository, repository, repository);
 
         var exception = await Assert.ThrowsAsync<CurriculumConflictException>(() =>
             service.CreatePloAsync(
@@ -86,7 +86,7 @@ public sealed class CurriculumServiceTests
         {
             Version = CreateVersion(CurriculumStatuses.Draft)
         };
-        var service = new CurriculumService(repository);
+        var service = new CurriculumService(repository, repository, repository, repository, repository, repository, repository, repository);
 
         var result = await service.CreatePloAsync(
             1,
@@ -114,7 +114,7 @@ public sealed class CurriculumServiceTests
             DateTime.UtcNow);
     }
 
-    private sealed class TestRepository : ICurriculumRepository
+    private sealed class TestRepository : IProgramRepository, IProgramVersionRepository, IProgramCourseRepository, IPloRepository, ICloRepository, ICoursePloMappingRepository, ICloPloMappingRepository, ICurriculumAnalysisRepository
     {
         public required ProgramVersionResponse Version { get; init; }
 
