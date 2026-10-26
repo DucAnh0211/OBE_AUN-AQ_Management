@@ -117,3 +117,8 @@ Smoke giao diện: `tests/contracts/reporting_ui_smoke.py`, cần Python với `
 Đã kiểm tra trình duyệt Edge headless: tạo ba loại, sáu lượt tải file, tài khoản chỉ xem, không lưu khóa localStorage, viewport điện thoại 390px không tràn ngang và không có lỗi JavaScript. DOCX đã kiểm tra ZIP/XML và đọc bằng python-docx; Word COM trên phiên máy kiểm thử bị treo nên chưa xác nhận bố cục bằng Word. PDF được render, kiểm tra giới hạn trang/văn bản và kiểm tra trực quan. Dữ liệu thử nghiệm ở PostgreSQL riêng cổng 55432; chưa chạy migration trên database hiện hữu của người dùng.
 
 PDF sử dụng PDFsharp/MigraDoc và nhúng Noto Sans để giữ tiếng Việt trên server. Font có giấy phép SIL OFL trong `modules/sv5/reporting/backend/assets/fonts/OFL.txt`; DOCX dùng Arial trên máy mở file. Các dependency Python/Playwright dùng để kiểm thử không phải dependency runtime của ứng dụng.
+
+Ki?m tra b?n k?t h?p ng?y 26/10: ??ng nh?p admin tr?n UI t? k?t n?i Reporting b?ng JWT;
+ba b?o c?o/s?u l??t t?i, m? ch? xem, thu h?i, reload qua refresh cookie v? mobile ??u qua.
+Smoke UI c?n th?m `MERGE_TEST_ADMIN_EMAIL`/`MERGE_TEST_ADMIN_PASSWORD` c?a t?i kho?n
+?? ??i m?t kh?u tr?n database th? nghi?m. Kh?ng ghi kh?a ho?c m?t kh?u th?t v?o source.

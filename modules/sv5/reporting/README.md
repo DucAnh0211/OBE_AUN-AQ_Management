@@ -26,3 +26,6 @@ UC28–UC30 và pipeline minh chứng/AI chưa triển khai; chưa tích hợp m
 Persistence dùng `ReportingDbContext` và `EfReportRepository`; report/audit là
 entity riêng, snapshot lưu JSONB. Interface repository thuộc Application.
 Xem [kiến trúc và migration EF Core](../../../docs/EF_CORE_ARCHITECTURE.md).
+
+Admin d?ng phi?n JWT chung ?? v?o Reporting; c?c m? b?o c?o ?? c?p v?n c? ph?m vi
+ch??ng tr?nh ri?ng, kh?ng c?p quy?n ? module kh?c. Xem h??ng d?n UC25?UC27 ? tr?n.

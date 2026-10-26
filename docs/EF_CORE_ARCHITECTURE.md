@@ -1,8 +1,9 @@
 # EF Core và tổ chức backend
 
-Cập nhật 26/10/2026. Curriculum và Reporting dùng EF Core 10 với Npgsql;
-không còn Dapper hoặc repository thực thi CRUD bằng Npgsql trực tiếp.
-Accreditation hiện chưa có lớp lưu trữ nghiệp vụ để chuyển đổi.
+Cập nhật 26/10/2026 sau khi kết hợp `main` vào `reporting`. Curriculum, Reporting,
+Identity và Accreditation đều dùng EF Core 10 với Npgsql; không còn Dapper hoặc
+repository thực thi CRUD bằng Npgsql trực tiếp. Chức năng đăng nhập, phân quyền,
+phân công học phần và quản lý khung AUN-QA từ `main` được giữ lại.
 
 ## Cấu trúc mỗi module
 
@@ -30,6 +31,18 @@ Application không tham chiếu EF Core hoặc Infrastructure. Cấu hình `UseN
 Mỗi module vẫn là **một project .csproj**, chia tầng bằng thư mục/namespace.
 Đây chưa phải bốn assembly cưỡng chế chiều phụ thuộc bằng compiler.
 `tests/contracts/architecture_check.py` kiểm tra quy tắc phụ thuộc và tách file.
+
+| Module | DbContext | Schema |
+|---|---|---|
+| Curriculum | CurriculumDbContext | curriculum |
+| Reporting | ReportingDbContext | reporting |
+| Accreditation | AccreditationDbContext | accreditation |
+| Identity | IdentityDbContext | security |
+
+Identity có các read model hẹp để kiểm tra phân công/phiên bản/khung kiểm định;
+chúng map sang bảng do module khác sở hữu và được `ExcludeFromMigrations`.
+Migration Identity vẫn tạo FK phân công tới Curriculum nhưng không tạo/sửa lại
+bảng Curriculum. Service nghiệp vụ dùng interface; DbContext và LINQ nằm ở Infrastructure.
 
 ## Database đang có dữ liệu
 
@@ -64,6 +77,12 @@ dotnet run --project tools/database -- migrate
 
 EF tạo bảng, khóa, index và view; seed danh mục X/Y và I/R/E. Không tự nạp
 59 học phần demo trừ khi bạn chọn bước seed dưới đây.
+
+`migrate`/`initialize` cũng nạp khung AUN-QA Programme 4.0 (8 criteria, 53 requirements,
+tiếng Anh và tiếng Việt) bằng `AccreditationSeeder`. Nội dung và trạng thái bản dịch
+được giữ nguyên từ `main`; bản tiếng Việt tham khảo không trở thành bản chính thức.
+Khung đã tồn tại không bị ghi đè. Tài khoản admin đầu tiên được API tạo từ
+`BootstrapAdmin__*` sau migration và bắt buộc đổi mật khẩu.
 
 ## Dữ liệu mẫu V1/V2 bằng EF Core
 
@@ -120,14 +139,15 @@ dotnet ef migrations add TenThayDoi --project modules/common/curriculum/backend 
 dotnet ef migrations script --idempotent --project modules/common/curriculum/backend --context CurriculumDbContext --output tmp/curriculum-migration.sql
 ```
 
-Với Reporting, thay project và context tương ứng. Review migration sinh ra,
+Với Reporting, Identity hoặc Accreditation, thay project và context tương ứng. Review migration sinh ra,
 đặc biệt thao tác xóa/đổi cột, rồi kiểm thử trên bản sao database trước khi áp dụng.
 Không sửa initial migration đã áp dụng để nâng cấp database đang sử dụng.
 
 ## Hành vi và kiểm tra
 
 Giữ API/JSON, trạng thái phiên bản, xóa mềm, thang X/Y và I/R/E; clone phiên bản
-vẫn chỉ sao chép học phần như trước. Snapshot báo cáo lưu riêng trong JSONB,
+vẫn sao chép học phần, đồng thời sao chép phân công giảng viên như chức năng trên `main`.
+Snapshot báo cáo lưu riêng trong JSONB,
 không thay đổi khi sửa nguồn; lưu báo cáo và audit trong cùng transaction.
 
 ```powershell
@@ -145,3 +165,15 @@ người dùng chưa được nâng cấp trong lần sửa source này.
 
 Đã đối chiếu 13 nhóm dữ liệu giữa seed EF và seed legacy trên database thử nghiệm:
 khớp toàn bộ nội dung và tham chiếu nghiệp vụ, bỏ qua ID tự sinh/timestamp.
+
+Kiểm tra bản kết hợp: 42 unit/model tests; `merged_modules_ef_smoke.py` kiểm tra
+đăng nhập, đổi mật khẩu, quyền admin/lecturer/student, phân công, clone, thu hồi JWT,
+refresh token, CRUD/import/publish/retire/bản dịch của Accreditation và quyền Reporting.
+Smoke test Curriculum và snapshot cần JWT admin trong biến môi trường được ghi đầu file.
+Không chạy chúng trên database thật. Database người dùng chưa bị thay đổi.
+
+Admin đăng nhập bằng JWT được dùng Reporting cho các chương trình; lecturer/student
+không có quyền Reporting theo phạm vi hiện tại trên `main`. Mã báo cáo cũ vẫn dùng
+scheme riêng chỉ có quyền trên chương trình được cấu hình; không cấp quyền vào
+Curriculum/Identity/Accreditation. Giao diện admin tự dùng phiên đăng nhập chung,
+không yêu cầu cấp thêm mã báo cáo.

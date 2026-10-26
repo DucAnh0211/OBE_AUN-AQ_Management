@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using ObeAunQa.Modules.Curriculum.Application;
+using ObeAunQa.SharedKernel;
 
 namespace ObeAunQa.Modules.Curriculum.Presentation;
 
@@ -10,11 +11,11 @@ internal static class OutcomeEndpoints
     public static RouteGroupBuilder MapOutcomeEndpoints(this RouteGroupBuilder group)
     {
         group.MapGet("/program-versions/{versionId:long:min(1)}/plos", GetPlosAsync);
-        group.MapPost("/program-versions/{versionId:long:min(1)}/plos", CreatePloAsync);
+        group.MapPost("/program-versions/{versionId:long:min(1)}/plos", CreatePloAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         group.MapGet("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", GetPloAsync)
             .WithName("GetCurriculumPlo");
-        group.MapPut("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", UpdatePloAsync);
-        group.MapDelete("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", DeletePloAsync);
+        group.MapPut("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", UpdatePloAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapDelete("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", DeletePloAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
         var coursePath = "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}";
         group.MapGet(coursePath + "/clos", GetClosAsync);
@@ -25,13 +26,13 @@ internal static class OutcomeEndpoints
         group.MapDelete(coursePath + "/clos/{cloId:long:min(1)}", DeleteCloAsync);
 
         group.MapGet(coursePath + "/plo-mappings", GetCoursePloMappingsAsync);
-        group.MapPost(coursePath + "/plo-mappings", CreateCoursePloMappingAsync);
+        group.MapPost(coursePath + "/plo-mappings", CreateCoursePloMappingAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         group.MapPut(
             coursePath + "/plo-mappings/{mappingId:long:min(1)}",
-            UpdateCoursePloMappingAsync);
+            UpdateCoursePloMappingAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         group.MapDelete(
             coursePath + "/plo-mappings/{mappingId:long:min(1)}",
-            DeleteCoursePloMappingAsync);
+            DeleteCoursePloMappingAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
         var cloMappingPath = coursePath + "/clos/{cloId:long:min(1)}/plo-mappings";
         group.MapGet(cloMappingPath, GetCloPloMappingsAsync);
@@ -53,15 +54,23 @@ internal static class OutcomeEndpoints
     private static async Task<IResult> GetPlosAsync(
         long versionId,
         CurriculumService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.GetPlosAsync(versionId, cancellationToken));
+        IAccessControlService access,
+        CancellationToken cancellationToken)
+    {
+        if (!await access.CanReadVersionAsync(versionId,cancellationToken)) return Results.Forbid();
+        return Results.Ok(await service.GetPlosAsync(versionId, cancellationToken));
+    }
 
     private static async Task<IResult> GetPloAsync(
         long versionId,
         long ploId,
         CurriculumService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.GetPloAsync(versionId, ploId, cancellationToken));
+        IAccessControlService access,
+        CancellationToken cancellationToken)
+    {
+        if (!await access.CanReadVersionAsync(versionId,cancellationToken)) return Results.Forbid();
+        return Results.Ok(await service.GetPloAsync(versionId, ploId, cancellationToken));
+    }
 
     private static async Task<IResult> CreatePloAsync(
         long versionId,
@@ -98,28 +107,38 @@ internal static class OutcomeEndpoints
         long versionId,
         long programCourseId,
         CurriculumService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.GetClosAsync(versionId, programCourseId, cancellationToken));
+        IAccessControlService access,
+        CancellationToken cancellationToken)
+    {
+        if (!await access.CanReadCourseAsync(programCourseId,cancellationToken)) return Results.Forbid();
+        return Results.Ok(await service.GetClosAsync(versionId, programCourseId, cancellationToken));
+    }
 
     private static async Task<IResult> GetCloAsync(
         long versionId,
         long programCourseId,
         long cloId,
         CurriculumService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.GetCloAsync(
+        IAccessControlService access,
+        CancellationToken cancellationToken)
+    {
+        if (!await access.CanReadCourseAsync(programCourseId,cancellationToken)) return Results.Forbid();
+        return Results.Ok(await service.GetCloAsync(
             versionId,
             programCourseId,
             cloId,
             cancellationToken));
+    }
 
     private static async Task<IResult> CreateCloAsync(
         long versionId,
         long programCourseId,
         CreateCloRequest request,
         CurriculumService service,
+        IAccessControlService access,
         CancellationToken cancellationToken)
     {
+        if (!await access.CanEditCourseOutcomesAsync(programCourseId,cancellationToken)) return Results.Forbid();
         var clo = await service.CreateCloAsync(
             versionId,
             programCourseId,
@@ -137,21 +156,27 @@ internal static class OutcomeEndpoints
         long cloId,
         UpdateCloRequest request,
         CurriculumService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.UpdateCloAsync(
+        IAccessControlService access,
+        CancellationToken cancellationToken)
+    {
+        if (!await access.CanEditCourseOutcomesAsync(programCourseId,cancellationToken)) return Results.Forbid();
+        return Results.Ok(await service.UpdateCloAsync(
             versionId,
             programCourseId,
             cloId,
             request,
             cancellationToken));
+    }
 
     private static async Task<IResult> DeleteCloAsync(
         long versionId,
         long programCourseId,
         long cloId,
         CurriculumService service,
+        IAccessControlService access,
         CancellationToken cancellationToken)
     {
+        if (!await access.CanEditCourseOutcomesAsync(programCourseId,cancellationToken)) return Results.Forbid();
         await service.DeleteCloAsync(
             versionId,
             programCourseId,
@@ -164,11 +189,15 @@ internal static class OutcomeEndpoints
         long versionId,
         long programCourseId,
         CurriculumService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.GetCoursePloMappingsAsync(
+        IAccessControlService access,
+        CancellationToken cancellationToken)
+    {
+        if (!await access.CanReadCourseAsync(programCourseId,cancellationToken)) return Results.Forbid();
+        return Results.Ok(await service.GetCoursePloMappingsAsync(
             versionId,
             programCourseId,
             cancellationToken));
+    }
 
     private static async Task<IResult> CreateCoursePloMappingAsync(
         long versionId,
@@ -221,12 +250,16 @@ internal static class OutcomeEndpoints
         long programCourseId,
         long cloId,
         CurriculumService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.GetCloPloMappingsAsync(
+        IAccessControlService access,
+        CancellationToken cancellationToken)
+    {
+        if (!await access.CanReadCourseAsync(programCourseId,cancellationToken)) return Results.Forbid();
+        return Results.Ok(await service.GetCloPloMappingsAsync(
             versionId,
             programCourseId,
             cloId,
             cancellationToken));
+    }
 
     private static async Task<IResult> CreateCloPloMappingAsync(
         long versionId,
@@ -234,8 +267,10 @@ internal static class OutcomeEndpoints
         long cloId,
         CreateCloPloMappingRequest request,
         CurriculumService service,
+        IAccessControlService access,
         CancellationToken cancellationToken)
     {
+        if (!await access.CanEditCourseOutcomesAsync(programCourseId,cancellationToken)) return Results.Forbid();
         var mapping = await service.CreateCloPloMappingAsync(
             versionId,
             programCourseId,
@@ -253,8 +288,10 @@ internal static class OutcomeEndpoints
         long cloId,
         long coursePloId,
         CurriculumService service,
+        IAccessControlService access,
         CancellationToken cancellationToken)
     {
+        if (!await access.CanEditCourseOutcomesAsync(programCourseId,cancellationToken)) return Results.Forbid();
         await service.DeleteCloPloMappingAsync(
             versionId,
             programCourseId,
@@ -267,12 +304,20 @@ internal static class OutcomeEndpoints
     private static async Task<IResult> GetPloCreditCheckAsync(
         long versionId,
         CurriculumService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.GetPloCreditCheckAsync(versionId, cancellationToken));
+        IAccessControlService access,
+        CancellationToken cancellationToken)
+    {
+        if (!await access.CanReadVersionAsync(versionId,cancellationToken)) return Results.Forbid();
+        return Results.Ok(await service.GetPloCreditCheckAsync(versionId, cancellationToken));
+    }
 
     private static async Task<IResult> GetPloBalanceAsync(
         long versionId,
         CurriculumService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.GetPloBalanceAsync(versionId, cancellationToken));
+        IAccessControlService access,
+        CancellationToken cancellationToken)
+    {
+        if (!await access.CanReadVersionAsync(versionId,cancellationToken)) return Results.Forbid();
+        return Results.Ok(await service.GetPloBalanceAsync(versionId, cancellationToken));
+    }
 }

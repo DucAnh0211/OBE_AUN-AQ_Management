@@ -5,6 +5,13 @@
   </Folder>
   <Folder Name="/modules/" />
   <Folder Name="/modules/common/" />
+  <Folder Name="/modules/common/identity/" />
+  <Folder Name="/modules/common/identity/backend/">
+    <Project Path="modules/common/identity/backend/ObeAunQa.Modules.Identity.csproj" />
+  </Folder>
+  <Folder Name="/modules/common/identity/backend/tests/">
+    <Project Path="modules/common/identity/backend/tests/ObeAunQa.Modules.Identity.Tests.csproj" />
+  </Folder>
   <Folder Name="/modules/common/curriculum/" />
   <Folder Name="/modules/common/curriculum/backend/">
     <Project Path="modules/common/curriculum/backend/ObeAunQa.Modules.Curriculum.csproj" />
@@ -16,6 +23,9 @@
   <Folder Name="/modules/sv4/accreditation/" />
   <Folder Name="/modules/sv4/accreditation/backend/">
     <Project Path="modules/sv4/accreditation/backend/ObeAunQa.Modules.Accreditation.csproj" />
+  </Folder>
+  <Folder Name="/modules/sv4/accreditation/backend/tests/">
+    <Project Path="modules/sv4/accreditation/backend/tests/ObeAunQa.Modules.Accreditation.Tests.csproj" />
   </Folder>
   <Folder Name="/modules/sv5/" />
   <Folder Name="/modules/sv5/reporting/" />

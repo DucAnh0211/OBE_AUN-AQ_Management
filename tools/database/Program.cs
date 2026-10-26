@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ObeAunQa.Modules.Curriculum.Infrastructure;
 using ObeAunQa.Modules.Reporting.Infrastructure;
+using ObeAunQa.Modules.Identity.Infrastructure;
+using ObeAunQa.Modules.Accreditation.Infrastructure;
 
 if (args.Length != 1 || args[0] is not ("migrate" or "baseline-existing" or "fingerprint" or "seed-demo" or "verify-demo" or "initialize"))
 {
@@ -19,7 +21,12 @@ await using var curriculum = new CurriculumDbContext(new DbContextOptionsBuilder
     p => p.MigrationsHistoryTable("__EFMigrationsHistory", "curriculum")).Options);
 await using var reporting = new ReportingDbContext(new DbContextOptionsBuilder<ReportingDbContext>().UseNpgsql(connection,
     p => p.MigrationsHistoryTable("__EFMigrationsHistory", "reporting")).Options);
-var contexts = new (DbContext Context, string Schema)[] { (curriculum, "curriculum"), (reporting, "reporting") };
+await using var accreditation = new AccreditationDbContext(new DbContextOptionsBuilder<AccreditationDbContext>().UseNpgsql(connection,
+    p => p.MigrationsHistoryTable("__EFMigrationsHistory", "accreditation")).Options);
+await using var identity = new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().UseNpgsql(connection,
+    p => p.MigrationsHistoryTable("__EFMigrationsHistory", "security")).Options);
+// Identity assignments reference Curriculum; always create Curriculum first.
+var contexts = new (DbContext Context, string Schema)[] { (curriculum, "curriculum"), (reporting, "reporting"), (accreditation, "accreditation"), (identity, "security") };
 var expected = JsonSerializer.Deserialize<Dictionary<string, string>>(Resource("LegacySchemaFingerprints.json"))!;
 var fingerprintSql = LegacySchemaFingerprint.Query;
 var baselineSchemas = new HashSet<string>();
@@ -82,6 +89,7 @@ foreach (var (db, schema) in contexts)
         Console.WriteLine($"{schema}: migrations applied.");
     }
 }
+if (args[0] is "migrate" or "initialize") await new AccreditationSeeder(accreditation).SeedAsync();
 if (args[0] == "initialize" && bool.TryParse(Environment.GetEnvironmentVariable("Database__SeedDemo"), out var seedDemo) && seedDemo)
     Console.WriteLine(await new CurriculumDemoSeeder(curriculum).SeedIfEmptyAsync() ? "Demo V1/V2 seeded and verified using EF Core." : "Existing curriculum detected; demo seed skipped, data unchanged.");
 return 0;

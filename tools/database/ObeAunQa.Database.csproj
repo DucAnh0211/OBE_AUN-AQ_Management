@@ -6,6 +6,8 @@
   <ItemGroup>
     <ProjectReference Include="../../modules/common/curriculum/backend/ObeAunQa.Modules.Curriculum.csproj" />
     <ProjectReference Include="../../modules/sv5/reporting/backend/ObeAunQa.Modules.Reporting.csproj" />
+    <ProjectReference Include="../../modules/common/identity/backend/ObeAunQa.Modules.Identity.csproj" />
+    <ProjectReference Include="../../modules/sv4/accreditation/backend/ObeAunQa.Modules.Accreditation.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="LegacySchemaFingerprints.json" />

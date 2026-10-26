@@ -1,5 +1,5 @@
 """Run only against an isolated test API. Creates its own program, exercises all writes,
-and archives it on success. Requires CURRICULUM_TEST_URL. Standard library only.
+and archives it on success. Requires CURRICULUM_TEST_URL and CURRICULUM_TEST_TOKEN (admin JWT). Standard library only.
 """
 import json
 import os
@@ -8,8 +8,9 @@ import urllib.error
 import uuid
 
 base = os.environ['CURRICULUM_TEST_URL'].rstrip('/') + '/api/curriculum'
+headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer '+os.environ['CURRICULUM_TEST_TOKEN']}
 def call(path, method='GET', body=None, status=200):
-    req=urllib.request.Request(base+path, method=method, headers={'Content-Type':'application/json'}, data=None if body is None else json.dumps(body).encode())
+    req=urllib.request.Request(base+path, method=method, headers=headers, data=None if body is None else json.dumps(body).encode())
     try: r=urllib.request.urlopen(req,timeout=30)
     except urllib.error.HTTPError as e: r=e
     raw=r.read()

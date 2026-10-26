@@ -1,7 +1,7 @@
 """Isolated seeded database only. Creates a temporary V2 course/CLO, edits the CLO,
 then deletes that CLO and archives the temporary course in finally.
 Checks report persistence remains independent of live EF-tracked curriculum entities.
-Requires REPORT_TEST_URL, REPORT_TEST_AUTHOR.
+Requires REPORT_TEST_URL, REPORT_TEST_AUTHOR (admin JWT, since this test edits Curriculum).
 """
 import json
 import os

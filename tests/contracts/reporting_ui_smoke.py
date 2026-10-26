@@ -2,6 +2,7 @@
 
 Use an isolated API/database seeded with V1/V2. Same author/reader token env vars
 as reporting_api_smoke.py; REPORT_TEST_WEB_URL defaults to localhost:5173.
+MERGE_TEST_ADMIN_EMAIL/PASSWORD must identify an admin whose password is already changed.
 """
 import os
 from pathlib import Path
@@ -15,6 +16,12 @@ with sync_playwright() as p:
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
     page.goto(os.environ.get('REPORT_TEST_WEB_URL', 'http://localhost:5173').rstrip('/') + '/reporting')
+    page.get_by_label('Email', exact=True).fill(os.environ['MERGE_TEST_ADMIN_EMAIL'])
+    page.get_by_label('Mật khẩu', exact=True).fill(os.environ['MERGE_TEST_ADMIN_PASSWORD'])
+    page.get_by_role('button', name='Đăng nhập', exact=True).click()
+    expect(page.get_by_label('Chương trình')).to_be_visible()
+    expect(page.get_by_label('Mã truy cập')).to_have_count(0)
+    page.get_by_role('button', name='Ngắt kết nối', exact=False).click()
     page.get_by_label('Mã truy cập').fill(os.environ['REPORT_TEST_AUTHOR'])
     page.get_by_role('button', name='Kết nối', exact=True).click()
     expect(page.get_by_label('Chương trình').locator('option')).to_have_count(2)
@@ -64,8 +71,6 @@ with sync_playwright() as p:
     expect(page.locator('.report-preview')).to_have_count(0)
     expect(page.locator('.report-notice')).to_contain_text('Đã thu hồi')
     page.goto(old_url)
-    page.get_by_label('Mã truy cập').fill(os.environ['REPORT_TEST_AUTHOR'])
-    page.get_by_role('button', name='Kết nối', exact=True).click()
     expect(page.get_by_role('alert')).to_contain_text('không tồn tại')
     assert not errors, errors
     browser.close()

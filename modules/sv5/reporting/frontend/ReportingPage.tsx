@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
+import { getCurrentUser } from "../../../../shared/frontend/auth-client";
 import type { CurriculumProgram, ProgramCourse, ProgramVersion } from "../../../common/curriculum/frontend/types";
 import { reportingApi, ReportApiError, type ReportDocument, type ReportKind, type ReportPage, type ReportSession } from "./api";
 import "./reporting.css";
@@ -13,6 +14,15 @@ export function ReportingPage() {
   const [session, setSession] = useState<{ token: string; user: ReportSession } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+    if (getCurrentUser()?.role !== "admin") return;
+    let active = true;
+    setBusy(true);
+    reportingApi("").session().then(user => { if (active) setSession({ token: "", user }); })
+      .catch(e => { if (active) setError(message(e)); })
+      .finally(() => { if (active) setBusy(false); });
+    return () => { active = false; };
+  }, []);
   async function connect(event: FormEvent) {
     event.preventDefault(); setBusy(true); setError("");
     try {

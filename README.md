@@ -10,15 +10,16 @@ Repository đã được khởi tạo thành ứng dụng chạy được:
 - Backend: ASP.NET Core 10 modular monolith.
 - Frontend: React 19, TypeScript và Vite.
 - Database: PostgreSQL qua EF Core; migrations nằm trong từng module.
-- Các module: Curriculum, Accreditation và Reporting.
+- Các module: Curriculum, Identity, Accreditation và Reporting; cả bốn dùng EF Core.
 
 Backend đã kết nối PostgreSQL và cung cấp CRUD cho CTĐT, phiên bản CTĐT, học
 phần, PLO, CLO và các mapping học phần–PLO/CLO–PLO. API kiểm tra quy tắc số PLO
 theo tín chỉ và độ cân bằng PLO cũng đã sẵn sàng. Reporting đã có UC25–UC27
 rule-based: xem trước, lịch sử, snapshot, quyền theo chương trình và xuất DOCX/PDF.
 Xem [hướng dẫn chạy UC25–UC27](docs/UC25_UC27_RULE_BASED.md) để áp dụng migration
-và cấp mã truy cập. Accreditation, pipeline minh chứng và UC28–UC30 tiếp tục
-được phát triển ở các bước sau.
+và đăng nhập. Identity có tài khoản/phân quyền; Accreditation có quản lý phiên bản
+khung AUN-QA, criteria, requirements và bản dịch. Pipeline minh chứng và UC28–UC30
+tiếp tục được phát triển ở các bước sau.
 
 ## Yêu cầu môi trường
 
@@ -36,8 +37,27 @@ database cũ cần baseline trước khi migrate; database trống chỉ cần m
 ```powershell
 dotnet build ObeAunQa.slnx
 $env:ConnectionStrings__Postgres = "Host=localhost;Port=5432;Database=obe_management;Username=postgres;Password=YOUR_PASSWORD"
+$env:BootstrapAdmin__Email = "admin@example.edu.vn"
+$env:BootstrapAdmin__Password = "ChangeMe123"
+$env:BootstrapAdmin__FullName = "Quản trị viên"
 dotnet run --project apps/api/ObeAunQa.Api.csproj --launch-profile http
 ```
+
+Ở lần chạy đầu, API tạo một admin từ các biến `BootstrapAdmin__*` và bắt buộc đổi
+mật khẩu sau khi đăng nhập. Khóa ký JWT dùng giá trị development trong
+`appsettings.Development.json`; môi trường Production bắt buộc cấu hình
+`Jwt__SigningKey` tối thiểu 32 ký tự.
+
+Với database đã tồn tại từ trước, kiểm tra baseline rồi áp dụng EF migrations cho cả bốn module trước khi chạy API:
+
+```powershell
+dotnet run --project tools/database -- baseline-existing
+dotnet run --project tools/database -- migrate
+```
+
+Các vai trò hiện có là `admin`, `lecturer` và `student`. Admin quản lý tài khoản và
+phân công tại `/admin/users`; giảng viên chỉnh sửa CLO/CLO–PLO của học phần được
+giao; sinh viên chỉ đọc phiên bản đã công bố của CTĐT được gán.
 
 API chạy tại `http://localhost:5099`. Các endpoint kiểm tra:
 
@@ -47,7 +67,7 @@ API chạy tại `http://localhost:5099`. Các endpoint kiểm tra:
 - `GET /api/accreditation/health`
 - `GET /api/reporting/health`
 
-Swagger UI: `http://localhost:5099/swagger`. OpenAPI JSON:
+Trong môi trường Development, Swagger UI: `http://localhost:5099/swagger`. OpenAPI JSON:
 `http://localhost:5099/openapi/v1.json`. Các request mẫu nằm trong
 `apps/api/ObeAunQa.Api.http`.
 

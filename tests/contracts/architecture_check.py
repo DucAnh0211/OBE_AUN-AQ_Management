@@ -2,7 +2,7 @@
 from pathlib import Path
 import re
 
-roots=[Path('modules/common/curriculum/backend'),Path('modules/sv5/reporting/backend')]
+roots=[Path(p) for p in ('modules/common/curriculum/backend','modules/sv5/reporting/backend','modules/common/identity/backend','modules/sv4/accreditation/backend')]
 count=0
 for root in roots:
     for area in ('domain','application'):

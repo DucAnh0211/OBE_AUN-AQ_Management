@@ -25,8 +25,10 @@ public static class ReportingModule
     {
         services.Configure<ReportingAccessOptions>(configuration.GetSection("Reporting:Access"));
         services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, ReportingAuthenticationHandler>(ReportingAuthenticationHandler.SchemeName, _ => { });
+        services.AddTransient<IClaimsTransformation, ReportingClaimsTransformation>();
         services.AddAuthorization(options => options.AddPolicy("Reporting", policy =>
-            policy.AddAuthenticationSchemes(ReportingAuthenticationHandler.SchemeName).RequireAuthenticatedUser()));
+            policy.AddAuthenticationSchemes("Bearer", ReportingAuthenticationHandler.SchemeName)
+                .RequireAuthenticatedUser().RequireClaim("reporting:access", "true")));
         services.AddRateLimiter(options => {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.AddPolicy("report-work", context => RateLimitPartition.GetFixedWindowLimiter(
@@ -45,7 +47,8 @@ public static class ReportingModule
 
     public static IEndpointRouteBuilder MapReportingModule(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup(Descriptor.ApiPrefix);
+        var group = endpoints.MapGroup(Descriptor.ApiPrefix)
+            .RequireAuthorization("Reporting");
 
         group.MapGet("/health", () => Results.Ok(new ModuleHealth(
             Descriptor.Key,

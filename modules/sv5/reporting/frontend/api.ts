@@ -1,4 +1,5 @@
 import { apiBaseUrl } from "../../../../shared/frontend/api-config";
+import { authenticatedFetch } from "../../../../shared/frontend/auth-client";
 import type { CurriculumProgram, ProgramVersion, ProgramCourse } from "../../../common/curriculum/frontend/types";
 
 export type ReportKind = "course" | "clo" | "plo";
@@ -22,8 +23,8 @@ export class ReportApiError extends Error {
 
 export function reportingApi(token: string) {
   async function response(path: string, init?: RequestInit) {
-    const result = await fetch(`${apiBaseUrl}/api/reporting${path}`, {
-      ...init, cache: "no-store", headers: { "Content-Type": "application/json", ...init?.headers, Authorization: `Bearer ${token}` },
+    const result = await (token ? fetch : authenticatedFetch)(`${apiBaseUrl}/api/reporting${path}`, {
+      ...init, cache: "no-store", headers: { "Content-Type": "application/json", ...init?.headers, ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     });
     if (!result.ok) {
       const defaults: Record<number, string> = {

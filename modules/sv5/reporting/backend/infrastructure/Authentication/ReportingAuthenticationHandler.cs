@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace ObeAunQa.Modules.Reporting.Infrastructure;
 
-// shortcut: configured access keys until shared IAM is implemented.
+// Compatibility for previously issued, program-scoped report keys; JWT remains the host default.
 public sealed class ReportingAuthenticationHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder,
     IOptionsMonitor<ReportingAccessOptions> access)
@@ -24,6 +24,7 @@ public sealed class ReportingAuthenticationHandler(
         var user = FindUser(access.CurrentValue, token);
         if (user is null) return Task.FromResult(AuthenticateResult.Fail("Mã truy cập không hợp lệ hoặc đã bị thu hồi."));
         var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, user.Id), new(ClaimTypes.Name, user.Id) };
+        claims.Add(new("reporting:access", "true"));
         claims.AddRange(user.ProgramIds.Distinct().Select(id => new Claim("reporting:program", id.ToString(System.Globalization.CultureInfo.InvariantCulture))));
         if (user.CanGenerate) claims.Add(new("reporting:generate", "true"));
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, SchemeName));
