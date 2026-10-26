@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
+using Microsoft.EntityFrameworkCore;
 using ObeAunQa.Modules.Curriculum.Application;
 using ObeAunQa.Modules.Curriculum.Infrastructure;
 using ObeAunQa.Modules.Curriculum.Presentation;
@@ -32,8 +32,18 @@ public static class CurriculumModule
                 "Thiếu connection string 'ConnectionStrings:Postgres'.");
         }
 
-        services.AddSingleton(_ => NpgsqlDataSource.Create(connectionString));
-        services.AddScoped<ICurriculumRepository, NpgsqlCurriculumRepository>();
+        services.AddDbContext<CurriculumDbContext>(options => options.UseNpgsql(connectionString,
+            postgres => postgres.MigrationsHistoryTable("__EFMigrationsHistory", "curriculum")));
+        services.AddScoped<CurriculumWriteSession>();
+        services.AddScoped<IProgramRepository, EfProgramRepository>();
+        services.AddScoped<IProgramVersionRepository, EfProgramVersionRepository>();
+        services.AddScoped<IProgramCourseRepository, EfProgramCourseRepository>();
+        services.AddScoped<IPloRepository, EfPloRepository>();
+        services.AddScoped<ICloRepository, EfCloRepository>();
+        services.AddScoped<ICoursePloMappingRepository, EfCoursePloMappingRepository>();
+        services.AddScoped<ICloPloMappingRepository, EfCloPloMappingRepository>();
+        services.AddScoped<ICurriculumAnalysisRepository, EfCurriculumAnalysisRepository>();
+        services.AddScoped<ICurriculumReportSource, EfCurriculumReportSource>();
         services.AddScoped<CurriculumService>();
         services.AddExceptionHandler<CurriculumExceptionHandler>();
         return services;

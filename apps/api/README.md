@@ -22,7 +22,8 @@ ghi đè bằng biến môi trường trong PowerShell:
 $env:ConnectionStrings__Postgres = "Host=localhost;Port=5432;Database=obe_management;Username=postgres;Password=YOUR_PASSWORD"
 ```
 
-Trước khi gọi API Curriculum, chạy `infra/postgres/004_curriculum_crud.sql` sau
-schema và seed V1. Swagger UI được phục vụ tại `/swagger`, OpenAPI JSON tại
+Trước khi gọi API, chuẩn bị database theo [hướng dẫn EF Core](../../docs/EF_CORE_ARCHITECTURE.md).
+Database cũ cần baseline trước khi migrate; API không tự chạy migration.
+Swagger UI được phục vụ tại `/swagger`, OpenAPI JSON tại
 `/openapi/v1.json`; các request mẫu
 nằm trong `ObeAunQa.Api.http`.

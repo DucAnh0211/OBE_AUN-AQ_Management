@@ -1,3 +1,5 @@
+using ObeAunQa.Modules.Curriculum.Domain;
+
 namespace ObeAunQa.Modules.Curriculum.Application;
 
 public sealed partial class CurriculumService
@@ -7,7 +9,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         _ = await GetProgramVersionAsync(versionId, cancellationToken);
-        return await repository.GetPlosAsync(versionId, cancellationToken);
+        return await ploRepository.GetPlosAsync(versionId, cancellationToken);
     }
 
     public async Task<PloResponse> GetPloAsync(
@@ -16,7 +18,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         _ = await GetProgramVersionAsync(versionId, cancellationToken);
-        return await repository.GetPloAsync(versionId, ploId, cancellationToken)
+        return await ploRepository.GetPloAsync(versionId, ploId, cancellationToken)
             ?? throw new CurriculumNotFoundException("PLO", ploId);
     }
 
@@ -30,7 +32,7 @@ public sealed partial class CurriculumService
             request.Code,
             request.Statement,
             request.LevelCode);
-        return await repository.CreatePloAsync(versionId, plo, cancellationToken);
+        return await ploRepository.CreatePloAsync(versionId, plo, cancellationToken);
     }
 
     public async Task<PloResponse> UpdatePloAsync(
@@ -44,7 +46,7 @@ public sealed partial class CurriculumService
             request.Code,
             request.Statement,
             request.LevelCode);
-        return await repository.UpdatePloAsync(versionId, ploId, plo, cancellationToken)
+        return await ploRepository.UpdatePloAsync(versionId, ploId, plo, cancellationToken)
             ?? throw new CurriculumNotFoundException("PLO", ploId);
     }
 
@@ -54,7 +56,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         EnsureDraft(await GetProgramVersionAsync(versionId, cancellationToken));
-        if (!await repository.DeletePloAsync(versionId, ploId, cancellationToken))
+        if (!await ploRepository.DeletePloAsync(versionId, ploId, cancellationToken))
         {
             throw new CurriculumNotFoundException("PLO", ploId);
         }
@@ -66,7 +68,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         _ = await GetProgramCourseAsync(versionId, programCourseId, cancellationToken);
-        return await repository.GetClosAsync(versionId, programCourseId, cancellationToken);
+        return await cloRepository.GetClosAsync(versionId, programCourseId, cancellationToken);
     }
 
     public async Task<CloResponse> GetCloAsync(
@@ -76,7 +78,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         _ = await GetProgramCourseAsync(versionId, programCourseId, cancellationToken);
-        return await repository.GetCloAsync(versionId, programCourseId, cloId, cancellationToken)
+        return await cloRepository.GetCloAsync(versionId, programCourseId, cloId, cancellationToken)
             ?? throw new CurriculumNotFoundException("CLO", cloId);
     }
 
@@ -92,7 +94,7 @@ public sealed partial class CurriculumService
             request.Code,
             request.Statement,
             request.LevelCode);
-        return await repository.CreateCloAsync(
+        return await cloRepository.CreateCloAsync(
             versionId,
             programCourseId,
             clo,
@@ -111,7 +113,7 @@ public sealed partial class CurriculumService
             request.Code,
             request.Statement,
             request.LevelCode);
-        return await repository.UpdateCloAsync(
+        return await cloRepository.UpdateCloAsync(
                 versionId,
                 programCourseId,
                 cloId,
@@ -127,7 +129,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         EnsureDraft(await GetProgramVersionAsync(versionId, cancellationToken));
-        if (!await repository.DeleteCloAsync(
+        if (!await cloRepository.DeleteCloAsync(
                 versionId,
                 programCourseId,
                 cloId,
@@ -143,7 +145,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         _ = await GetProgramCourseAsync(versionId, programCourseId, cancellationToken);
-        return await repository.GetCoursePloMappingsAsync(
+        return await coursePloMappingRepository.GetCoursePloMappingsAsync(
             versionId,
             programCourseId,
             cancellationToken);
@@ -157,7 +159,7 @@ public sealed partial class CurriculumService
     {
         EnsureDraft(await GetProgramVersionAsync(versionId, cancellationToken));
         var mapping = CurriculumValidator.CoursePloMapping(request);
-        return await repository.CreateCoursePloMappingAsync(
+        return await coursePloMappingRepository.CreateCoursePloMappingAsync(
             versionId,
             programCourseId,
             mapping,
@@ -173,7 +175,7 @@ public sealed partial class CurriculumService
     {
         EnsureDraft(await GetProgramVersionAsync(versionId, cancellationToken));
         var mapping = CurriculumValidator.CoursePloMapping(request);
-        return await repository.UpdateCoursePloMappingAsync(
+        return await coursePloMappingRepository.UpdateCoursePloMappingAsync(
                 versionId,
                 programCourseId,
                 mappingId,
@@ -189,7 +191,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         EnsureDraft(await GetProgramVersionAsync(versionId, cancellationToken));
-        if (!await repository.DeleteCoursePloMappingAsync(
+        if (!await coursePloMappingRepository.DeleteCoursePloMappingAsync(
                 versionId,
                 programCourseId,
                 mappingId,
@@ -206,7 +208,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         _ = await GetCloAsync(versionId, programCourseId, cloId, cancellationToken);
-        return await repository.GetCloPloMappingsAsync(
+        return await cloPloMappingRepository.GetCloPloMappingsAsync(
             versionId,
             programCourseId,
             cloId,
@@ -229,7 +231,7 @@ public sealed partial class CurriculumService
             });
         }
 
-        return await repository.CreateCloPloMappingAsync(
+        return await cloPloMappingRepository.CreateCloPloMappingAsync(
             versionId,
             programCourseId,
             cloId,
@@ -245,7 +247,7 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         EnsureDraft(await GetProgramVersionAsync(versionId, cancellationToken));
-        if (!await repository.DeleteCloPloMappingAsync(
+        if (!await cloPloMappingRepository.DeleteCloPloMappingAsync(
                 versionId,
                 programCourseId,
                 cloId,
@@ -261,9 +263,9 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         _ = await GetProgramVersionAsync(versionId, cancellationToken);
-        var courses = await repository.GetPloCreditChecksAsync(versionId, cancellationToken);
+        var courses = await curriculumAnalysisRepository.GetPloCreditChecksAsync(versionId, cancellationToken);
         var violations = courses.Count(course => !course.IsValid);
-        return new PloCreditCheckResponse(versionId, 5, violations == 0, violations, courses);
+        return new PloCreditCheckResponse(versionId, CurriculumAnalysisRules.MaximumRequiredPloCount, violations == 0, violations, courses);
     }
 
     public async Task<PloBalanceResponse> GetPloBalanceAsync(
@@ -271,10 +273,10 @@ public sealed partial class CurriculumService
         CancellationToken cancellationToken)
     {
         _ = await GetProgramVersionAsync(versionId, cancellationToken);
-        var items = await repository.GetPloBalanceAsync(versionId, cancellationToken);
+        var items = await curriculumAnalysisRepository.GetPloBalanceAsync(versionId, cancellationToken);
         return new PloBalanceResponse(
             versionId,
-            0.20m,
+            CurriculumAnalysisRules.AllowedDeviation,
             items.Count > 0 && items.All(item => !item.ExceedsTwentyPercent),
             items);
     }

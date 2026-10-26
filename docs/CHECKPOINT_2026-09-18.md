@@ -1,5 +1,20 @@
 # Checkpoint tiến độ đồ án - 18/09/2026
 
+> Đính chính phạm vi ngày 25/10/2026: AUN-QA Programme Level v4.0 có 8 criteria
+> và 53 requirements, theo [hướng dẫn chính thức](https://aunsec.org/application/files/2816/7290/3752/Guide_to_AUN-QA_Assessment_at_Programme_Level_Version_4.0_4.pdf#page=6).
+> SV4 quản lý file/quyền/phiên bản minh chứng; SV5 làm parse, chunk, embedding,
+> index và retrieval dùng chung. UC25–UC27 đã được giảng viên đồng ý điều chỉnh
+> theo xác nhận của người dùng. Các số liệu tiến độ bên dưới vẫn là ghi nhận
+> ngày 18/09, không phải kết quả đo lại. Kế hoạch hiện hành nằm trong
+> [phân tích SV5 ngày 25/10](PHAN_TICH_VA_KE_HOACH_SV5_2026-10-25.md).
+>
+> Cập nhật 26/10/2026: [UC25–UC27 rule-based đã triển khai](UC25_UC27_RULE_BASED.md)
+> gồm giao diện, lưu snapshot, phân quyền báo cáo và xuất DOCX/PDF. Các tỷ lệ
+> phần trăm bên dưới được giữ nguyên như lịch sử của checkpoint.
+>
+> Backend hiện đã chuyển Dapper sang EF Core; xem
+> [kiến trúc và hướng dẫn database](EF_CORE_ARCHITECTURE.md).
+
 ## 1. Tóm tắt
 
 | Phạm vi | Tiến độ ước tính | Trạng thái |
@@ -138,7 +153,7 @@ Phần Curriculum mới hoàn thành API và giao diện cho CTĐT, phiên bản
 
 - [ ] Migration cho dữ liệu Accreditation.
 - [ ] Bảng bộ tiêu chuẩn, tiêu chuẩn và tiêu chí AUN-QA.
-- [ ] Seed 8 tiêu chuẩn và 52 tiêu chí.
+- [ ] Seed 8 criteria và 53 requirements của AUN-QA Programme Level v4.0.
 - [ ] Kho file minh chứng.
 - [ ] Upload, download, sửa và xóa mềm minh chứng.
 - [ ] Mapping tiêu chí-minh chứng.
@@ -146,7 +161,7 @@ Phần Curriculum mới hoàn thành API và giao diện cho CTĐT, phiên bản
 - [ ] Tìm kiếm và bộ lọc minh chứng.
 - [ ] Trạng thái hồ sơ kiểm định.
 - [ ] Danh sách minh chứng còn thiếu.
-- [ ] Trích xuất nội dung PDF, Word và Excel.
+- [ ] Tích hợp pipeline trích xuất/indexing do SV5 cung cấp; hiển thị trạng thái và retry.
 - [ ] AI phân loại minh chứng.
 - [ ] AI tóm tắt minh chứng.
 - [ ] AI gợi ý tiêu chí phù hợp.
@@ -177,6 +192,7 @@ Có thể xem phần **phân tích và thiết kế sơ bộ của SV4 đạt kh
 - [ ] Chưa có xuất Excel, Word hoặc PDF.
 - [ ] Chưa có grounded chat và citation.
 - [ ] Chưa có AI sinh báo cáo.
+- [ ] Pipeline parse/chunk/embedding/index và retrieval dùng chung (phân công cập nhật 25/10).
 
 Reporting đang chờ public API của Curriculum và dữ liệu đầu ra của Accreditation.
 
@@ -196,7 +212,7 @@ Reporting đang chờ public API của Curriculum và dữ liệu đầu ra củ
 
 1. Tạo migration `accreditation`.
 2. Tạo bảng `aun_frameworks`, `aun_standards`, `aun_criteria`.
-3. Seed 8 tiêu chuẩn và 52 tiêu chí.
+3. Seed 8 criteria và 53 requirements của AUN-QA Programme Level v4.0.
 4. Làm API xem cây tiêu chí.
 5. Làm màn hình Bộ tiêu chí AUN-QA.
 
@@ -226,7 +242,7 @@ Reporting đang chờ public API của Curriculum và dữ liệu đầu ra củ
 2. Khai báo loại tài liệu cần có cho mỗi tiêu chí.
 3. Tính trạng thái hồ sơ.
 4. Hiển thị danh sách còn thiếu.
-5. Trích xuất nội dung tài liệu.
+5. Tích hợp trích xuất nội dung tài liệu và retrieval qua contract của SV5.
 6. AI phân loại, tóm tắt và gợi ý.
 
 **Kết quả:** hoàn thành phạm vi riêng của SV4.

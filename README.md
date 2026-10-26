@@ -9,13 +9,16 @@ Repository đã được khởi tạo thành ứng dụng chạy được:
 
 - Backend: ASP.NET Core 10 modular monolith.
 - Frontend: React 19, TypeScript và Vite.
-- Database: PostgreSQL; schema và seed CTĐT V1 nằm trong `infra/postgres`.
+- Database: PostgreSQL qua EF Core; migrations nằm trong từng module.
 - Các module: Curriculum, Accreditation và Reporting.
 
 Backend đã kết nối PostgreSQL và cung cấp CRUD cho CTĐT, phiên bản CTĐT, học
 phần, PLO, CLO và các mapping học phần–PLO/CLO–PLO. API kiểm tra quy tắc số PLO
-theo tín chỉ và độ cân bằng PLO cũng đã sẵn sàng. Các module Accreditation và
-Reporting tiếp tục được phát triển ở các bước sau.
+theo tín chỉ và độ cân bằng PLO cũng đã sẵn sàng. Reporting đã có UC25–UC27
+rule-based: xem trước, lịch sử, snapshot, quyền theo chương trình và xuất DOCX/PDF.
+Xem [hướng dẫn chạy UC25–UC27](docs/UC25_UC27_RULE_BASED.md) để áp dụng migration
+và cấp mã truy cập. Accreditation, pipeline minh chứng và UC28–UC30 tiếp tục
+được phát triển ở các bước sau.
 
 ## Yêu cầu môi trường
 
@@ -26,6 +29,9 @@ Reporting tiếp tục được phát triển ở các bước sau.
 ## Chạy backend
 
 Từ thư mục gốc repository:
+
+Chuẩn bị database theo [hướng dẫn EF Core](docs/EF_CORE_ARCHITECTURE.md):
+database cũ cần baseline trước khi migrate; database trống chỉ cần migrate.
 
 ```powershell
 dotnet build ObeAunQa.slnx
@@ -69,7 +75,7 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
-Docker Compose chạy PostgreSQL, tự seed V1/V2, khởi động API và phục vụ frontend
+Docker Compose chạy PostgreSQL, áp dụng EF migrations và seed V1/V2 bằng C#, khởi động API và phục vụ frontend
 qua Nginx tại `http://localhost:8080`. Xem hướng dẫn đầy đủ tại
 [`docs/DOCKER.md`](docs/DOCKER.md).
 
@@ -81,12 +87,12 @@ apps/
   web/                         React composition root
 modules/
   common/curriculum/           CTĐT, học phần, PLO, CLO, mapping
-  sv4/accreditation/           AUN-QA, minh chứng, ingestion, gap analysis
-  sv5/reporting/               Chat, trích dẫn, báo cáo, export
+  sv4/accreditation/           AUN-QA, file/quyền/phiên bản minh chứng, gap analysis
+  sv5/reporting/               Ingestion/retrieval dùng chung, chat, báo cáo, export
 shared/
   backend/                     Contract kỹ thuật dùng chung
   frontend/                    Type dùng chung
-infra/postgres/                Schema, import template và kiểm tra dữ liệu
+tools/database/                EF migration runner và kiểm tra baseline database cũ
 ```
 
 Các thư mục trong `apps` chỉ ghép module và cấu hình host. Business logic nằm

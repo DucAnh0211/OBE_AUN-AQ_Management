@@ -250,28 +250,3 @@ public static partial class CurriculumValidator
     [GeneratedRegex("^[A-Z0-9][A-Z0-9._-]*$", RegexOptions.CultureInvariant)]
     private static partial Regex CourseCodePattern();
 }
-
-public sealed record NormalizedCourse(
-    string? InstitutionalCode,
-    string Name,
-    int Credits,
-    string Semester,
-    int? DisplayOrder);
-
-public sealed record NormalizedLearningOutcome(
-    string Code,
-    string Statement,
-    string? LevelCode);
-
-public sealed record NormalizedCoursePloMapping(
-    long PloId,
-    string WeightCode,
-    string ProgressionCode,
-    string? Fit,
-    string? FitReason);
-
-public sealed record NormalizedCoursePloMappingUpdate(
-    string WeightCode,
-    string ProgressionCode,
-    string? Fit,
-    string? FitReason);

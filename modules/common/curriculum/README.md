@@ -29,3 +29,7 @@ Các endpoint PLO/CLO chính:
 - `GET /api/curriculum/program-versions/{versionId}/plo-balance`
 
 Các thao tác tạo, sửa và xóa PLO/CLO/mapping chỉ áp dụng cho phiên bản `draft`.
+
+Persistence dùng EF Core với entity/configuration riêng từng file, DTO chia theo
+nghiệp vụ và repository/interface riêng cho từng nhóm thao tác.
+Xem [kiến trúc và migration EF Core](../../../docs/EF_CORE_ARCHITECTURE.md).

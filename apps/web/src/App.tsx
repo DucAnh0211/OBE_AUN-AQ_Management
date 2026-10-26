@@ -8,6 +8,7 @@ import {
   ProgramVersionsPage,
 } from "./curriculum/CurriculumPages";
 import { webModules } from "./module-registry";
+import { ReportingPage } from "../../../modules/sv5/reporting/frontend";
 
 type ApiState = "checking" | "online" | "offline";
 
@@ -126,7 +127,7 @@ export function App() {
             <Route
               key={module.id}
               path={module.route}
-              element={module.id === "curriculum" ? <CurriculumProgramsPage /> : <ModulePage module={module} />}
+              element={module.id === "curriculum" ? <CurriculumProgramsPage /> : module.id === "reporting" ? <ReportingPage /> : <ModulePage module={module} />}
             />
           ))}
           <Route path="*" element={<Navigate to="/" replace />} />

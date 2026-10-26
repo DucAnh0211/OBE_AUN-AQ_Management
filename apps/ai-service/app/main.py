@@ -29,12 +29,12 @@ def capabilities() -> dict[str, object]:
         "modules": list(MODULE_IDS),
         "capabilities": {
             "accreditation": [
-                "document-ingestion",
                 "evidence-classification",
-                "evidence-retrieval",
                 "gap-analysis",
             ],
             "reporting": [
+                "document-ingestion",
+                "evidence-retrieval",
                 "grounded-chat",
                 "citation",
                 "report-generation",

@@ -12,21 +12,28 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./infra/postgres:/sql:ro
-      - ./infra/postgres/docker-init/001-bootstrap.sh:/docker-entrypoint-initdb.d/001-bootstrap.sh:ro
     healthcheck:
       test:
         - CMD-SHELL
         - >-
           pg_isready --username "$${POSTGRES_USER}" --dbname "$${POSTGRES_DB}"
-          && psql --username "$${POSTGRES_USER}" --dbname "$${POSTGRES_DB}"
-          --set ON_ERROR_STOP=1 --tuples-only --no-align
-          --command "SELECT 1 FROM curriculum.program_versions WHERE version_code = 'V2' LIMIT 1"
-          | grep -q '^1$'
       interval: 10s
       timeout: 5s
       start_period: 30s
       retries: 12
+
+  database-init:
+    build:
+      context: .
+      dockerfile: tools/database/Dockerfile
+    restart: "no"
+    environment:
+      ConnectionStrings__Postgres: >-
+        Host=db;Port=5432;Database=${POSTGRES_DB:-obe_management};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      Database__SeedDemo: ${SEED_DEMO:-true}
+    depends_on:
+      db:
+        condition: service_healthy
 
   api:
     build:
@@ -43,8 +50,8 @@ services:
     ports:
       - "${API_PORT:-5099}:8080"
     depends_on:
-      db:
-        condition: service_healthy
+      database-init:
+        condition: service_completed_successfully
     healthcheck:
       test:
         - CMD

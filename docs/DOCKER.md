@@ -10,6 +10,10 @@ Nếu PostgreSQL trên máy đang dùng cổng `5432`, đổi `POSTGRES_PORT` tr
 
 ## Khởi động lần đầu
 
+Docker dùng EF Core cho toàn bộ vòng đời dữ liệu. Service `database-init` chạy
+migrations và seed bằng C# trước khi API khởi động. Không còn mount SQL/init shell.
+Xem [hướng dẫn EF Core](EF_CORE_ARCHITECTURE.md).
+
 Từ thư mục gốc repository:
 
 ```powershell
@@ -21,13 +25,14 @@ docker compose up --build
 
 Docker sẽ tự động:
 
-1. Tạo database `obe_management`.
-2. Tạo schema Curriculum.
-3. Nạp V1 với 59 học phần.
-4. Áp dụng migration CRUD.
-5. Nạp V2 với dữ liệu PLO-CLO đã cân bằng.
-6. Chạy các truy vấn kiểm tra.
-7. Khởi động API rồi mới khởi động web.
+1. PostgreSQL tạo database `obe_management` và báo healthy.
+2. `database-init` kiểm tra schema cũ, ghi baseline nếu khớp và chạy EF migrations.
+3. Nếu `SEED_DEMO=true` và Curriculum trống, nạp V1/V2 bằng EF rồi kiểm tra trước commit.
+4. API chỉ khởi động khi `database-init` thoát thành công; web chờ API healthy.
+
+Đặt `SEED_DEMO=false` trong `.env` nếu không muốn dữ liệu mẫu. Database đã có chương
+trình sẽ được giữ nguyên; chạy lại không reset seed. Schema cũ khác mẫu baseline sẽ
+bị từ chối, cần kiểm tra chênh lệch trước khi nâng cấp. Không xóa volume để sửa lỗi này.
 
 Các địa chỉ mặc định:
 
@@ -150,7 +155,7 @@ docker compose logs db
 docker compose logs api
 ```
 
-API chỉ khởi động sau khi database đã seed xong và chuyển sang `healthy`.
+API chỉ khởi động sau khi `database-init` hoàn tất thành công. Xem log bằng `docker compose logs database-init`.
 
 ### Đổi mật khẩu sau khi đã tạo volume
 
@@ -159,7 +164,7 @@ volume đầu tiên. Nếu đổi giá trị này trong `.env` khi volume đã c
 sẽ báo `password authentication failed`.
 
 Nếu đây là dữ liệu demo có thể tạo lại, seed lại volume bằng các lệnh ở mục
-"Muốn chạy lại bootstrap" bên dưới. Nếu cần giữ dữ liệu, cập nhật mật khẩu của
+"Tạo lại demo" bên dưới. Nếu cần giữ dữ liệu, cập nhật mật khẩu của
 role trong PostgreSQL cho trùng với `.env`, rồi tạo lại container API:
 
 ```powershell
@@ -169,9 +174,9 @@ docker compose exec --user postgres db psql `
 docker compose up --detach --force-recreate api web
 ```
 
-### Muốn chạy lại bootstrap
+### Tạo lại demo
 
-Các script bootstrap chỉ chạy khi volume PostgreSQL còn trống:
+Chỉ dành cho dữ liệu demo có thể bỏ: các lệnh sau xóa volume, tạo lại schema bằng EF và seed mới:
 
 ```powershell
 docker compose down --volumes
@@ -180,4 +185,4 @@ docker compose up --build
 
 ### Thay đổi seed hoặc migration
 
-Trong môi trường demo, tạo lại volume để áp dụng toàn bộ bootstrap. Khi triển khai production cần dùng migration runner riêng thay vì xóa volume.
+Thêm EF migration, build lại rồi chạy `docker compose up --build --detach`. Service `database-init` áp dụng migration còn thiếu và không ghi đè dữ liệu. Để chạy lại riêng bước nâng cấp: `docker compose run --rm database-init initialize`. Seed chỉ dành cho database trống; thay đổi JSON seed không tự sửa dữ liệu đã có.

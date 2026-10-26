@@ -13,7 +13,7 @@ public static class AccreditationModule
         "Kiểm định AUN-QA",
         "SV4 - Đức Anh",
         "/api/accreditation",
-        "Quản lý tiêu chí AUN-QA, minh chứng, ingestion, truy xuất và gap analysis.");
+        "Quản lý tiêu chí AUN-QA, file minh chứng, quyền, phiên bản và gap analysis.");
 
     public static IServiceCollection AddAccreditationModule(this IServiceCollection services)
     {
@@ -33,8 +33,9 @@ public static class AccreditationModule
         {
             "aun-criteria",
             "evidence",
-            "document-ingestion",
-            "retrieval",
+            "evidence-files",
+            "evidence-permissions",
+            "evidence-versions",
             "gap-analysis"
         }));
 

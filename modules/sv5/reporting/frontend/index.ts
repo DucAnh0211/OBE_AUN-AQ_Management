@@ -1,4 +1,5 @@
 import type { FrontendModuleDefinition } from "../../../../shared/frontend/module";
+export { ReportingPage } from "./ReportingPage";
 
 export const reportingFrontend: FrontendModuleDefinition = {
   id: "reporting",
@@ -6,6 +7,6 @@ export const reportingFrontend: FrontendModuleDefinition = {
   shortLabel: "BC",
   owner: "SV5 - Chí Hoàng",
   route: "/reporting",
-  summary: "Hỏi đáp có căn cứ, soạn báo cáo SAR, trích dẫn và xuất tài liệu.",
-  features: ["Chat", "Trích dẫn", "Báo cáo SAR", "Xuất tài liệu"],
+  summary: "Báo cáo học phần, mapping CLO/PLO và độ bao phủ chương trình; xuất DOCX/PDF.",
+  features: ["Báo cáo học phần", "Mapping CLO/PLO", "Lịch sử báo cáo", "Xuất DOCX/PDF"],
 };
