@@ -1,5 +1,9 @@
+import { KnowledgeBasePage } from "./admin/KnowledgeBasePage";
+import { KnowledgeChatPage } from "./knowledge/KnowledgeChatPage";
+import { KnowledgeSourcePage } from "./knowledge/KnowledgeSourcePage";
 import { useEffect, useState } from "react";
-import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
+import { Link, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
+import { SidebarSimple, CaretLeft } from "@phosphor-icons/react";
 import { apiBaseUrl } from "../../../shared/frontend/api-config";
 import type { FrontendModuleDefinition } from "../../../shared/frontend/module";
 import { AccreditationFrameworkDetailPage } from "./accreditation/AccreditationFrameworkDetailPage";
@@ -110,6 +114,10 @@ function ModulePage({ module }: { module: FrontendModuleDefinition }) {
 
 export function App() {
   const { loading, user, logout } = useAuth();
+  const location = useLocation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem("obe.sidebar.collapsed") === "true"; } catch { return false; } });
+  function toggleSidebar() { setSidebarCollapsed(previous => { const next = !previous; try { localStorage.setItem("obe.sidebar.collapsed", String(next)); } catch { /* Storage may be unavailable. */ } return next; }); }
+  const chatPage = location.pathname === "/knowledge/chat";
   if (loading) return <main className="auth-shell"><div className="session-loading"><span className="brand__mark">OA</span><p>Đang khôi phục phiên đăng nhập…</p></div></main>;
   if (!user) return <LoginPage />;
   if (user.mustChangePassword) return <ChangePasswordPage />;
@@ -119,8 +127,9 @@ export function App() {
     (module.id === "accreditation" && user.role !== "student") ||
     (module.id === "reporting" && user.role === "admin"));
 
-  return <div className="app-shell">
-    <aside className="app-sidebar">
+  return <div className={`app-shell ${sidebarCollapsed ? "app-shell--sidebar-collapsed" : ""} ${chatPage ? "app-shell--chat" : ""}`}>
+    <aside className="app-sidebar" id="main-navigation-sidebar" hidden={sidebarCollapsed}>
+      <button className="sidebar-collapse" aria-label="Thu gọn thanh điều hướng" aria-controls="main-navigation-sidebar" aria-expanded={!sidebarCollapsed} title="Thu gọn thanh điều hướng" onClick={toggleSidebar}><CaretLeft size={18} /></button>
       <Link className="brand" to="/">
         <span className="brand__mark">OA</span>
         <span><strong>OBE · AUN-QA</strong><small>Quản lý chất lượng đào tạo</small></span>
@@ -132,7 +141,8 @@ export function App() {
         {allowedModules.map((module, index) => <NavLink key={module.id} to={module.route}>
           <span className="nav-code">{String(index + 2).padStart(2, "0")}</span><span>{module.label}</span>
         </NavLink>)}
-        {user.role === "admin" && <><span className="nav-label nav-label--spaced">Quản trị</span><NavLink to="/admin/users"><span className="nav-code">QL</span><span>Tài khoản</span></NavLink></>}
+        {user.role !== "student" && <NavLink to="/knowledge/chat"><span className="nav-code">AI</span><span>Chatbot tài liệu</span></NavLink>}
+        {user.role === "admin" && <><span className="nav-label nav-label--spaced">Quản trị</span><NavLink to="/admin/knowledge"><span className="nav-code">KB</span><span>Knowledge Base</span></NavLink><NavLink to="/admin/users"><span className="nav-code">QL</span><span>Tài khoản</span></NavLink></>}
       </nav>
 
       <div className="sidebar-user">
@@ -143,10 +153,12 @@ export function App() {
     </aside>
 
     <div className="app-workspace">
-      <header className="workspace-bar"><span>Hệ thống quản lý OBE và kiểm định AUN-QA</span><span className="workspace-bar__context">{roleLabels[user.role]}</span></header>
+      <header className="workspace-bar"><div className="workspace-bar__leading">{sidebarCollapsed && <button className="sidebar-reopen" aria-label="Mở thanh điều hướng" aria-controls="main-navigation-sidebar" aria-expanded={false} title="Mở thanh điều hướng" onClick={toggleSidebar}><SidebarSimple size={22} /></button>}<span>Hệ thống quản lý OBE và kiểm định AUN-QA</span></div><span className="workspace-bar__context">{roleLabels[user.role]}</span></header>
       <main className="workspace-content">
         <Routes>
           <Route path="/" element={<Dashboard modules={allowedModules} />} />
+          {user.role !== "student" && <Route path="/knowledge/chat" element={<KnowledgeChatPage />} />}
+          {user.role !== "student" && <Route path="/knowledge/sources/:documentId/:ordinal" element={<KnowledgeSourcePage />} />}
           <Route path="/curriculum/programs/:programId" element={<ProgramVersionsPage />} />
           <Route path="/curriculum/versions/:versionId" element={<ProgramCoursesPage />} />
           <Route path="/curriculum/versions/:versionId/courses/:courseId/outcomes" element={<CourseOutcomesPage />} />
@@ -155,6 +167,7 @@ export function App() {
           <Route path="/curriculum/versions/:versionId/clo-plo-matrix" element={<CloPloMatrixPage />} />
           <Route path="/curriculum/versions/:versionId/validation" element={<DataValidationPage />} />
           {user.role !== "student" && <Route path="/accreditation/frameworks/:frameworkId" element={<AccreditationFrameworkDetailPage />} />}
+          {user.role === "admin" && <Route path="/admin/knowledge" element={<KnowledgeBasePage />} />}
           {user.role === "admin" && <Route path="/admin/users" element={<AdminUsersPage />} />}
           {allowedModules.map((module) => <Route key={module.id} path={module.route} element={
             module.id === "curriculum"

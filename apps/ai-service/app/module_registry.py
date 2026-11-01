@@ -1,8 +1,7 @@
-"""AI registry for the SV4 and SV5 modules; Curriculum intentionally has no AI."""
+"""Implemented AI modules. Curriculum itself has no AI; SV5 reads its public boundary."""
 
 MODULES = {
-    "accreditation": "modules.sv4.accreditation.ai",
-    "reporting": "modules.sv5.reporting.ai",
+    "knowledge": "modules.sv5.knowledge.ai",
 }
 
 MODULE_IDS = tuple(MODULES)

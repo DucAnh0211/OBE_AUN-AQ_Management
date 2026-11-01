@@ -28,6 +28,13 @@
     <Project Path="modules/sv4/accreditation/backend/tests/ObeAunQa.Modules.Accreditation.Tests.csproj" />
   </Folder>
   <Folder Name="/modules/sv5/" />
+  <Folder Name="/modules/sv5/knowledge/" />
+  <Folder Name="/modules/sv5/knowledge/backend/">
+    <Project Path="modules/sv5/knowledge/backend/ObeAunQa.Modules.Knowledge.csproj" />
+  </Folder>
+  <Folder Name="/modules/sv5/knowledge/backend/tests/">
+    <Project Path="modules/sv5/knowledge/backend/tests/ObeAunQa.Modules.Knowledge.Tests.csproj" />
+  </Folder>
   <Folder Name="/modules/sv5/reporting/" />
   <Folder Name="/modules/sv5/reporting/backend/">
     <Project Path="modules/sv5/reporting/backend/ObeAunQa.Modules.Reporting.csproj" />

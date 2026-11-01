@@ -1,3 +1,4 @@
+using ObeAunQa.Modules.Knowledge;
 using ObeAunQa.Modules.Accreditation;
 using ObeAunQa.Modules.Curriculum;
 using ObeAunQa.Modules.Identity;
@@ -31,12 +32,13 @@ builder.Services
     .AddIdentityModule(builder.Configuration)
     .AddCurriculumModule(builder.Configuration)
     .AddAccreditationModule(builder.Configuration)
-    .AddReportingModule(builder.Configuration);
+    .AddReportingModule(builder.Configuration)
+    .AddKnowledgeModule(builder.Configuration);
 
 var app = builder.Build();
 
 app.Use(async (context, next) => {
-    if (context.Request.Path.StartsWithSegments("/api/reporting"))
+    if (context.Request.Path.StartsWithSegments("/api/reporting") || context.Request.Path.StartsWithSegments("/api/knowledge"))
         context.Response.OnStarting(() => {
             context.Response.Headers.CacheControl = "no-store";
             return Task.CompletedTask;
@@ -91,6 +93,7 @@ app.MapCurriculumModule();
 app.MapAccreditationModule();
 app.MapReportingModule();
 app.MapIdentityModule();
+app.MapKnowledgeModule();
 
 app.Run();
 

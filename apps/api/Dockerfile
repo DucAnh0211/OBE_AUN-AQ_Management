@@ -9,6 +9,8 @@ COPY modules/common/identity/backend/ObeAunQa.Modules.Identity.csproj modules/co
 COPY modules/sv4/accreditation/backend/ObeAunQa.Modules.Accreditation.csproj modules/sv4/accreditation/backend/
 COPY modules/sv5/reporting/backend/ObeAunQa.Modules.Reporting.csproj modules/sv5/reporting/backend/
 
+COPY modules/sv5/knowledge/backend/ObeAunQa.Modules.Knowledge.csproj modules/sv5/knowledge/backend/
+
 RUN dotnet restore apps/api/ObeAunQa.Api.csproj
 
 COPY apps/api/ apps/api/
@@ -17,6 +19,7 @@ COPY modules/common/curriculum/backend/ modules/common/curriculum/backend/
 COPY modules/common/identity/backend/ modules/common/identity/backend/
 COPY modules/sv4/accreditation/backend/ modules/sv4/accreditation/backend/
 COPY modules/sv5/reporting/backend/ modules/sv5/reporting/backend/
+COPY modules/sv5/knowledge/backend/ modules/sv5/knowledge/backend/
 
 RUN dotnet publish apps/api/ObeAunQa.Api.csproj \
     --configuration Release \

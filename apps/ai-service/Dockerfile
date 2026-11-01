@@ -5,6 +5,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends tesseract-ocr tesseract-ocr-vie tesseract-ocr-eng \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY apps/ai-service/requirements.txt ./requirements.txt
 RUN pip install \
     --no-cache-dir \
@@ -13,6 +17,7 @@ RUN pip install \
     --requirement requirements.txt
 
 COPY apps/ai-service/app/ ./app/
+COPY modules/sv5/knowledge/ai/ ./modules/sv5/knowledge/ai/
 
 RUN useradd --create-home --uid 10001 appuser \
     && chown -R appuser:appuser /app

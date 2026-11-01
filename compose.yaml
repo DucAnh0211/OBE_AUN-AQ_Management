@@ -47,6 +47,12 @@ services:
         Host=db;Port=5432;Database=${POSTGRES_DB:-obe_management};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       Cors__AllowedOrigins__0: http://localhost:5173
       Cors__AllowedOrigins__1: ${CORS_ORIGIN:-http://localhost:8080}
+      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_DOCKER_ENDPOINT:-http://minio:9000}
+      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-obe-knowledge}
+      OBJECT_STORAGE_ACCESS_KEY: ${OBJECT_STORAGE_ACCESS_KEY:-minioadmin}
+      OBJECT_STORAGE_SECRET_KEY: ${OBJECT_STORAGE_SECRET_KEY:-change_minio_password}
+      AI_SERVICE_URL: http://ai:8000
+      AI_SERVICE_KEY: ${AI_SERVICE_KEY:-}
       Jwt__Issuer: ObeAunQa.Api
       Jwt__Audience: ObeAunQa.Web
       Jwt__SigningKey: ${JWT_SIGNING_KEY:?Set JWT_SIGNING_KEY in .env}
@@ -95,14 +101,36 @@ services:
       start_period: 10s
       retries: 6
 
+  minio:
+    profiles: ["storage"]
+    image: ${MINIO_IMAGE:-minio/minio:RELEASE.2025-09-07T16-13-09Z}
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${OBJECT_STORAGE_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${OBJECT_STORAGE_SECRET_KEY:-change_minio_password}
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+
   ai:
     profiles: ["ai"]
     build:
       context: .
       dockerfile: apps/ai-service/Dockerfile
+    environment:
+      AI_SERVICE_KEY: ${AI_SERVICE_KEY:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      CHAT_MODEL: ${CHAT_MODEL:-gpt-4.1-mini}
+      RERANK_MODEL: ${RERANK_MODEL:-gpt-4.1-mini}
+      DOTNET_API_URL: http://api:8080
+      OCR_LANGUAGES: ${OCR_LANGUAGES:-vie+eng}
     restart: unless-stopped
     ports:
-      - "${AI_PORT:-8000}:8000"
+      - "127.0.0.1:${AI_PORT:-8000}:8000"
     healthcheck:
       test:
         - CMD
@@ -118,3 +146,4 @@ services:
 
 volumes:
   postgres_data:
+  minio_data:

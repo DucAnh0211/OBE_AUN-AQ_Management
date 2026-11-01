@@ -22,6 +22,15 @@ public static class AccreditationModule
         services.AddDbContext<AccreditationDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("Postgres"), p => p.MigrationsHistoryTable("__EFMigrationsHistory", "accreditation")));
         services.AddScoped<IAccreditationRepository, EfAccreditationRepository>();
         services.AddScoped<AccreditationService>();
+        services.Configure<DocumentStorageOptions>(o => {
+            o.Endpoint = configuration["OBJECT_STORAGE_ENDPOINT"] ?? "";
+            o.Bucket = configuration["OBJECT_STORAGE_BUCKET"] ?? "";
+            o.AccessKey = configuration["OBJECT_STORAGE_ACCESS_KEY"] ?? "";
+            o.SecretKey = configuration["OBJECT_STORAGE_SECRET_KEY"] ?? "";
+            o.Secure = bool.TryParse(configuration["OBJECT_STORAGE_SECURE"], out var secure) && secure;
+        });
+        services.AddScoped<IDocumentLibrary, MinioDocumentLibrary>();
+        services.AddScoped<IDocumentCatalog, EfDocumentCatalog>();
         services.AddExceptionHandler<AccreditationExceptionHandler>();
         return services;
     }

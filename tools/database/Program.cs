@@ -1,3 +1,4 @@
+using ObeAunQa.Modules.Knowledge.Infrastructure;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -25,8 +26,10 @@ await using var accreditation = new AccreditationDbContext(new DbContextOptionsB
     p => p.MigrationsHistoryTable("__EFMigrationsHistory", "accreditation")).Options);
 await using var identity = new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().UseNpgsql(connection,
     p => p.MigrationsHistoryTable("__EFMigrationsHistory", "security")).Options);
+await using var knowledge = new KnowledgeDbContext(new DbContextOptionsBuilder<KnowledgeDbContext>().UseNpgsql(connection,
+    p => p.MigrationsHistoryTable("__EFMigrationsHistory", "knowledge")).Options);
 // Identity assignments reference Curriculum; always create Curriculum first.
-var contexts = new (DbContext Context, string Schema)[] { (curriculum, "curriculum"), (reporting, "reporting"), (accreditation, "accreditation"), (identity, "security") };
+var contexts = new (DbContext Context, string Schema)[] { (curriculum, "curriculum"), (reporting, "reporting"), (accreditation, "accreditation"), (identity, "security"), (knowledge, "knowledge") };
 var expected = JsonSerializer.Deserialize<Dictionary<string, string>>(Resource("LegacySchemaFingerprints.json"))!;
 var fingerprintSql = LegacySchemaFingerprint.Query;
 var baselineSchemas = new HashSet<string>();
