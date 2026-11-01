@@ -324,6 +324,67 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ObeAunQa.Modules.Accreditation.Domain.Entities.SourceDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Bucket")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DisabledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("DisabledBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("character varying(240)");
+
+                    b.Property<string>("ObjectKey")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Sha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Bucket", "ObjectKey")
+                        .IsUnique();
+
+                    b.ToTable("source_documents", "accreditation");
+                });
+
             modelBuilder.Entity("ObeAunQa.Modules.Accreditation.Domain.Entities.AunCriterion", b =>
                 {
                     b.HasOne("ObeAunQa.Modules.Accreditation.Domain.Entities.AunFramework", "Framework")

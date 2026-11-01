@@ -11,6 +11,7 @@ internal sealed class AccreditationExceptionHandler : IExceptionHandler
     {
         ProblemDetails? problem = exception switch
         {
+            DocumentException document => new ProblemDetails { Status=document.StatusCode, Title="Tài liệu", Detail=document.Message },
             AccreditationValidationException validation => new HttpValidationProblemDetails(validation.Errors.ToDictionary(x=>x.Key,x=>x.Value))
             { Status=400, Title="Dữ liệu AUN-QA không hợp lệ", Detail=validation.Message, Type="https://httpstatuses.com/400" },
             AccreditationNotFoundException notFound => new ProblemDetails

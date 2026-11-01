@@ -177,3 +177,7 @@ không có quyền Reporting theo phạm vi hiện tại trên `main`. Mã báo 
 scheme riêng chỉ có quyền trên chương trình được cấu hình; không cấp quyền vào
 Curriculum/Identity/Accreditation. Giao diện admin tự dùng phiên đăng nhập chung,
 không yêu cầu cấp thêm mã báo cáo.
+
+## Knowledge Base (01/11/2026)
+
+Thêm KnowledgeDbContext (schema knowledge) cho job và chunks/vectors; metadata bản gốc thuộc AccreditationDbContext. Migration AddSourceDocuments, InitialKnowledge, AddOcrPreference bổ sung bảng; không thay initial migration đã áp dụng. Công cụ database xử lý đủ 5 contexts. Toàn bộ OCR/parse/chunk/embedding chạy ở Python qua API; .NET giữ authorization, file/metadata, orchestration và EF persistence. Xem [KNOWLEDGE_BASE.md](KNOWLEDGE_BASE.md).

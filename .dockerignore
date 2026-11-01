@@ -27,3 +27,4 @@ tmp
 documents
 outputs
 *.log
+**/*.dump

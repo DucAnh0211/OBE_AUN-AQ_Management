@@ -2,7 +2,7 @@
 from pathlib import Path
 import re
 
-roots=[Path(p) for p in ('modules/common/curriculum/backend','modules/sv5/reporting/backend','modules/common/identity/backend','modules/sv4/accreditation/backend')]
+roots=[Path(p) for p in ('modules/common/curriculum/backend','modules/sv5/reporting/backend','modules/common/identity/backend','modules/sv4/accreditation/backend','modules/sv5/knowledge/backend')]
 count=0
 for root in roots:
     for area in ('domain','application'):
@@ -25,3 +25,10 @@ compose = Path('compose.yaml').read_text(encoding='utf-8')
 assert 'docker-entrypoint-initdb.d' not in compose
 assert 'database-init:' in compose and 'service_completed_successfully' in compose
 print('PASS database lifecycle: EF initialization service; no legacy SQL/bootstrap mounts')
+
+agent = Path('modules/sv5/knowledge/ai/agent')
+for name in ('prompts.py', 'schemas.py', 'graph.py', 'runtime.py', 'checkpoints.py', 'routes.py', 'tools/curriculum.py', 'tools/documents.py'):
+    assert (agent / name).is_file(), name
+assert not Path('apps/ai-service/app/knowledge').exists(), 'AI business code belongs to SV5'
+assert 'COPY modules/sv5/knowledge/ai/' in Path('apps/ai-service/Dockerfile').read_text()
+print('PASS AI ownership: SV5 owns the agent, prompts, tools and ingestion; apps/ai-service hosts deployment')

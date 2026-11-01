@@ -6,6 +6,7 @@
     <ProjectReference Include="..\..\modules\common\identity\backend\ObeAunQa.Modules.Identity.csproj" />
     <ProjectReference Include="..\..\modules\sv4\accreditation\backend\ObeAunQa.Modules.Accreditation.csproj" />
     <ProjectReference Include="..\..\modules\sv5\reporting\backend\ObeAunQa.Modules.Reporting.csproj" />
+      <ProjectReference Include="../../modules/sv5/knowledge/backend/ObeAunQa.Modules.Knowledge.csproj" />
   </ItemGroup>
 
   <ItemGroup>

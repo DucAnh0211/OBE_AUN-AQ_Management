@@ -29,6 +29,16 @@
 
 * { box-sizing: border-box; }
 
+.app-shell.app-shell--sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
+.app-sidebar[hidden] { display: none; }
+.app-shell--sidebar-collapsed .workspace-bar { display: flex; min-height: 48px; }
+.sidebar-collapse { position: absolute; right: 8px; top: 8px; display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid #ffffff24; background: #ffffff0c; color: #dbe9e1; border-radius: 6px; z-index: 1; }
+.sidebar-collapse:hover { background: #ffffff22; }
+.workspace-bar__leading { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.workspace-bar__leading > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-reopen { display: grid; place-items: center; width: 30px; height: 30px; flex-shrink: 0; border: 0; border-radius: 6px; background: transparent; color: #496a5c; }
+.sidebar-reopen:hover { background: #eaf0ec; }
+
 html {
   min-width: 320px;
   min-height: 100%;

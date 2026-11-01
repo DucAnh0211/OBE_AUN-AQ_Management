@@ -6,6 +6,7 @@ COPY modules/common/curriculum/backend/ modules/common/curriculum/backend/
 COPY modules/common/identity/backend/ modules/common/identity/backend/
 COPY modules/sv4/accreditation/backend/ modules/sv4/accreditation/backend/
 COPY modules/sv5/reporting/backend/ modules/sv5/reporting/backend/
+COPY modules/sv5/knowledge/backend/ modules/sv5/knowledge/backend/
 COPY tools/database/ tools/database/
 RUN dotnet publish tools/database/ObeAunQa.Database.csproj --configuration Release --output /app/publish
 

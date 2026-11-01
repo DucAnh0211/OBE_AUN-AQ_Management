@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><DefaultItemExcludes>$(DefaultItemExcludes);tests/**;tests\**</DefaultItemExcludes></PropertyGroup>
+  <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../../sv4/accreditation/backend/ObeAunQa.Modules.Accreditation.csproj" />
+    <ProjectReference Include="../../../common/curriculum/backend/ObeAunQa.Modules.Curriculum.csproj" />
+    <ProjectReference Include="../../../common/identity/backend/ObeAunQa.Modules.Identity.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.14"><PrivateAssets>all</PrivateAssets><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets></PackageReference>
+  </ItemGroup>
+</Project>

@@ -127,3 +127,7 @@ dotnet test ObeAunQa.slnx
 Set-Location apps/web
 npm run build
 ```
+
+## Knowledge Base cho admin
+
+Đã có upload tài liệu gốc lên MinIO, OCR PDF scan, chunking và embedding bằng Python, trạng thái xử lý và xem chunks trên UI. .NET quản lý quyền, gọi Python API và lưu kết quả bằng EF Core. Xem [hướng dẫn chạy Knowledge Base](docs/KNOWLEDGE_BASE.md), bao gồm chạy riêng MinIO Docker và FE/BE/Python bằng lệnh.

@@ -37,6 +37,7 @@ Thumbs.db
 tmp/
 .npm-cache/
 reporting-access.local.json
+*.dump
 
 scripts
 outputs
