@@ -28,8 +28,9 @@ function setSession(session: SessionResponse | null) {
 
 async function parseError(response: Response): Promise<Error> {
   try {
-    const problem = await response.json() as { detail?: string; title?: string };
-    return new Error(problem.detail ?? problem.title ?? `HTTP ${response.status}`);
+    const problem = await response.json() as { detail?: string; title?: string; errors?: Record<string, string[]> };
+    const validation = Object.values(problem.errors ?? {}).flat().filter(value => typeof value === "string").slice(0, 4).join(" ");
+    return new Error(validation || problem.detail || problem.title || `HTTP ${response.status}`);
   } catch {
     return new Error(`Yêu cầu thất bại (HTTP ${response.status}).`);
   }
@@ -105,7 +106,7 @@ export async function authenticatedFetch(
 
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
-  if (init.body) headers.set("Content-Type", "application/json");
+  if (init.body && !(init.body instanceof FormData)) headers.set("Content-Type", "application/json");
   const response = await authenticatedFetch(`${apiBaseUrl}${path}`, { ...init, headers });
   if (!response.ok) throw await parseError(response);
   if (response.status === 204) return undefined as T;

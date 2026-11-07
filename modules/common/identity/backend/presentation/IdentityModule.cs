@@ -35,6 +35,7 @@ public static class IdentityModule
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser,HttpCurrentUser>();
         services.AddScoped<IAccessControlService,AccessControlService>();
+        services.AddScoped<IAcademicStaffDirectory, AcademicStaffDirectory>();
         services.AddDbContext<IdentityDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("Postgres"), p => p.MigrationsHistoryTable("__EFMigrationsHistory", "security")));
         services.AddScoped<IIdentityRepository, IdentityRepository>();
         services.AddScoped<IAssignmentCloneService>(sp=>sp.GetRequiredService<IIdentityRepository>());

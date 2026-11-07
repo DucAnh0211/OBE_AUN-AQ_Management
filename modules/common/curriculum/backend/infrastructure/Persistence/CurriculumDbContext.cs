@@ -44,6 +44,7 @@ public partial class CurriculumDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasSequence<long>("course_offering_codes", "curriculum").StartsAt(100000).IncrementsBy(1).HasMax(999999);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CurriculumDbContext).Assembly,
             type => type.Namespace == "ObeAunQa.Modules.Curriculum.Infrastructure");

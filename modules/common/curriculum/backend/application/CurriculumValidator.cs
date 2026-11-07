@@ -85,11 +85,10 @@ public static partial class CurriculumValidator
     {
         var errors = new Dictionary<string, string[]>();
         var normalizedCode = NormalizeOptional(institutionalCode)?.ToUpperInvariant();
-        if (normalizedCode is not null &&
-            (normalizedCode.Length > 50 || !CourseCodePattern().IsMatch(normalizedCode)))
+        if (normalizedCode is null || !CourseCodePattern().IsMatch(normalizedCode))
         {
             errors["institutionalCode"] =
-                ["Mã học phần chỉ gồm chữ, số, dấu chấm, gạch dưới hoặc gạch ngang và tối đa 50 ký tự."];
+                ["Mã học phần là bắt buộc và phải có đúng 6 chữ số từ 0 đến 9."];
         }
 
         var normalizedName = NormalizeRequiredText(name, "name", 2, 250, errors);
@@ -111,7 +110,7 @@ public static partial class CurriculumValidator
 
         ThrowIfInvalid(errors);
         return new NormalizedCourse(
-            normalizedCode,
+            normalizedCode!,
             normalizedName,
             credits,
             normalizedSemester,
@@ -265,6 +264,6 @@ public static partial class CurriculumValidator
     [GeneratedRegex("^[A-Z0-9][A-Z0-9._-]*$", RegexOptions.CultureInvariant)]
     private static partial Regex CodePattern();
 
-    [GeneratedRegex("^[A-Z0-9][A-Z0-9._-]*$", RegexOptions.CultureInvariant)]
+    [GeneratedRegex("^[0-9]{6}$", RegexOptions.CultureInvariant)]
     private static partial Regex CourseCodePattern();
 }

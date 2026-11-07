@@ -35,12 +35,12 @@ public sealed class CurriculumServiceTests
 
         var result = await service.CreateProgramCourseAsync(
             1,
-            new CreateProgramCourseRequest(" cs101 ", "  Nhập môn lập trình ", 3, " Kỳ 1 ", null),
+            new CreateProgramCourseRequest(" 012345 ", "  Nhập môn lập trình ", 3, " Kỳ 1 ", null),
             CancellationToken.None);
 
         Assert.Equal(10, result.Id);
         Assert.NotNull(repository.ReceivedCourse);
-        Assert.Equal("CS101", repository.ReceivedCourse.InstitutionalCode);
+        Assert.Equal("012345", repository.ReceivedCourse.InstitutionalCode);
         Assert.Equal("Kỳ 1", repository.ReceivedCourse.Semester);
     }
 

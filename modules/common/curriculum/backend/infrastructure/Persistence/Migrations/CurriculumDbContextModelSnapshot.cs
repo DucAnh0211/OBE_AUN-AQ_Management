@@ -22,6 +22,124 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence("course_offering_codes", "curriculum")
+                .StartsAt(100000L)
+                .HasMax(999999L);
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.AcademicClass", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AcademicPeriod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<long>("ProgramVersionId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramVersionId", "AcademicPeriod", "Code")
+                        .IsUnique();
+
+                    b.ToTable("academic_classes", "curriculum");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.AcademicStudent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("StudentCode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<long>("UniversityId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UniversityId", "StudentCode")
+                        .IsUnique();
+
+                    b.ToTable("academic_students", "curriculum");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.AssessmentComponent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("MaxScore")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<long>("ProgramVersionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Weight")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramVersionId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("assessment_components", "curriculum", t =>
+                        {
+                            t.HasCheckConstraint("assessment_max_score_positive", "\"MaxScore\" > 0 AND \"MaxScore\" <= 1000");
+
+                            t.HasCheckConstraint("assessment_weight_positive", "\"Weight\" > 0 AND \"Weight\" <= 100");
+                        });
+                });
+
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.Clo", b =>
                 {
                     b.Property<long>("Id")
@@ -121,8 +239,13 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasDefaultValueSql("now()");
 
                     b.Property<string>("InstitutionalCode")
-                        .HasColumnType("text")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)")
                         .HasColumnName("institutional_code");
+
+                    b.Property<string>("LegacyInstitutionalCode")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -146,7 +269,108 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("(institutional_code IS NOT NULL)");
 
-                    b.ToTable("courses", "curriculum");
+                    b.ToTable("courses", "curriculum", t =>
+                        {
+                            t.HasCheckConstraint("course_code_six_digits", "institutional_code ~ '^[0-9]{6}$'");
+                        });
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.CourseEnrollment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AcademicPeriod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("OfferingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProgramCourseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.Property<long>("StudentId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramCourseId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("OfferingId", "StudentId")
+                        .IsUnique();
+
+                    b.HasIndex("OfferingId", "ProgramCourseId", "AcademicPeriod");
+
+                    b.ToTable("course_enrollments", "curriculum");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.CourseOffering", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("AcademicClassId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("AcademicPeriod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)")
+                        .HasDefaultValueSql("lpad(nextval('curriculum.course_offering_codes')::text, 6, '0')");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("LecturerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProgramCourseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProgramVersionId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("LecturerId");
+
+                    b.HasIndex("AcademicClassId", "ProgramCourseId")
+                        .IsUnique();
+
+                    b.HasIndex("ProgramCourseId", "ProgramVersionId");
+
+                    b.HasIndex("AcademicClassId", "ProgramVersionId", "AcademicPeriod");
+
+                    b.ToTable("course_offerings", "curriculum", t =>
+                        {
+                            t.HasCheckConstraint("offering_code_six_digits", "\"Code\" ~ '^[0-9]{6}$'");
+                        });
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.CoursePlo", b =>
@@ -211,6 +435,48 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("course_plos", "curriculum");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.GradeChange", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ActorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("ComponentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("EnrollmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal?>("NewScore")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<decimal?>("PreviousScore")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComponentId");
+
+                    b.HasIndex("EnrollmentId", "ChangedAt");
+
+                    b.ToTable("grade_changes", "curriculum");
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.ImportBatch", b =>
@@ -409,7 +675,9 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnName("archived_at");
 
                     b.Property<string>("CourseCodeSnapshot")
-                        .HasColumnType("text")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)")
                         .HasColumnName("course_code_snapshot");
 
                     b.Property<string>("CourseCodeSourceValue")
@@ -445,6 +713,9 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer")
                         .HasColumnName("display_order");
+
+                    b.Property<string>("LegacyCourseCodeSnapshot")
+                        .HasColumnType("text");
 
                     b.Property<long>("ProgramVersionId")
                         .HasColumnType("bigint")
@@ -490,6 +761,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
                     b.ToTable("program_courses", "curriculum", t =>
                         {
+                            t.HasCheckConstraint("course_snapshot_code_six_digits", "course_code_snapshot ~ '^[0-9]{6}$'");
+
                             t.HasCheckConstraint("program_courses_credits_check", "credits > 0");
 
                             t.HasCheckConstraint("program_courses_dataset_status_ck", "dataset_status IN ('draft','finalized','archived')");
@@ -523,6 +796,9 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("dataset_status")
                         .HasDefaultValueSql("'finalized'::text");
+
+                    b.Property<int>("GradeSchemeRevision")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsCurrent")
                         .ValueGeneratedOnAdd()
@@ -674,6 +950,34 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.StudentGrade", b =>
+                {
+                    b.Property<long>("EnrollmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ComponentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Score")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("EnrollmentId", "ComponentId");
+
+                    b.HasIndex("ComponentId");
+
+                    b.ToTable("student_grades", "curriculum", t =>
+                        {
+                            t.HasCheckConstraint("student_grade_nonnegative", "\"Score\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.University", b =>
                 {
                     b.Property<long>("Id")
@@ -750,6 +1054,33 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.AcademicClass", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.ProgramVersion", null)
+                        .WithMany()
+                        .HasForeignKey("ProgramVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.AcademicStudent", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.University", null)
+                        .WithMany()
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.AssessmentComponent", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.ProgramVersion", null)
+                        .WithMany()
+                        .HasForeignKey("ProgramVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.Clo", b =>
                 {
                     b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.ProgramCourse", "ProgramCourse")
@@ -794,6 +1125,51 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Navigation("University");
                 });
 
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.CourseEnrollment", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.ProgramCourse", null)
+                        .WithMany()
+                        .HasForeignKey("ProgramCourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.AcademicStudent", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.CourseOffering", null)
+                        .WithMany()
+                        .HasForeignKey("OfferingId", "ProgramCourseId", "AcademicPeriod")
+                        .HasPrincipalKey("Id", "ProgramCourseId", "AcademicPeriod")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.CourseOffering", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.ProgramCourse", "ProgramCourse")
+                        .WithMany()
+                        .HasForeignKey("ProgramCourseId", "ProgramVersionId")
+                        .HasPrincipalKey("Id", "ProgramVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.AcademicClass", "AcademicClass")
+                        .WithMany()
+                        .HasForeignKey("AcademicClassId", "ProgramVersionId", "AcademicPeriod")
+                        .HasPrincipalKey("Id", "ProgramVersionId", "AcademicPeriod")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AcademicClass");
+
+                    b.Navigation("ProgramCourse");
+                });
+
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.CoursePlo", b =>
                 {
                     b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.ProgressionCode", "ProgressionCodeNavigation")
@@ -829,6 +1205,21 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Navigation("ProgressionCodeNavigation");
 
                     b.Navigation("WeightCodeNavigation");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.GradeChange", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.AssessmentComponent", null)
+                        .WithMany()
+                        .HasForeignKey("ComponentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.CourseEnrollment", null)
+                        .WithMany()
+                        .HasForeignKey("EnrollmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.ImportBatch", b =>
@@ -935,6 +1326,21 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasConstraintName("source_course_rows_import_batch_id_fkey");
 
                     b.Navigation("ImportBatch");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.StudentGrade", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.AssessmentComponent", null)
+                        .WithMany()
+                        .HasForeignKey("ComponentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.CourseEnrollment", null)
+                        .WithMany()
+                        .HasForeignKey("EnrollmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.Clo", b =>

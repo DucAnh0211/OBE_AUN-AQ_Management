@@ -6,7 +6,8 @@ public class Course
 
     public long UniversityId { get; set; }
 
-    public string? InstitutionalCode { get; set; }
+    public string InstitutionalCode { get; set; } = null!;
+    public string? LegacyInstitutionalCode { get; set; }
 
     public string Name { get; set; } = null!;
 

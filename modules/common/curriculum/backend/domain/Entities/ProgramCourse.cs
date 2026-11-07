@@ -20,7 +20,8 @@ public class ProgramCourse
 
     public string QualityFlags { get; set; } = null!;
 
-    public string? CourseCodeSnapshot { get; set; }
+    public string CourseCodeSnapshot { get; set; } = null!;
+    public string? LegacyCourseCodeSnapshot { get; set; }
 
     public string CourseNameSnapshot { get; set; } = null!;
 

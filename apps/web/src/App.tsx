@@ -11,6 +11,9 @@ import { ChangePasswordPage, LoginPage } from "./auth/AuthPages";
 import { useAuth } from "./auth/AuthContext";
 import { CourseOutcomesPage } from "./curriculum/CourseOutcomesPage";
 import { ProgramCoursesPage, ProgramVersionsPage } from "./curriculum/CurriculumPages";
+import { SubjectOfferingsPage } from "../../../modules/common/curriculum/frontend/pages/SubjectOfferingsPage";
+import { AcademicClassesPage, AcademicClassPage } from "../../../modules/common/curriculum/frontend/pages/AcademicClassPages";
+import { AssessmentSchemePage, CourseStudentsPage, StudentGradesPage } from "../../../modules/common/curriculum/frontend/pages/AcademicPages";
 import { UniversitiesPage, UniversityProgramsPage } from "./curriculum/UniversityPages";
 import {
   CloPloMatrixPage,
@@ -75,6 +78,12 @@ export function App() {
         <Route path="/curriculum/universities/:universityId" element={<UniversityProgramsPage />} />
         <Route path="/curriculum/programs/:programId" element={<ProgramVersionsPage />} />
         <Route path="/curriculum/versions/:versionId" element={<ProgramCoursesPage />} />
+        {canChat && <Route path="/curriculum/versions/:versionId/assessment-scheme" element={<AssessmentSchemePage isAdmin={isAdmin} />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/courses/:courseId/offerings" element={<SubjectOfferingsPage />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/classes" element={<AcademicClassesPage isAdmin={isAdmin} />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/classes/:classId" element={<AcademicClassPage isAdmin={isAdmin} />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/offerings/:offeringId/students" element={<CourseStudentsPage />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/offerings/:offeringId/students/:enrollmentId/grades" element={<StudentGradesPage />} />}
         <Route path="/curriculum/versions/:versionId/courses/:courseId/outcomes" element={<CourseOutcomesPage />} />
         <Route path="/curriculum/versions/:versionId/plos" element={<PloListPage />} />
         <Route path="/curriculum/versions/:versionId/course-plo-matrix" element={<CoursePloMatrixPage />} />

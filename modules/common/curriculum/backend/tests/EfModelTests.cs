@@ -47,6 +47,20 @@ public sealed class EfModelTests
     }
 
     [Fact]
+    public void GradebooksBelongToOfferingAndOfferingReusesCatalogMappings()
+    {
+        using var db = Context();
+        var enrollment = db.Model.FindEntityType(typeof(CourseEnrollment))!;
+        Assert.Contains(enrollment.GetIndexes(), i => i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual(new[] { "OfferingId", "StudentId" }));
+        Assert.Contains(enrollment.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(CourseOffering) && fk.Properties.Select(p => p.Name).SequenceEqual(new[] { "OfferingId", "ProgramCourseId", "AcademicPeriod" }));
+        var offering = db.Model.FindEntityType(typeof(CourseOffering))!;
+        Assert.Contains(offering.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(ProgramCourse) && fk.Properties.Select(p => p.Name).SequenceEqual(new[] { "ProgramCourseId", "ProgramVersionId" }));
+        Assert.Contains(offering.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(AcademicClass) && fk.Properties.Select(p => p.Name).SequenceEqual(new[] { "AcademicClassId", "ProgramVersionId", "AcademicPeriod" }));
+        Assert.Contains(offering.GetIndexes(), i => i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual(new[] { "Code" }));
+        Assert.Contains("nextval", offering.FindProperty("Code")!.GetDefaultValueSql());
+    }
+
+    [Fact]
     public void ModelMatchesCommittedMigrations()
     {
         using var db = Context();

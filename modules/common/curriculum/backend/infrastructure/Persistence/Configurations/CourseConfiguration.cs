@@ -10,7 +10,7 @@ internal sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
     {
         entity.HasKey(e => e.Id).HasName("courses_pkey");
 
-        entity.ToTable("courses", "curriculum");
+        entity.ToTable("courses", "curriculum", t => t.HasCheckConstraint("course_code_six_digits", "institutional_code ~ '^[0-9]{6}$'"));
 
         entity.HasIndex(e => new { e.UniversityId, e.InstitutionalCode }, "courses_university_id_institutional_code_uq")
             .IsUnique()
@@ -22,7 +22,7 @@ internal sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
         entity.Property(e => e.CreatedAt)
             .HasDefaultValueSql("now()")
             .HasColumnName("created_at");
-        entity.Property(e => e.InstitutionalCode).HasColumnName("institutional_code");
+        entity.Property(e => e.InstitutionalCode).HasColumnName("institutional_code").HasMaxLength(6).IsRequired();
         entity.Property(e => e.Name).HasColumnName("name");
         entity.Property(e => e.UniversityId).HasColumnName("university_id");
         entity.Property(e => e.UpdatedAt)
