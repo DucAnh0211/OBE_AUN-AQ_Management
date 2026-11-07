@@ -26,23 +26,26 @@ public sealed class CurriculumDemoSeeder(CurriculumDbContext db)
         var metadata = first.GetProperty("metadata");
         var workbook = new SourceDocument { FileName = Text(metadata, "source_workbook")!, FileKind = "xlsx", Sha256 = Text(m1.RootElement, "workbookSha256")! };
         var syllabus = new SourceDocument { FileName = Text(metadata, "source_course_syllabus")!, FileKind = "docx", Sha256 = Text(m1.RootElement, "syllabusSha256")! };
-        var program = new CurriculumProgram { Code = "CS", Name = "Khoa học máy tính" };
+        var university = new University { Code = "TRUONG-01", Name = "Trường chưa đặt tên" };
+        db.Universities.Add(university);
+        await db.SaveChangesAsync(ct);
+        var program = new CurriculumProgram { UniversityId = university.Id, Code = "CS", Name = "Khoa học máy tính" };
         db.Programs.Add(program);
         db.SourceDocuments.AddRange(workbook, syllabus);
         await db.SaveChangesAsync(ct);
 
-        var baseline = await AddVersionAsync(program.Id, first, m1.RootElement, workbook, syllabus, null, ct);
-        await AddVersionAsync(program.Id, v2.RootElement, m2.RootElement, workbook, syllabus, baseline, ct);
+        var baseline = await AddVersionAsync(program, first, m1.RootElement, workbook, syllabus, null, ct);
+        await AddVersionAsync(program, v2.RootElement, m2.RootElement, workbook, syllabus, baseline, ct);
         await new CurriculumDemoVerifier(db).VerifyAsync(ct);
         await transaction.CommitAsync(ct);
         return true;
     }
 
-    private async Task<ProgramVersion> AddVersionAsync(long programId, JsonElement data, JsonElement manifest,
+    private async Task<ProgramVersion> AddVersionAsync(CurriculumProgram program, JsonElement data, JsonElement manifest,
         SourceDocument workbook, SourceDocument syllabus, ProgramVersion? source, CancellationToken ct)
     {
         var isBaseline = source == null;
-        var version = new ProgramVersion { ProgramId = programId, VersionCode = Text(data.GetProperty("metadata"), "program_version")!,
+        var version = new ProgramVersion { ProgramId = program.Id, VersionCode = Text(data.GetProperty("metadata"), "program_version")!,
             DatasetStatus = isBaseline ? "finalized" : "draft", IsCurrent = isBaseline,
             PublishedAt = isBaseline ? DateTime.UtcNow : null, SourceVersionId = source?.Id };
         db.ProgramVersions.Add(version);
@@ -66,7 +69,7 @@ public sealed class CurriculumDemoSeeder(CurriculumDbContext db)
             var code = Text(item, "course_code_source_value")?.Trim();
             var course = new ProgramCourse {
                 ProgramVersionId = version.Id, SourceRow = row,
-                Course = original?.Course ?? new Course { Name = Text(item, "name")! },
+                Course = original?.Course ?? new Course { UniversityId = program.UniversityId, Name = Text(item, "name")! },
                 Credits = original?.Credits ?? item.GetProperty("credits").GetInt32(),
                 CourseCodeSourceValue = original?.CourseCodeSourceValue ?? Text(item, "course_code_source_value"),
                 SemesterSourceValue = original?.SemesterSourceValue ?? Text(item, "semester_source_value"),

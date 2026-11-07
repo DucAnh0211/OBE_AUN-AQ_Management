@@ -71,7 +71,7 @@ function OutcomeShell({ versionId, version, title, description, children, action
 }) {
   return <section className="admin-page">
     <div className="breadcrumbs"><Link to={`/curriculum/versions/${versionId}`}>Học phần</Link><span>/</span><span>{version?.versionCode ?? "…"}</span><span>/</span><span>{title}</span></div>
-    <div className="admin-heading"><div><span className="eyebrow">CHUẨN ĐẦU RA · {version?.versionCode ?? "…"}</span><h1>{title}</h1><p>{description}</p></div>{actions && <div className="admin-heading__actions">{actions}</div>}</div>
+    <div className="admin-heading"><div><span className="eyebrow">Chuẩn đầu ra · {version?.versionCode ?? "…"}</span><h1>{title}</h1><p>{description}</p></div>{actions && <div className="admin-heading__actions">{actions}</div>}</div>
     <VersionOutcomeNav versionId={versionId} />
     {children}
   </section>;
@@ -156,7 +156,7 @@ export function PloListPage() {
     catch (caught) { setError(messageOf(caught, "Không xóa được PLO.")); }
     finally { setBusy(false); }
   }
-  return <OutcomeShell versionId={versionId} version={version} title="Danh sách PLO" description={editable ? "Quản lý chuẩn đầu ra của phiên bản CTĐT đang ở bản nháp." : "Danh sách chuẩn đầu ra ở chế độ chỉ đọc."} actions={editable && <button className="button button--primary" onClick={() => setEditing("new")}>+ Thêm PLO</button>}>
+  return <OutcomeShell versionId={versionId} version={version} title="Danh sách PLO" description={editable ? "Quản lý chuẩn đầu ra của phiên bản CTĐT đang ở bản nháp." : "Danh sách chuẩn đầu ra ở chế độ chỉ đọc."} actions={editable && <button className="button button--primary" onClick={() => setEditing("new")}>Thêm PLO</button>}>
     <ScreenState loading={loading} error={error} empty={!plos.length} retry={() => void load()}>
       <div className="outcome-grid">{plos.map((plo, index) => <article className="outcome-panel" key={plo.id}>
         <div className="outcome-panel__index">{String(index + 1).padStart(2, "0")}</div>

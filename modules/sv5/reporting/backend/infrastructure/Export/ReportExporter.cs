@@ -132,6 +132,7 @@ public sealed class ReportExporter : IReportExporter
     }
 
     private static string[] Metadata(ReportDocument r) => [
+        $"Trường: {r.UniversityName ?? "Chưa ghi nhận"}",
         $"Chương trình: {r.ProgramCode} — {r.ProgramName}",
         $"Phiên bản: {r.VersionCode} (ID {r.VersionId}) • Trạng thái nguồn: {r.VersionStatus} • Bản báo cáo chưa phê duyệt",
         $"Mã báo cáo: {r.Id} • Người tạo: {r.CreatedBy}",

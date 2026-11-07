@@ -4,6 +4,11 @@ import type {
   AccreditationProblem,
   CreateFrameworkInput,
   CriterionInput,
+  DirectoryProgram,
+  DirectoryUniversity,
+  PagedResult,
+  ProgramAccreditation,
+  ProgramAccreditationInput,
   FrameworkImportInput,
   FrameworkSummary,
   FrameworkTree,
@@ -61,6 +66,18 @@ function query(values: Record<string, string | undefined>) {
 const base = "/api/accreditation";
 
 export const accreditationApi = {
+  directoryUniversities: (page: number, pageSize: number, search: string) =>
+    request<PagedResult<DirectoryUniversity>>(`${base}/directory/universities?${query({ page: String(page), pageSize: String(pageSize), q: search })}`),
+  directoryPrograms: (universityId: number, status: "accredited" | "all", page: number, pageSize: number, search: string) =>
+    request<PagedResult<DirectoryProgram>>(`${base}/directory/universities/${universityId}/programs?${query({ status, page: String(page), pageSize: String(pageSize), q: search })}`),
+  programAccreditations: (programId: number) =>
+    request<ProgramAccreditation[]>(`${base}/directory/programs/${programId}/accreditations`),
+  createProgramAccreditation: (programId: number, input: ProgramAccreditationInput) =>
+    request<ProgramAccreditation>(`${base}/programs/${programId}/accreditations`, { method: "POST", body: JSON.stringify(input) }),
+  updateProgramAccreditation: (id: number, input: ProgramAccreditationInput) =>
+    request<ProgramAccreditation>(`${base}/program-accreditations/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  deleteProgramAccreditation: (id: number) =>
+    request<void>(`${base}/program-accreditations/${id}`, { method: "DELETE" }),
   listFrameworks: (status = "", search = "") =>
     request<FrameworkSummary[]>(`${base}/frameworks?${query({ status, q: search })}`),
   getFramework: (id: number) => request<FrameworkSummary>(`${base}/frameworks/${id}`),

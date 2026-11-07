@@ -7,11 +7,13 @@ public interface IProgramRepository
         int pageSize,
         string? search,
         bool includeArchived,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        long? universityId = null);
 
     Task<ProgramResponse?> GetProgramAsync(long id, CancellationToken cancellationToken);
 
     Task<ProgramResponse> CreateProgramAsync(
+        long universityId,
         string code,
         string name,
         CancellationToken cancellationToken);

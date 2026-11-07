@@ -40,7 +40,8 @@ internal sealed class CurriculumWriteSession(CurriculumDbContext db)
     }
     private static CurriculumConflictException Conflict(PostgresException pg) => pg.ConstraintName switch
     {
-        "programs_code_key" => new("program_code_exists", "Mã chương trình đào tạo đã tồn tại."),
+        "universities_code_key" => new("university_code_exists", "Mã trường đã tồn tại."),
+        "programs_university_id_code_key" => new("program_code_exists", "Mã chương trình đào tạo đã tồn tại trong trường này."),
         "program_versions_program_id_version_code_key" => new("program_version_code_exists", "Mã phiên bản đã tồn tại trong chương trình đào tạo."),
         "program_courses_active_course_uq" => new("course_already_in_version", "Học phần đã tồn tại trong phiên bản chương trình đào tạo."),
         "plos_program_version_id_code_key" => new("plo_code_exists", "Mã PLO đã tồn tại trong phiên bản."),

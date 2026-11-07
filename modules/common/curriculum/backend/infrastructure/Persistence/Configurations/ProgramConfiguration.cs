@@ -12,7 +12,7 @@ internal sealed class ProgramConfiguration : IEntityTypeConfiguration<Program>
 
         entity.ToTable("programs", "curriculum");
 
-        entity.HasIndex(e => e.Code, "programs_code_key").IsUnique();
+        entity.HasIndex(e => new { e.UniversityId, e.Code }, "programs_university_id_code_key").IsUnique();
 
         entity.Property(e => e.Id)
             .UseIdentityAlwaysColumn()
@@ -23,8 +23,14 @@ internal sealed class ProgramConfiguration : IEntityTypeConfiguration<Program>
             .HasDefaultValueSql("now()")
             .HasColumnName("created_at");
         entity.Property(e => e.Name).HasColumnName("name");
+        entity.Property(e => e.UniversityId).HasColumnName("university_id");
         entity.Property(e => e.UpdatedAt)
             .HasDefaultValueSql("now()")
             .HasColumnName("updated_at");
+
+        entity.HasOne(d => d.University).WithMany(p => p.Programs)
+            .HasForeignKey(d => d.UniversityId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("programs_university_id_fkey");
     }
 }

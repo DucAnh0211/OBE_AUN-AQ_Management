@@ -353,7 +353,7 @@ export function AccreditationFrameworkDetailPage() {
   return <section className="admin-page">
     <div className="breadcrumbs"><Link to="/accreditation">Bộ tiêu chí AUN-QA</Link><span>/</span><span>{framework.code} · {framework.version}</span></div>
     <header className="workspace-heading">
-      <div><span className="eyebrow">CẤU TRÚC BỘ TIÊU CHÍ</span><h1>{framework.code} · {framework.version}</h1><p>{framework.sourceTitle}</p></div>
+      <div><span className="eyebrow">Cấu trúc bộ tiêu chí</span><h1>{framework.code} · {framework.version}</h1><p>{framework.sourceTitle}</p></div>
       {isAdmin && <div className="admin-heading__actions">{structureEditable && <button className="button button--ghost" type="button" onClick={() => setShowMetadata(true)}>Thông tin phiên bản</button>}{structureEditable && <button className="button button--primary" type="button" disabled={busy} onClick={() => void publish()}>Công bố</button>}{framework.status === "published" && <button className="button button--danger" type="button" disabled={busy} onClick={() => void retire()}>Ngừng sử dụng</button>}</div>}
     </header>
 

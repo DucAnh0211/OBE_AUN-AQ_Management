@@ -24,7 +24,7 @@ async function loadAssignmentOptions(user: AuthUser): Promise<{ current: number[
     curriculumApi.listPrograms(1, 100, "", false),
   ]);
   if (user.role === "student") {
-    return { current, options: programPage.items.map((program) => ({ id: program.id, label: `${program.code} · ${program.name}`, meta: "Chương trình đào tạo" })) };
+    return { current, options: programPage.items.map((program) => ({ id: program.id, label: `${program.code} · ${program.name}`, meta: program.universityName })) };
   }
   const versionGroups = await Promise.all(programPage.items.map(async (program) => ({
     program,
@@ -41,7 +41,7 @@ async function loadAssignmentOptions(user: AuthUser): Promise<{ current: number[
     options: courseGroups.flatMap(({ program, version, courses }) => courses.map((course) => ({
       id: course.id,
       label: `${course.institutionalCode ?? "—"} · ${course.name}`,
-      meta: `${program.code} / ${version.versionCode}`,
+      meta: `${program.universityCode} / ${program.code} / ${version.versionCode}`,
     }))),
   };
 }
@@ -145,7 +145,7 @@ export function AdminUsersPage() {
   const filteredOptions = assignment?.options.filter((option) => `${option.label} ${option.meta}`.toLocaleLowerCase("vi").includes(assignment.query.toLocaleLowerCase("vi"))) ?? [];
 
   return <section className="admin-page">
-    <header className="workspace-heading"><div><span className="eyebrow">QUẢN TRỊ HỆ THỐNG</span><h1>Tài khoản và phân quyền</h1><p>Quản lý trạng thái tài khoản và phạm vi dữ liệu của từng người dùng.</p></div>
+    <header className="workspace-heading"><div><h1>Tài khoản và phân quyền</h1><p>Quản lý trạng thái tài khoản và phạm vi dữ liệu của từng người dùng.</p></div>
       <button className="button button--primary" type="button" onClick={() => setShowCreate((value) => !value)}>{showCreate ? "Đóng biểu mẫu" : "Tạo tài khoản"}</button>
     </header>
 

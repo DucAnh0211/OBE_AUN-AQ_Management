@@ -5,7 +5,7 @@ import type { CurriculumProgram, ProgramCourse, ProgramVersion } from "../../../
 import { reportingApi, ReportApiError, type ReportDocument, type ReportKind, type ReportPage, type ReportSession } from "./api";
 import "./reporting.css";
 
-const names: Record<ReportKind, string> = { course: "UC25 · Báo cáo học phần", clo: "UC26 · Báo cáo CLO", plo: "UC27 · Báo cáo PLO" };
+const names: Record<ReportKind, string> = { course: "Báo cáo học phần", clo: "Báo cáo CLO", plo: "Báo cáo PLO" };
 const date = (value: string) => new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value));
 const message = (error: unknown) => error instanceof Error ? error.message : "Không thể kết nối máy chủ. Vui lòng thử lại.";
 
@@ -34,10 +34,10 @@ export function ReportingPage() {
   }
   const disconnect = useCallback(() => { setSession(null); setKey(""); }, []);
   return <section className="admin-page reporting-page">
-    <div className="admin-heading"><div><span className="eyebrow">SV5 · BÁO CÁO DỮ LIỆU</span>
+    <div className="admin-heading"><div>
       <h1>Báo cáo học phần, CLO và PLO</h1>
       <p>Tổng hợp cấu trúc chương trình và mapping theo phiên bản. Các chỉ số được tính từ dữ liệu nguồn, không dùng AI.</p>
-    </div>{session && <button className="button button--ghost" onClick={disconnect}>Ngắt kết nối · {session.user.userId}</button>}</div>
+    </div>{session && <button className="button button--ghost" onClick={disconnect}>Ngắt kết nối</button>}</div>
     {!session ? <form className="report-access admin-form" onSubmit={connect}>
       <h2>Truy cập báo cáo</h2><p>Nhập mã truy cập do quản trị viên cấp. Báo cáo chỉ hiển thị các chương trình bạn được phép xem.</p>
       <label>Mã truy cập<input type="password" required value={key} onChange={e => setKey(e.target.value)} autoComplete="off" disabled={busy} /></label>
@@ -140,7 +140,7 @@ function ReportWorkspace({ token, user, disconnect }: { token: string; user: Rep
         {Object.entries(names).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
       </select></label>
       <label>Chương trình<select required value={programId} onChange={e => { setProgramId(e.target.value); setVersionId(""); }} disabled={!!busy}>
-        <option value="">Chọn chương trình</option>{programs.map(p => <option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}
+        <option value="">Chọn chương trình</option>{programs.map(p => <option key={p.id} value={p.id}>{p.universityCode} · {p.code} · {p.name}</option>)}
       </select></label>
       <label>Phiên bản<select required value={versionId} onChange={e => setVersionId(e.target.value)} disabled={!!busy || loadingVersions || !programId}>
         <option value="">{loadingVersions ? "Đang tải…" : "Chọn phiên bản"}</option>{versions.map(v => <option key={v.id} value={v.id}>{v.versionCode} · {v.status === "draft" ? "Bản nháp" : "Đã công bố"}</option>)}
@@ -169,13 +169,13 @@ function ReportWorkspace({ token, user, disconnect }: { token: string; user: Rep
     </section>
     {reportId && !report && !error && <p role="status">Đang tải báo cáo…</p>}
     {report && <article className="report-preview" aria-labelledby="report-title">
-      <div className="report-preview-heading"><div><span className="eyebrow">{names[report.kind]} · CHƯA PHÊ DUYỆT</span><h2 id="report-title">{report.title}</h2></div>
+      <div className="report-preview-heading"><div><span className="eyebrow">{names[report.kind]} · Chưa phê duyệt</span><h2 id="report-title">{report.title}</h2></div>
         <div className="table-actions"><button className="button button--primary" disabled={!!busy} onClick={() => download("docx")}>{busy === "docx" ? "Đang xuất…" : "Tải DOCX"}</button>
           <button className="button button--secondary" disabled={!!busy} onClick={() => download("pdf")}>{busy === "pdf" ? "Đang xuất…" : "Tải PDF"}</button>
           {user.canGenerate && <button className="button button--danger" disabled={!!busy} onClick={() => setConfirmRevoke(true)}>Thu hồi</button>}</div></div>
       {confirmRevoke && <div className="report-revoke" role="alert"><p>Thu hồi báo cáo này? Người dùng sẽ không thể mở hoặc tải lại bản này.</p>
         <button className="button button--danger" disabled={!!busy} onClick={revoke}>Xác nhận thu hồi</button> <button className="button button--ghost" disabled={!!busy} onClick={() => setConfirmRevoke(false)}>Hủy</button></div>}
-      <p><strong>{report.programCode} · {report.programName}</strong><br />Phiên bản {report.versionCode} · {report.versionStatus === "draft" ? "CTĐT bản nháp" : "CTĐT đã công bố"}<br />Tạo lúc {date(report.createdAt)} bởi {report.createdBy}</p>
+      <p>{report.universityName && <>{report.universityName}<br /></>}<strong>{report.programCode} · {report.programName}</strong><br />Phiên bản {report.versionCode} · {report.versionStatus === "draft" ? "CTĐT bản nháp" : "CTĐT đã công bố"}<br />Tạo lúc {date(report.createdAt)} bởi {report.createdBy}</p>
       <p className="report-source">Báo cáo {report.id}<br />Quy tắc: {report.ruleVersion}<br />SHA-256 dữ liệu: <code>{report.snapshotHash}</code></p>
       <div className="report-metrics">{report.metrics.map(m => <div key={m.label}><span>{m.label}</span><strong>{m.numerator}/{m.denominator}</strong><small>{m.percentage === null ? "Chưa có dữ liệu" : `${m.percentage.toLocaleString("vi-VN")}%`}</small></div>)}</div>
       <section><h3>Kết quả kiểm tra</h3><ul>{report.findings.map((f, i) => <li key={i}>{f}</li>)}</ul></section>

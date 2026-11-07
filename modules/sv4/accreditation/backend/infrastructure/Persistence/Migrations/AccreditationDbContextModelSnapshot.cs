@@ -324,6 +324,78 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ObeAunQa.Modules.Accreditation.Domain.Entities.ProgramAccreditation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
+
+                    b.Property<DateOnly>("AssessedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("assessed_on");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("created_by");
+
+                    b.Property<long>("FrameworkId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("framework_id");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<long>("ProgramId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("program_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateOnly?>("ValidUntil")
+                        .HasColumnType("date")
+                        .HasColumnName("valid_until");
+
+                    b.Property<int?>("VerdictRating")
+                        .HasColumnType("integer")
+                        .HasColumnName("verdict_rating");
+
+                    b.HasKey("Id")
+                        .HasName("program_accreditations_pkey");
+
+                    b.HasIndex("FrameworkId");
+
+                    b.HasIndex(new[] { "ProgramId", "FrameworkId", "AssessedOn" }, "program_accreditations_round_key")
+                        .IsUnique();
+
+                    b.ToTable("program_accreditations", "accreditation", t =>
+                        {
+                            t.HasCheckConstraint("program_accreditations_rating_check", "verdict_rating IS NULL OR verdict_rating BETWEEN 1 AND 7");
+
+                            t.HasCheckConstraint("program_accreditations_status_check", "status IN ('self_assessed', 'accredited', 'not_met')");
+
+                            t.HasCheckConstraint("program_accreditations_valid_check", "valid_until IS NULL OR valid_until >= assessed_on");
+                        });
+                });
+
             modelBuilder.Entity("ObeAunQa.Modules.Accreditation.Domain.Entities.SourceDocument", b =>
                 {
                     b.Property<Guid>("Id")
@@ -431,6 +503,18 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         .HasConstraintName("aun_requirement_translations_requirement_id_fkey");
 
                     b.Navigation("Requirement");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Accreditation.Domain.Entities.ProgramAccreditation", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Accreditation.Domain.Entities.AunFramework", "Framework")
+                        .WithMany()
+                        .HasForeignKey("FrameworkId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("program_accreditations_framework_id_fkey");
+
+                    b.Navigation("Framework");
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Accreditation.Domain.Entities.AunCriterion", b =>

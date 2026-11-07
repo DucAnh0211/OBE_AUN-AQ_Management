@@ -21,6 +21,10 @@ và đăng nhập. Identity có tài khoản/phân quyền; Accreditation có qu
 khung AUN-QA, criteria, requirements và bản dịch. Pipeline minh chứng và UC28–UC30
 tiếp tục được phát triển ở các bước sau.
 
+Hệ thống quản lý kiểm định AUN-QA cho nhiều trường: người dùng chọn trường, chọn ngành đã
+kiểm định rồi xem CTĐT. Xem [Curriculum](modules/common/curriculum/README.md) và
+[Accreditation](modules/sv4/accreditation/README.md).
+
 ## Yêu cầu môi trường
 
 - .NET SDK 10.0.401 trở lên trong dòng 10.0.

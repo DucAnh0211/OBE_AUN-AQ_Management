@@ -136,7 +136,7 @@ public sealed class ReportTests
         id == 101 ? 3 : 2, "1", (int)id, "draft", null, null, Date, Date);
 
     private static CurriculumReportSnapshot Fixture() => new(
-        new(1, "CNTT", "Công nghệ thông tin", false, 1, 10, "V1", Date, Date),
+        new(1, 1, "TEST", "Trường thử nghiệm", "CNTT", "Công nghệ thông tin", false, 1, 10, "V1", Date, Date),
         new(10, 1, "V1", "draft", false, null, 2, null, null, Date, Date),
         [Course(101), Course(102)],
         [new(1, 10, "PLO1", "Phân tích dữ liệu", "C4", "official"), new(2, 10, "PLO2", "Giao tiếp", null, "official")],

@@ -1,238 +1,13 @@
-import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ApiError, curriculumApi, swaggerUrl } from "../../../../modules/common/curriculum/frontend/api";
+import { curriculumApi } from "../../../../modules/common/curriculum/frontend/api";
 import type { CurriculumProgram, PagedResult, ProgramCourse, ProgramVersion } from "../../../../modules/common/curriculum/frontend/types";
 import { useAuth } from "../auth/AuthContext";
-import { DialogFrame, useConfirmDialog } from "../components/Dialogs";
+import { useConfirmDialog } from "../components/Dialogs";
+import { ProgramAccreditationPanel } from "./ProgramAccreditationPanel";
+import { Alert, Dialog, EmptyState, errorInfo, FieldError, formatDate, LoadingState, PageHeader, Pagination, statusLabel } from "./ui";
 
 const pageSize = 10;
-
-function formatDate(value: string | null): string {
-  return value
-    ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(value))
-    : "—";
-}
-
-function statusLabel(status: string): string {
-  return ({ draft: "Bản nháp", finalized: "Đã công bố", archived: "Đã lưu trữ", active: "Đang sử dụng" })[status] ?? status;
-}
-
-function errorInfo(error: unknown): { message: string; fields: Record<string, string[]> } {
-  if (error instanceof ApiError) return { message: error.message, fields: error.fieldErrors };
-  return { message: "Đã xảy ra lỗi không xác định.", fields: {} };
-}
-
-function PageHeader({ eyebrow, title, description, actions }: {
-  eyebrow: string;
-  title: string;
-  description: string;
-  actions?: ReactNode;
-}) {
-  return (
-    <div className="admin-heading">
-      <div>
-        <span className="eyebrow">{eyebrow}</span>
-        <h1>{title}</h1>
-        <p>{description}</p>
-      </div>
-      {actions && <div className="admin-heading__actions">{actions}</div>}
-    </div>
-  );
-}
-
-function Alert({ message, onRetry }: { message: string; onRetry?: () => void }) {
-  return (
-    <div className="alert alert--error" role="alert">
-      <span>{message}</span>
-      {onRetry && <button className="button button--small button--ghost" onClick={onRetry}>Thử lại</button>}
-    </div>
-  );
-}
-
-function EmptyState({ children }: { children: ReactNode }) {
-  return <div className="empty-state">{children}</div>;
-}
-
-function LoadingState() {
-  return <div className="empty-state" aria-live="polite">Đang tải dữ liệu…</div>;
-}
-
-function Dialog({ title, description, children, onClose }: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <DialogFrame title={title} description={description} onClose={onClose}>
-      {children}
-    </DialogFrame>
-  );
-}
-
-function FieldError({ errors }: { errors?: string[] }) {
-  return errors?.length ? <span className="field-error">{errors[0]}</span> : null;
-}
-
-function Pagination({ page, totalPages, totalItems, onChange }: {
-  page: number;
-  totalPages: number;
-  totalItems: number;
-  onChange: (page: number) => void;
-}) {
-  return (
-    <div className="pagination">
-      <span>Tổng cộng {totalItems} mục</span>
-      <div>
-        <button className="button button--small button--ghost" disabled={page <= 1} onClick={() => onChange(page - 1)}>Trước</button>
-        <span>Trang {page}/{Math.max(totalPages, 1)}</span>
-        <button className="button button--small button--ghost" disabled={page >= totalPages} onClick={() => onChange(page + 1)}>Sau</button>
-      </div>
-    </div>
-  );
-}
-
-type ProgramDialogState = { mode: "create" } | { mode: "edit"; program: CurriculumProgram };
-
-function ProgramForm({ state, onClose, onSaved }: {
-  state: ProgramDialogState;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const editing = state.mode === "edit";
-  const [code, setCode] = useState(editing ? state.program.code : "");
-  const [name, setName] = useState(editing ? state.program.name : "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [fields, setFields] = useState<Record<string, string[]>>({});
-
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setSaving(true);
-    setError("");
-    setFields({});
-    try {
-      if (editing) await curriculumApi.updateProgram(state.program.id, name);
-      else await curriculumApi.createProgram(code, name);
-      onSaved();
-    } catch (caught) {
-      const info = errorInfo(caught);
-      setError(info.message);
-      setFields(info.fields);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <Dialog title={editing ? "Cập nhật chương trình đào tạo" : "Tạo chương trình đào tạo"} onClose={onClose}>
-      <form className="admin-form" onSubmit={submit}>
-        {error && <Alert message={error} />}
-        <label>
-          <span>Mã CTĐT</span>
-          <input value={code} onChange={(event) => setCode(event.target.value)} disabled={editing || saving} placeholder="Ví dụ: CS" autoFocus={!editing} />
-          <FieldError errors={fields.code} />
-        </label>
-        <label>
-          <span>Tên chương trình đào tạo</span>
-          <input value={name} onChange={(event) => setName(event.target.value)} disabled={saving} placeholder="Ví dụ: Khoa học máy tính" autoFocus={editing} />
-          <FieldError errors={fields.name} />
-        </label>
-        <div className="dialog__actions">
-          <button className="button button--ghost" type="button" onClick={onClose} disabled={saving}>Hủy</button>
-          <button className="button button--primary" disabled={saving}>{saving ? "Đang lưu…" : "Lưu"}</button>
-        </div>
-      </form>
-    </Dialog>
-  );
-}
-
-export function CurriculumProgramsPage() {
-  const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
-  const { confirm, confirmationDialog } = useConfirmDialog();
-  const [data, setData] = useState<PagedResult<CurriculumProgram> | null>(null);
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
-  const [includeArchived, setIncludeArchived] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [dialog, setDialog] = useState<ProgramDialogState | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      setData(await curriculumApi.listPrograms(page, pageSize, search, includeArchived));
-    } catch (caught) {
-      setError(errorInfo(caught).message);
-    } finally {
-      setLoading(false);
-    }
-  }, [includeArchived, page, search]);
-
-  useEffect(() => { void load(); }, [load]);
-
-  async function archive(program: CurriculumProgram) {
-    const accepted = await confirm({
-      title: "Lưu trữ chương trình đào tạo?",
-      description: `CTĐT “${program.name}” sẽ không còn xuất hiện trong danh sách đang hoạt động. Dữ liệu liên quan vẫn được giữ lại.`,
-      confirmLabel: "Lưu trữ",
-      tone: "danger",
-    });
-    if (!accepted) return;
-    try {
-      await curriculumApi.archiveProgram(program.id);
-      await load();
-    } catch (caught) {
-      setError(errorInfo(caught).message);
-    }
-  }
-
-  return (
-    <section className="admin-page">
-      <PageHeader
-        eyebrow="Quản trị dữ liệu đào tạo"
-        title="Chương trình đào tạo"
-        description="Quản lý CTĐT và đi sâu vào từng phiên bản, học phần."
-        actions={isAdmin ? <><a className="button button--ghost" href={swaggerUrl} target="_blank" rel="noreferrer">Mở Swagger</a><button className="button button--primary" onClick={() => setDialog({ mode: "create" })}>+ Tạo CTĐT</button></> : undefined}
-      />
-
-      <div className="toolbar">
-        <form className="search-box" onSubmit={(event) => { event.preventDefault(); setPage(1); setSearch(searchInput.trim()); }}>
-          <input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Tìm theo mã hoặc tên CTĐT" aria-label="Tìm chương trình đào tạo" />
-          <button className="button button--secondary">Tìm kiếm</button>
-        </form>
-        <label className="check-control"><input type="checkbox" checked={includeArchived} onChange={(event) => { setPage(1); setIncludeArchived(event.target.checked); }} /> Hiện dữ liệu lưu trữ</label>
-      </div>
-
-      {error && <Alert message={error} onRetry={() => void load()} />}
-      {loading ? <LoadingState /> : !data?.items.length ? <EmptyState>Chưa có chương trình đào tạo phù hợp.</EmptyState> : (
-        <>
-          <div className="data-table-wrap">
-            <table className="data-table">
-              <thead><tr><th>Mã</th><th>Chương trình đào tạo</th><th>Phiên bản hiện hành</th><th>Số phiên bản</th><th>Cập nhật</th><th className="align-right">Thao tác</th></tr></thead>
-              <tbody>{data.items.map((program) => (
-                <tr key={program.id} className={program.isArchived ? "row--archived" : ""}>
-                  <td><strong>{program.code}</strong></td>
-                  <td><Link className="table-link" to={`/curriculum/programs/${program.id}`}>{program.name}</Link>{program.isArchived && <span className="status status--archived">Đã lưu trữ</span>}</td>
-                  <td>{program.currentVersionCode ?? "Chưa có"}</td>
-                  <td>{program.versionCount}</td>
-                  <td>{formatDate(program.updatedAt)}</td>
-                  <td><div className="table-actions"><Link className="button button--small button--secondary" to={`/curriculum/programs/${program.id}`}>Mở</Link>{isAdmin && !program.isArchived && <><button className="button button--small button--ghost" onClick={() => setDialog({ mode: "edit", program })}>Sửa</button><button className="button button--small button--danger" onClick={() => void archive(program)}>Lưu trữ</button></>}</div></td>
-                </tr>
-              ))}</tbody>
-            </table>
-          </div>
-          <Pagination page={data.page} totalPages={data.totalPages} totalItems={data.totalItems} onChange={setPage} />
-        </>
-      )}
-      {confirmationDialog}
-      {dialog && <ProgramForm state={dialog} onClose={() => setDialog(null)} onSaved={() => { setDialog(null); void load(); }} />}
-    </section>
-  );
-}
 
 type VersionDialogState = { mode: "create" } | { mode: "edit"; version: ProgramVersion };
 
@@ -347,8 +122,9 @@ export function ProgramVersionsPage() {
 
   return (
     <section className="admin-page">
-      <div className="breadcrumbs"><Link to="/curriculum">Chương trình đào tạo</Link><span>/</span><span>{program?.code ?? "…"}</span></div>
-      <PageHeader eyebrow={program?.code ?? "CTĐT"} title={program?.name ?? "Phiên bản chương trình đào tạo"} description="Quản lý các phiên bản và danh sách học phần thuộc từng phiên bản." actions={isAdmin ? <button className="button button--primary" disabled={!program || program.isArchived} onClick={() => setDialog({ mode: "create" })}>+ Tạo phiên bản</button> : undefined} />
+      <div className="breadcrumbs"><Link to="/curriculum">Trường đại học</Link><span>/</span>{program && <><Link to={`/curriculum/universities/${program.universityId}`}>{program.universityName}</Link><span>/</span></>}<span>{program?.code ?? "…"}</span></div>
+      <PageHeader eyebrow={program?.code ?? "CTĐT"} title={program?.name ?? "Phiên bản chương trình đào tạo"} description="Quản lý các phiên bản và danh sách học phần thuộc từng phiên bản." actions={isAdmin ? <button className="button button--primary" disabled={!program || program.isArchived} onClick={() => setDialog({ mode: "create" })}>Tạo phiên bản</button> : undefined} />
+      <ProgramAccreditationPanel programId={programId} isAdmin={isAdmin} />
       <div className="toolbar toolbar--end"><label className="check-control"><input type="checkbox" checked={includeArchived} onChange={(event) => setIncludeArchived(event.target.checked)} /> Hiện phiên bản lưu trữ</label></div>
       {error && <Alert message={error} onRetry={() => void load()} />}
       {loading ? <LoadingState /> : !versions.length ? <EmptyState>Chưa có phiên bản CTĐT.</EmptyState> : (
@@ -485,8 +261,8 @@ export function ProgramCoursesPage() {
 
   return (
     <section className="admin-page">
-      <div className="breadcrumbs"><Link to="/curriculum">Chương trình đào tạo</Link><span>/</span>{program && <Link to={`/curriculum/programs/${program.id}`}>{program.code}</Link>}<span>/</span><span>{version?.versionCode ?? "…"}</span></div>
-      <PageHeader eyebrow={`${program?.code ?? "CTĐT"} · ${version?.versionCode ?? "Phiên bản"}`} title="Danh sách học phần" description={editable ? "Phiên bản đang ở trạng thái bản nháp và có thể chỉnh sửa." : "Phiên bản chỉ đọc; các thao tác thay đổi học phần đã được khóa."} actions={<><Link className="button button--secondary" to={`/curriculum/versions/${versionId}/plos`}>Chuẩn đầu ra</Link>{user?.role === "admin" && <button className="button button--primary" disabled={!editable} onClick={() => setDialog({ mode: "create" })}>+ Thêm học phần</button>}</>} />
+      <div className="breadcrumbs"><Link to="/curriculum">Trường đại học</Link><span>/</span>{program && <><Link to={`/curriculum/universities/${program.universityId}`}>{program.universityName}</Link><span>/</span><Link to={`/curriculum/programs/${program.id}`}>{program.code}</Link></>}<span>/</span><span>{version?.versionCode ?? "…"}</span></div>
+      <PageHeader eyebrow={`${program?.code ?? "CTĐT"} · ${version?.versionCode ?? "Phiên bản"}`} title="Danh sách học phần" description={editable ? "Phiên bản đang ở trạng thái bản nháp và có thể chỉnh sửa." : "Phiên bản chỉ đọc; các thao tác thay đổi học phần đã được khóa."} actions={<><Link className="button button--secondary" to={`/curriculum/versions/${versionId}/plos`}>Chuẩn đầu ra</Link>{user?.role === "admin" && <button className="button button--primary" disabled={!editable} onClick={() => setDialog({ mode: "create" })}>Thêm học phần</button>}</>} />
       {version && <div className="summary-strip"><div><span>Trạng thái</span><strong className={`status status--${version.status}`}>{statusLabel(version.status)}</strong></div><div><span>Tổng học phần</span><strong>{data?.totalItems ?? version.courseCount}</strong></div><div><span>Công bố</span><strong>{formatDate(version.publishedAt)}</strong></div></div>}
       <div className="toolbar">
         <form className="search-box search-box--courses" onSubmit={(event) => { event.preventDefault(); setPage(1); setSearch(searchInput.trim()); setSemester(semesterInput.trim()); }}>

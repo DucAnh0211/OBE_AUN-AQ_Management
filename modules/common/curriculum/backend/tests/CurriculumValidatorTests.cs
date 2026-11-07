@@ -8,10 +8,30 @@ public sealed class CurriculumValidatorTests
     public void Program_NormalizesCodeAndName()
     {
         var result = CurriculumValidator.Program(
-            new CreateProgramRequest(" cs ", "  Khoa học máy tính  "));
+            new CreateProgramRequest(1, " cs ", "  Khoa học máy tính  "));
 
         Assert.Equal("CS", result.Code);
         Assert.Equal("Khoa học máy tính", result.Name);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(0L)]
+    public void Program_RequiresUniversity(long? universityId)
+    {
+        var exception = Assert.Throws<CurriculumValidationException>(
+            () => CurriculumValidator.Program(new CreateProgramRequest(universityId, "CS", "Khoa học máy tính")));
+
+        Assert.Contains("universityId", exception.Errors.Keys);
+    }
+
+    [Fact]
+    public void University_NormalizesCodeAndName()
+    {
+        var result = CurriculumValidator.University(new CreateUniversityRequest(" tnu ", "  Đại học Tây Nguyên  "));
+
+        Assert.Equal("TNU", result.Code);
+        Assert.Equal("Đại học Tây Nguyên", result.Name);
     }
 
     [Theory]

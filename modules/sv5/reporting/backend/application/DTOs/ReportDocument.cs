@@ -6,4 +6,4 @@ public sealed record ReportDocument(Guid Id, string Kind, string Title, long Pro
     long? ProgramCourseId, string ProgramCode, string ProgramName, string VersionCode, string VersionStatus,
     DateTimeOffset CreatedAt, string CreatedBy, string RuleVersion, string SnapshotHash,
     ReportMetric[] Metrics, string[] Findings, string[] Notes, ReportTable[] Tables,
-    CurriculumReportSnapshot Source);
+    CurriculumReportSnapshot Source, string? UniversityName = null);

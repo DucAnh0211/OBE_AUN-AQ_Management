@@ -6,17 +6,20 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure;
 
 internal sealed class EfProgramRepository(CurriculumDbContext db, CurriculumWriteSession writes) : IProgramRepository
 {
-    public async Task<PagedResult<ProgramResponse>> GetProgramsAsync(int page, int pageSize, string? search, bool includeArchived, CancellationToken ct)
+    public async Task<PagedResult<ProgramResponse>> GetProgramsAsync(int page, int pageSize, string? search, bool includeArchived, CancellationToken ct, long? universityId = null)
     {
         var query = db.Programs.AsNoTracking().Where(p => includeArchived || p.ArchivedAt == null);
+        if (universityId != null) query = query.Where(p => p.UniversityId == universityId);
         if (search != null) query = query.Where(p => EF.Functions.ILike(p.Code, "%" + search + "%") || EF.Functions.ILike(p.Name, "%" + search + "%"));
         var count = await query.LongCountAsync(ct);
         return PagedResult<ProgramResponse>.Create(await query.OrderBy(p => p.Code).ThenBy(p => p.Id).Skip((page-1)*pageSize).Take(pageSize).ProgramResponses().ToListAsync(ct), page, pageSize, count);
     }
     public Task<ProgramResponse?> GetProgramAsync(long id, CancellationToken ct) => db.Programs.Where(p => p.Id == id).ProgramResponses().SingleOrDefaultAsync(ct);
-    public async Task<ProgramResponse> CreateProgramAsync(string code, string name, CancellationToken ct)
+    public async Task<ProgramResponse> CreateProgramAsync(long universityId, string code, string name, CancellationToken ct)
     {
-        var entity = new ProgramEntity { Code = code, Name = name };
+        if (!await db.Universities.AnyAsync(u => u.Id == universityId && u.ArchivedAt == null, ct))
+            throw new CurriculumNotFoundException("trường đại học", universityId);
+        var entity = new ProgramEntity { UniversityId = universityId, Code = code, Name = name };
         await writes.RunAsync(async () => { db.Programs.Add(entity); await db.SaveChangesAsync(ct); return entity.Id; }, ct);
         return (await GetProgramAsync(entity.Id, ct))!;
     }

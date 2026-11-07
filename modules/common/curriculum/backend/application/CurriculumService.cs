@@ -18,7 +18,8 @@ public sealed partial class CurriculumService(IProgramRepository programReposito
         int pageSize,
         string? search,
         bool includeArchived,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        long? universityId = null)
     {
         var query = CurriculumValidator.ListQuery(page, pageSize, search);
         return programRepository.GetProgramsAsync(
@@ -26,7 +27,8 @@ public sealed partial class CurriculumService(IProgramRepository programReposito
             query.PageSize,
             query.Search,
             includeArchived,
-            cancellationToken);
+            cancellationToken,
+            universityId);
     }
 
     public async Task<ProgramResponse> GetProgramAsync(
@@ -42,7 +44,7 @@ public sealed partial class CurriculumService(IProgramRepository programReposito
         CancellationToken cancellationToken)
     {
         var program = CurriculumValidator.Program(request);
-        return programRepository.CreateProgramAsync(program.Code, program.Name, cancellationToken);
+        return programRepository.CreateProgramAsync(program.UniversityId, program.Code, program.Name, cancellationToken);
     }
 
     public async Task<ProgramResponse> UpdateProgramAsync(

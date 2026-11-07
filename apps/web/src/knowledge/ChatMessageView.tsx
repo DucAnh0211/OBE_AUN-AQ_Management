@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Sparkle, Copy, Check, BookOpen, ArrowSquareOut } from "@phosphor-icons/react";
+import { Copy, Check, BookOpen, ArrowSquareOut } from "@phosphor-icons/react";
 
 type Citation = { key: string; title: string; locator: string; quote: string; url: string };
 export type ChatAnswer = { parts: { text: string; citations: Citation[] }[]; notice: string | null; documentCount: number; chunkCount: number;
@@ -14,7 +14,7 @@ export function ChatMessageView({ answer }: { answer: ChatAnswer }) {
   const [copied, setCopied] = useState(false);
   const text = answer.notice ?? answer.parts.map(p => p.text).join("\n\n");
   async function copy() { try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch { setCopied(false); } }
-  return <div className="assistant-message"><span className="assistant-avatar" aria-hidden="true"><Sparkle size={20} weight="duotone" /></span>
+  return <div className="assistant-message">
     <div className="assistant-message__body">
       {answer.notice && <div className="chat-markdown"><RichText>{answer.notice}</RichText></div>}
       {!!answer.databaseSources?.length && <details className="answer-sources"><summary><BookOpen size={14} />Nguồn dữ liệu chương trình</summary><div>

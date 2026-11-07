@@ -32,13 +32,31 @@ public static partial class CurriculumValidator
         return (page, pageSize, normalizedSearch);
     }
 
-    public static (string Code, string Name) Program(CreateProgramRequest request)
+    public static (string Code, string Name) University(CreateUniversityRequest request)
     {
         var errors = new Dictionary<string, string[]>();
         var code = NormalizeCode(request.Code, "code", errors);
         var name = NormalizeRequiredText(request.Name, "name", 2, 250, errors);
         ThrowIfInvalid(errors);
         return (code, name);
+    }
+
+    public static string UniversityName(UpdateUniversityRequest request)
+    {
+        var errors = new Dictionary<string, string[]>();
+        var name = NormalizeRequiredText(request.Name, "name", 2, 250, errors);
+        ThrowIfInvalid(errors);
+        return name;
+    }
+
+    public static (long UniversityId, string Code, string Name) Program(CreateProgramRequest request)
+    {
+        var errors = new Dictionary<string, string[]>();
+        if (request.UniversityId is null or < 1) errors["universityId"] = ["Chọn trường đại học."];
+        var code = NormalizeCode(request.Code, "code", errors);
+        var name = NormalizeRequiredText(request.Name, "name", 2, 250, errors);
+        ThrowIfInvalid(errors);
+        return (request.UniversityId!.Value, code, name);
     }
 
     public static string ProgramName(UpdateProgramRequest request)

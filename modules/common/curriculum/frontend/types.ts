@@ -6,8 +6,21 @@ export type PagedResult<T> = {
   totalPages: number;
 };
 
+export type University = {
+  id: number;
+  code: string;
+  name: string;
+  isArchived: boolean;
+  programCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CurriculumProgram = {
   id: number;
+  universityId: number;
+  universityCode: string;
+  universityName: string;
   code: string;
   name: string;
   isArchived: boolean;

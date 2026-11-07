@@ -1,24 +1,19 @@
 import { useState, type FormEvent, type ReactNode } from "react";
+import { GraduationCap } from "@phosphor-icons/react";
 import { useAuth } from "./AuthContext";
 
-function AuthLayout({ eyebrow, title, description, children }: {
-  eyebrow: string;
+function AuthLayout({ title, description, children }: {
   title: string;
   description: string;
   children: ReactNode;
 }) {
   return <main className="auth-shell">
-    <section className="auth-layout">
-      <aside className="auth-context">
-        <div className="brand brand--inverse"><span className="brand__mark">OA</span><span><strong>OBE · AUN-QA</strong><small>Quản lý chất lượng đào tạo</small></span></div>
-        <div><span className="auth-context__index">HỆ THỐNG NỘI BỘ</span><h2>Dữ liệu đào tạo có cấu trúc, minh bạch và nhất quán.</h2><p>Dành cho cán bộ quản lý, giảng viên và sinh viên thuộc chương trình đào tạo.</p></div>
-        <small>Truy cập được ghi nhận nhằm bảo vệ dữ liệu học thuật.</small>
-      </aside>
-      <section className="auth-card">
-        <header><span className="eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p></header>
-        {children}
-      </section>
-    </section>
+    <div className="auth-column">
+      <div className="auth-brand"><GraduationCap size={26} weight="fill" aria-hidden="true" /><strong>OBE · AUN-QA</strong></div>
+      <header className="auth-heading"><h1>{title}</h1><p>{description}</p></header>
+      <section className="auth-card">{children}</section>
+      <small className="auth-foot">Truy cập được ghi nhận nhằm bảo vệ dữ liệu học thuật.</small>
+    </div>
   </main>;
 }
 
@@ -36,7 +31,7 @@ export function LoginPage() {
     finally { setBusy(false); }
   }
 
-  return <AuthLayout eyebrow="ĐĂNG NHẬP" title="Truy cập hệ thống" description="Sử dụng tài khoản do quản trị viên cấp.">
+  return <AuthLayout title="Dữ liệu đào tạo minh bạch và nhất quán" description="Sử dụng tài khoản do quản trị viên cấp.">
     <form className="admin-form auth-form" onSubmit={submit}>
       {error && <div className="alert alert--error" role="alert">{error}</div>}
       <label><span>Email</span><input type="email" autoComplete="username" required autoFocus value={email} onChange={(event) => setEmail(event.target.value)} placeholder="ten@truong.edu.vn" /></label>
@@ -63,7 +58,7 @@ export function ChangePasswordPage() {
     finally { setBusy(false); }
   }
 
-  return <AuthLayout eyebrow="BẢO MẬT TÀI KHOẢN" title="Đổi mật khẩu tạm" description="Hoàn tất bước này trước khi sử dụng các phân hệ nghiệp vụ.">
+  return <AuthLayout title="Đổi mật khẩu tạm" description="Hoàn tất bước này trước khi sử dụng các phân hệ nghiệp vụ.">
     <div className="password-requirements" aria-label="Yêu cầu mật khẩu"><span>Tối thiểu 10 ký tự</span><span>Có chữ hoa và chữ thường</span><span>Có ít nhất một chữ số</span></div>
     <form className="admin-form auth-form" onSubmit={submit}>
       {error && <div className="alert alert--error" role="alert">{error}</div>}
