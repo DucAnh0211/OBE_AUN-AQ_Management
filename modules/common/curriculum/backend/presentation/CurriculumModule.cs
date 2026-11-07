@@ -35,6 +35,7 @@ public static class CurriculumModule
         services.AddDbContext<CurriculumDbContext>(options => options.UseNpgsql(connectionString,
             postgres => postgres.MigrationsHistoryTable("__EFMigrationsHistory", "curriculum")));
         services.AddScoped<CurriculumWriteSession>();
+        services.AddScoped<IUniversityRepository, EfUniversityRepository>();
         services.AddScoped<IProgramRepository, EfProgramRepository>();
         services.AddScoped<IProgramVersionRepository, EfProgramVersionRepository>();
         services.AddScoped<IProgramCourseRepository, EfProgramCourseRepository>();
@@ -45,6 +46,7 @@ public static class CurriculumModule
         services.AddScoped<ICurriculumAnalysisRepository, EfCurriculumAnalysisRepository>();
         services.AddScoped<ICurriculumReportSource, EfCurriculumReportSource>();
         services.AddScoped<CurriculumService>();
+        services.AddScoped<UniversityService>();
         services.AddExceptionHandler<CurriculumExceptionHandler>();
         return services;
     }
@@ -95,6 +97,7 @@ public static class CurriculumModule
             "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}",
             ArchiveProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
+        group.MapUniversityEndpoints();
         group.MapOutcomeEndpoints();
 
         return endpoints;
@@ -108,15 +111,16 @@ public static class CurriculumModule
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery(Name = "q")] string? search = null,
-        [FromQuery] bool includeArchived = false)
+        [FromQuery] bool includeArchived = false,
+        [FromQuery] long? universityId = null)
     {
         if (currentUser.Role == SystemRoles.Admin)
-            return Results.Ok(await service.GetProgramsAsync(page,pageSize,search,includeArchived,cancellationToken));
+            return Results.Ok(await service.GetProgramsAsync(page,pageSize,search,includeArchived,cancellationToken,universityId));
         var allowed = (await access.GetReadableProgramIdsAsync(cancellationToken)).ToHashSet();
         var all = new List<ProgramResponse>();
         for (var fetchPage=1;;fetchPage++)
         {
-            var batch=await service.GetProgramsAsync(fetchPage,100,search,false,cancellationToken);
+            var batch=await service.GetProgramsAsync(fetchPage,100,search,false,cancellationToken,universityId);
             all.AddRange(batch.Items.Where(x=>allowed.Contains(x.Id)));
             if(fetchPage>=batch.TotalPages) break;
         }

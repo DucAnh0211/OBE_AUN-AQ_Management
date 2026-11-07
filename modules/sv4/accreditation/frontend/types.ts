@@ -1,3 +1,7 @@
+import type { CurriculumProgram, PagedResult } from "../../../common/curriculum/frontend/types";
+
+export type { PagedResult };
+
 export type FrameworkStatus = "draft" | "published" | "retired";
 export type TranslationStatus = "official" | "reviewed" | "draft" | "machine_translated";
 
@@ -103,4 +107,45 @@ export type AccreditationProblem = {
   status?: number;
   code?: string;
   errors?: Record<string, string[]>;
+};
+
+export type AccreditationStatus = "self_assessed" | "accredited" | "not_met";
+export type EffectiveAccreditationStatus = AccreditationStatus | "expired";
+
+export type ProgramAccreditation = {
+  id: number;
+  programId: number;
+  frameworkId: number;
+  frameworkCode: string;
+  frameworkVersion: string;
+  status: AccreditationStatus;
+  effectiveStatus: EffectiveAccreditationStatus;
+  assessedOn: string;
+  validUntil: string | null;
+  verdictRating: number | null;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ProgramAccreditationInput = {
+  frameworkId: number | null;
+  status: AccreditationStatus;
+  assessedOn: string | null;
+  validUntil: string | null;
+  verdictRating: number | null;
+  note: string | null;
+};
+
+export type DirectoryUniversity = {
+  id: number;
+  code: string;
+  name: string;
+  programCount: number;
+  accreditedProgramCount: number;
+};
+
+export type DirectoryProgram = {
+  program: CurriculumProgram;
+  accreditation: ProgramAccreditation | null;
 };

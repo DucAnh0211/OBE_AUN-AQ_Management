@@ -100,7 +100,7 @@ export function CourseOutcomesPage() {
   if (loading) return <section className="admin-page"><div className="compact-loading">Đang tải chuẩn đầu ra học phần…</div></section>;
   return <section className="admin-page">
     <div className="breadcrumbs"><Link to={`/curriculum/versions/${versionId}`}>Học phần</Link><span>/</span><span>{course?.institutionalCode ?? course?.name ?? courseId}</span></div>
-    <header className="workspace-heading"><div><span className="eyebrow">{course?.institutionalCode ?? "HỌC PHẦN"}</span><h1>Chuẩn đầu ra học phần</h1><p>{course?.name}</p></div>{editable && <button className="button button--primary" type="button" onClick={() => setEditing("new")}>Thêm CLO</button>}</header>
+    <header className="workspace-heading"><div><span className="eyebrow">{course?.institutionalCode ?? "Học phần"}</span><h1>Chuẩn đầu ra học phần</h1><p>{course?.name}</p></div>{editable && <button className="button button--primary" type="button" onClick={() => setEditing("new")}>Thêm CLO</button>}</header>
     <VersionOutcomeNav versionId={versionId} />
     {error && <div className="alert alert--error" role="alert">{error}</div>}
 

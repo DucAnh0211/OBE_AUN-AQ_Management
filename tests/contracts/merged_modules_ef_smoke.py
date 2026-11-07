@@ -58,7 +58,8 @@ for token in (lecturer_token, student_token):
     call('/api/admin/users', token=token, status=403)
     call('/api/reporting/session', token=token, status=403)
 
-program = api('/api/curriculum/programs', 'POST', {'code': 'MERGE'+tag, 'name': 'EF merge integration'}, 201)
+university = api('/api/curriculum/universities', 'POST', {'code': 'UM'+tag, 'name': 'Merge integration university'}, 201)
+program = api('/api/curriculum/programs', 'POST', {'universityId': university['id'], 'code': 'MERGE'+tag, 'name': 'EF merge integration'}, 201)
 pid = program['id']
 version = api(f'/api/curriculum/programs/{pid}/versions', 'POST', {'versionCode': 'TEST1'}, 201)
 vid = version['id']

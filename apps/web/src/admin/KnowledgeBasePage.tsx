@@ -103,7 +103,7 @@ export function KnowledgeBasePage() {
     catch (e) { setError(message(e)); } finally { setBusy(false); }
   }
   return <section className="admin-page kb-page">
-    <header className="workspace-heading"><div><span className="eyebrow">QUẢN TRỊ</span><h1>Knowledge Base</h1><p>Thêm tài liệu, xem nội dung trích xuất và theo dõi quá trình tạo embedding.</p></div></header>
+    <header className="workspace-heading"><div><h1>Knowledge Base</h1><p>Thêm tài liệu, xem nội dung trích xuất và theo dõi quá trình tạo embedding.</p></div></header>
     {error && <div className="kb-alert kb-alert--error" role="alert">{error}</div>}
     {notice && <div className="kb-alert" role="status">{notice}</div>}
     {config && !config.embeddingConfigured && <div className="kb-alert" role="status">{config.error ?? "Chưa cấu hình API key cho embedding trên Python service."} Bạn vẫn có thể lưu bản gốc và xử lý sau.</div>}

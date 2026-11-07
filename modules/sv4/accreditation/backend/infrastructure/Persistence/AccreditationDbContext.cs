@@ -22,6 +22,8 @@ public partial class AccreditationDbContext : DbContext
 
     public virtual DbSet<AunRequirementTranslation> AunRequirementTranslations { get; set; }
 
+    public virtual DbSet<ProgramAccreditation> ProgramAccreditations { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 

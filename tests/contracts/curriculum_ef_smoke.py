@@ -18,9 +18,11 @@ def call(path, method='GET', body=None, status=200):
     return json.loads(raw) if raw else None
 
 code='EF'+uuid.uuid4().hex[:12].upper()
-program=call('/programs','POST',{'code':code,'name':'Chương trình thử nghiệm EF'},201)
+university=call('/universities','POST',{'code':'U'+code[:20],'name':'Trường thử nghiệm EF'},201)
+uid=university['id']
+program=call('/programs','POST',{'universityId':uid,'code':code,'name':'Chương trình thử nghiệm EF'},201)
 pid=program['id']
-call('/programs','POST',{'code':code,'name':'Chương trình trùng'},409)
+call('/programs','POST',{'universityId':uid,'code':code,'name':'Chương trình trùng'},409)
 assert call('/programs?q='+code)['totalItems']==1
 call(f'/programs/{pid}','PUT',{'name':'Chương trình kiểm thử cập nhật'})
 version=call(f'/programs/{pid}/versions','POST',{'versionCode':'V1'},201)

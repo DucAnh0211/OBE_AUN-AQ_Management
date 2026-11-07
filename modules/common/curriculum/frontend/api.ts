@@ -11,6 +11,7 @@ import type {
   ProgramCourse,
   ProgramVersion,
   Plo,
+  University,
 } from "./types";
 import { apiBaseUrl } from "../../../../shared/frontend/api-config";
 import { authenticatedFetch } from "../../../../shared/frontend/auth-client";
@@ -76,15 +77,29 @@ function queryString(values: Record<string, string | number | boolean | undefine
 const curriculumPath = "/api/curriculum";
 
 export const curriculumApi = {
+  getUniversity: (id: number) => request<University>(`${curriculumPath}/universities/${id}`),
+  createUniversity: (code: string, name: string) =>
+    request<University>(`${curriculumPath}/universities`, {
+      method: "POST",
+      body: JSON.stringify({ code, name }),
+    }),
+  updateUniversity: (id: number, name: string) =>
+    request<University>(`${curriculumPath}/universities/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ name }),
+    }),
+  archiveUniversity: (id: number) =>
+    request<void>(`${curriculumPath}/universities/${id}`, { method: "DELETE" }),
+
   listPrograms: (page: number, pageSize: number, search: string, includeArchived: boolean) =>
     request<PagedResult<CurriculumProgram>>(
       `${curriculumPath}/programs?${queryString({ page, pageSize, q: search, includeArchived })}`,
     ),
   getProgram: (id: number) => request<CurriculumProgram>(`${curriculumPath}/programs/${id}`),
-  createProgram: (code: string, name: string) =>
+  createProgram: (universityId: number, code: string, name: string) =>
     request<CurriculumProgram>(`${curriculumPath}/programs`, {
       method: "POST",
-      body: JSON.stringify({ code, name }),
+      body: JSON.stringify({ universityId, code, name }),
     }),
   updateProgram: (id: number, name: string) =>
     request<CurriculumProgram>(`${curriculumPath}/programs/${id}`, {

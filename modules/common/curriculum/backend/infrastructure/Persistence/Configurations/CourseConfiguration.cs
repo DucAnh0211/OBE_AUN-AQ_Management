@@ -12,7 +12,7 @@ internal sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
 
         entity.ToTable("courses", "curriculum");
 
-        entity.HasIndex(e => e.InstitutionalCode, "courses_institutional_code_uq")
+        entity.HasIndex(e => new { e.UniversityId, e.InstitutionalCode }, "courses_university_id_institutional_code_uq")
             .IsUnique()
             .HasFilter("(institutional_code IS NOT NULL)");
 
@@ -24,8 +24,14 @@ internal sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
             .HasColumnName("created_at");
         entity.Property(e => e.InstitutionalCode).HasColumnName("institutional_code");
         entity.Property(e => e.Name).HasColumnName("name");
+        entity.Property(e => e.UniversityId).HasColumnName("university_id");
         entity.Property(e => e.UpdatedAt)
             .HasDefaultValueSql("now()")
             .HasColumnName("updated_at");
+
+        entity.HasOne(d => d.University).WithMany(p => p.Courses)
+            .HasForeignKey(d => d.UniversityId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("courses_university_id_fkey");
     }
 }

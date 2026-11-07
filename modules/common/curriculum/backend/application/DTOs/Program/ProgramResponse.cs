@@ -2,6 +2,9 @@ namespace ObeAunQa.Modules.Curriculum.Application;
 
 public sealed record ProgramResponse(
     long Id,
+    long UniversityId,
+    string UniversityCode,
+    string UniversityName,
     string Code,
     string Name,
     bool IsArchived,

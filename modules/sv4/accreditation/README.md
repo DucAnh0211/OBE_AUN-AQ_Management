@@ -33,3 +33,21 @@ Persistence dùng `AccreditationDbContext`, cấu hình từng entity, EF migrat
 `EfAccreditationRepository`. `AccreditationSeeder` nạp JSON bằng EF khi khung 4.0
 chưa tồn tại, giữ nguyên dữ liệu/bản dịch đã chỉnh sửa. Không còn SQL bootstrap.
 Xem [hướng dẫn EF Core](../../../docs/EF_CORE_ARCHITECTURE.md).
+
+## Kiểm định theo ngành
+
+`accreditation.program_accreditations` lưu từng đợt kiểm định của một CTĐT: bộ tiêu chí,
+kết quả (`self_assessed`, `accredited`, `not_met`), ngày đánh giá, ngày hết hiệu lực, mức
+kết luận 1–7 theo Guide AUN-QA v4.0 và ghi chú nguồn. Trạng thái `expired` không lưu mà
+tính từ `valid_until`. Một kiểm định còn hiệu lực được ưu tiên hơn đợt tự đánh giá mới hơn.
+
+- `GET /api/accreditation/directory/universities`: danh sách trường kèm số ngành đã kiểm định.
+- `GET /api/accreditation/directory/universities/{id}/programs?status=accredited|all`:
+  mặc định chỉ trả ngành đang còn hiệu lực kiểm định.
+- `GET /api/accreditation/directory/programs/{programId}/accreditations`: lịch sử theo CTĐT.
+- `POST /api/accreditation/programs/{programId}/accreditations`, `PUT|DELETE
+  /api/accreditation/program-accreditations/{id}`: chỉ admin.
+
+Nhóm `directory` mở cho mọi vai trò đã đổi mật khẩu nhưng vẫn giới hạn theo CTĐT được phân
+công. Kết quả kiểm định do admin nhập theo căn cứ; hệ thống không tự suy ra từ SAR.
+Kiểm thử luồng này: `tests/contracts/university_directory_smoke.py`.

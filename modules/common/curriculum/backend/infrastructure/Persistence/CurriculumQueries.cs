@@ -8,10 +8,13 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure;
 internal static class CurriculumQueries
 {
     public static IQueryable<ProgramResponse> ProgramResponses(this IQueryable<Domain.Entities.Program> query) =>
-        query.AsNoTracking().Select(p => new ProgramResponse(p.Id, p.Code, p.Name, p.ArchivedAt != null,
+        query.AsNoTracking().Select(p => new ProgramResponse(p.Id, p.UniversityId, p.University.Code, p.University.Name, p.Code, p.Name, p.ArchivedAt != null,
             p.ProgramVersions.LongCount(v => v.ArchivedAt == null),
             p.ProgramVersions.Where(v => v.IsCurrent && v.ArchivedAt == null).Select(v => (long?)v.Id).FirstOrDefault(),
             p.ProgramVersions.Where(v => v.IsCurrent && v.ArchivedAt == null).Select(v => v.VersionCode).FirstOrDefault(), p.CreatedAt, p.UpdatedAt));
+    public static IQueryable<UniversityResponse> UniversityResponses(this IQueryable<University> query, long[]? programIds = null) =>
+        query.AsNoTracking().Select(u => new UniversityResponse(u.Id, u.Code, u.Name, u.ArchivedAt != null,
+            u.Programs.LongCount(p => p.ArchivedAt == null && (programIds == null || programIds.Contains(p.Id))), u.CreatedAt, u.UpdatedAt));
     public static IQueryable<ProgramVersionResponse> VersionResponses(this IQueryable<ProgramVersion> query) =>
         query.AsNoTracking().Select(v => new ProgramVersionResponse(v.Id, v.ProgramId, v.VersionCode,
             v.DatasetStatus, v.IsCurrent, v.SourceVersionId, v.ProgramCourses.LongCount(c => c.ArchivedAt == null),

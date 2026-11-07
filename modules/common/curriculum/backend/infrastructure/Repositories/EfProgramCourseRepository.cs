@@ -19,8 +19,8 @@ internal sealed class EfProgramCourseRepository(CurriculumDbContext db, Curricul
     public async Task<ProgramCourseResponse> CreateProgramCourseAsync(long versionId, NormalizedCourse input, CancellationToken ct)
     {
         var id = await writes.RunAsync(async () => {
-            await writes.DraftAsync(versionId, ct);
-            var entity = new ProgramCourse { ProgramVersionId = versionId, CourseId = await CourseId(input, ct), DatasetStatus = CurriculumStatuses.Draft, QualityFlags = "[]",
+            var version = await writes.DraftAsync(versionId, ct);
+            var entity = new ProgramCourse { ProgramVersionId = versionId, CourseId = await CourseId(version.ProgramId, input, ct), DatasetStatus = CurriculumStatuses.Draft, QualityFlags = "[]",
                 CourseCodeSnapshot = input.InstitutionalCode, CourseNameSnapshot = input.Name, Credits = input.Credits, SemesterSourceValue = input.Semester,
                 DisplayOrder = input.DisplayOrder ?? (await db.ProgramCourses.Where(c => c.ProgramVersionId == versionId).MaxAsync(c => (int?)c.DisplayOrder, ct) ?? 0) + 1 };
             db.ProgramCourses.Add(entity); await db.SaveChangesAsync(ct); return entity.Id;
@@ -30,10 +30,10 @@ internal sealed class EfProgramCourseRepository(CurriculumDbContext db, Curricul
     public async Task<ProgramCourseResponse?> UpdateProgramCourseAsync(long versionId, long id, NormalizedCourse input, CancellationToken ct)
     {
         var found = await writes.RunAsync(async () => {
-            await writes.DraftAsync(versionId, ct);
+            var version = await writes.DraftAsync(versionId, ct);
             var c = await db.ProgramCourses.SingleOrDefaultAsync(c => c.Id == id && c.ProgramVersionId == versionId && c.ArchivedAt == null, ct);
             if (c == null) return false;
-            if (input.InstitutionalCode != null) c.CourseId = await CourseId(input, ct);
+            if (input.InstitutionalCode != null) c.CourseId = await CourseId(version.ProgramId, input, ct);
             c.CourseCodeSnapshot = input.InstitutionalCode; c.CourseNameSnapshot = input.Name; c.Credits = input.Credits;
             c.SemesterSourceValue = input.Semester; c.DisplayOrder = input.DisplayOrder!.Value; c.UpdatedAt = DateTime.UtcNow;
             return true;
@@ -45,14 +45,15 @@ internal sealed class EfProgramCourseRepository(CurriculumDbContext db, Curricul
         return await db.ProgramCourses.Where(c => c.Id == id && c.ProgramVersionId == versionId && c.ArchivedAt == null).ExecuteUpdateAsync(s => s
             .SetProperty(c => c.DatasetStatus, CurriculumStatuses.Archived).SetProperty(c => c.ArchivedAt, DateTime.UtcNow).SetProperty(c => c.UpdatedAt, DateTime.UtcNow), ct) == 1;
     }, ct);
-    private async Task<long> CourseId(NormalizedCourse input, CancellationToken ct)
+    private async Task<long> CourseId(long programId, NormalizedCourse input, CancellationToken ct)
     {
+        var universityId = await db.Programs.Where(p => p.Id == programId).Select(p => p.UniversityId).SingleAsync(ct);
         if (input.InstitutionalCode != null)
         {
-            var existing = await db.Courses.SingleOrDefaultAsync(c => c.InstitutionalCode == input.InstitutionalCode, ct);
+            var existing = await db.Courses.SingleOrDefaultAsync(c => c.UniversityId == universityId && c.InstitutionalCode == input.InstitutionalCode, ct);
             if (existing != null) return existing.Id;
         }
-        var course = new Course { InstitutionalCode = input.InstitutionalCode, Name = input.Name };
+        var course = new Course { UniversityId = universityId, InstitutionalCode = input.InstitutionalCode, Name = input.Name };
         db.Courses.Add(course); await db.SaveChangesAsync(ct); return course.Id;
     }
 }

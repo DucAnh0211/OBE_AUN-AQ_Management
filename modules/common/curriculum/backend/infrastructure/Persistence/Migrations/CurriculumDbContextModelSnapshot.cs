@@ -129,6 +129,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<long>("UniversityId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("university_id");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -138,7 +142,7 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("courses_pkey");
 
-                    b.HasIndex(new[] { "InstitutionalCode" }, "courses_institutional_code_uq")
+                    b.HasIndex(new[] { "UniversityId", "InstitutionalCode" }, "courses_university_id_institutional_code_uq")
                         .IsUnique()
                         .HasFilter("(institutional_code IS NOT NULL)");
 
@@ -372,6 +376,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<long>("UniversityId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("university_id");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -381,7 +389,7 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("programs_pkey");
 
-                    b.HasIndex(new[] { "Code" }, "programs_code_key")
+                    b.HasIndex(new[] { "UniversityId", "Code" }, "programs_university_id_code_key")
                         .IsUnique();
 
                     b.ToTable("programs", "curriculum");
@@ -666,6 +674,50 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.University", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("archived_at");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("universities_pkey");
+
+                    b.HasIndex(new[] { "Code" }, "universities_code_key")
+                        .IsUnique();
+
+                    b.ToTable("universities", "curriculum");
+                });
+
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.WeightCode", b =>
                 {
                     b.Property<char>("Code")
@@ -728,6 +780,18 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Navigation("Clo");
 
                     b.Navigation("CoursePlo");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.Course", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.University", "University")
+                        .WithMany("Courses")
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("courses_university_id_fkey");
+
+                    b.Navigation("University");
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.CoursePlo", b =>
@@ -811,6 +875,18 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasConstraintName("plos_program_version_id_fkey");
 
                     b.Navigation("ProgramVersion");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.Program", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.University", "University")
+                        .WithMany("Programs")
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("programs_university_id_fkey");
+
+                    b.Navigation("University");
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.ProgramCourse", b =>
@@ -921,6 +997,13 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Navigation("ImportBatchSyllabusDocuments");
 
                     b.Navigation("ImportBatchWorkbookDocuments");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.University", b =>
+                {
+                    b.Navigation("Courses");
+
+                    b.Navigation("Programs");
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.WeightCode", b =>

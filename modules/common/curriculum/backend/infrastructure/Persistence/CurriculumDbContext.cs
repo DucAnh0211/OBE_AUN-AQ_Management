@@ -38,6 +38,8 @@ public partial class CurriculumDbContext : DbContext
 
     public virtual DbSet<SourceDocument> SourceDocuments { get; set; }
 
+    public virtual DbSet<University> Universities { get; set; }
+
     public virtual DbSet<WeightCode> WeightCodes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

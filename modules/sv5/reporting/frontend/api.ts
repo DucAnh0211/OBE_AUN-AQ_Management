@@ -9,7 +9,7 @@ export type ReportSummary = {
   createdAt: string; createdBy: string; snapshotHash: string;
 };
 export type ReportDocument = ReportSummary & {
-  programCourseId: number | null; programCode: string; programName: string; versionCode: string;
+  programCourseId: number | null; universityName?: string | null; programCode: string; programName: string; versionCode: string;
   versionStatus: string; ruleVersion: string;
   metrics: { label: string; numerator: number; denominator: number; percentage: number | null }[];
   findings: string[]; notes: string[];

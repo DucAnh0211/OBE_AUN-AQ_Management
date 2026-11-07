@@ -195,7 +195,7 @@ export function AccreditationFrameworksPage() {
 
   return <section className="admin-page">
     <header className="workspace-heading">
-      <div><span className="eyebrow">KIỂM ĐỊNH AUN-QA</span><h1>Bộ tiêu chí AUN-QA</h1><p>Quản lý phiên bản khung đánh giá, tiêu chuẩn và các yêu cầu ở cấp chương trình.</p></div>
+      <div><h1>Bộ tiêu chí AUN-QA</h1><p>Quản lý phiên bản khung đánh giá, tiêu chuẩn và các yêu cầu ở cấp chương trình.</p></div>
       {isAdmin && <div className="admin-heading__actions"><button className="button button--ghost" type="button" onClick={() => setDialog("import")}>Nhập JSON</button><button className="button button--primary" type="button" onClick={() => setDialog("create")}>Tạo phiên bản</button></div>}
     </header>
 

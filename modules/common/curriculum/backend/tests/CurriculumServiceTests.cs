@@ -156,12 +156,14 @@ public sealed class CurriculumServiceTests
             int pageSize,
             string? search,
             bool includeArchived,
-            CancellationToken cancellationToken) => throw new NotSupportedException();
+            CancellationToken cancellationToken,
+            long? universityId = null) => throw new NotSupportedException();
 
         public Task<ProgramResponse?> GetProgramAsync(long id, CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
         public Task<ProgramResponse> CreateProgramAsync(
+            long universityId,
             string code,
             string name,
             CancellationToken cancellationToken) => throw new NotSupportedException();

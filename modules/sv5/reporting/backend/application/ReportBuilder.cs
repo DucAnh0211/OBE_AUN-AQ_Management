@@ -122,7 +122,7 @@ public static class ReportBuilder
         var title = request.Kind switch { "course" => "Báo cáo thiết kế học phần", "clo" => "Báo cáo CLO và mapping", _ => "Báo cáo PLO và độ bao phủ" };
         return new(Guid.NewGuid(), request.Kind, title, source.Program.Id, source.Version.Id, request.ProgramCourseId,
             source.Program.Code, source.Program.Name, source.Version.VersionCode, source.Version.Status, now, userId,
-            RuleVersion, hash, metrics, findings.ToArray(), notes, tables.ToArray(), snapshot);
+            RuleVersion, hash, metrics, findings.ToArray(), notes, tables.ToArray(), snapshot, source.Program.UniversityName);
     }
 
     private static ReportMetric Metric(string label, int numerator, int denominator) =>

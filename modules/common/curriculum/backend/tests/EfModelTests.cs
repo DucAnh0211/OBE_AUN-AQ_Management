@@ -35,6 +35,18 @@ public sealed class EfModelTests
     }
 
     [Fact]
+    public void ProgramAndCourseCodesAreUniqueInsideOneUniversityOnly()
+    {
+        using var db = Context();
+        var program = db.Model.FindEntityType(typeof(Program))!;
+        Assert.Contains(program.GetIndexes(), index => index.IsUnique && index.Properties.Select(p => p.Name).SequenceEqual(new[] { "UniversityId", "Code" }));
+        Assert.DoesNotContain(program.GetIndexes(), index => index.IsUnique && index.Properties.Count == 1);
+        var course = db.Model.FindEntityType(typeof(Course))!;
+        Assert.Contains(course.GetIndexes(), index => index.IsUnique && index.Properties.Select(p => p.Name).SequenceEqual(new[] { "UniversityId", "InstitutionalCode" }));
+        Assert.All(new[] { program, course }, entity => Assert.Contains(entity.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(University) && fk.DeleteBehavior == DeleteBehavior.Restrict));
+    }
+
+    [Fact]
     public void ModelMatchesCommittedMigrations()
     {
         using var db = Context();

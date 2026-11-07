@@ -22,6 +22,8 @@ public static class AccreditationModule
         services.AddDbContext<AccreditationDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("Postgres"), p => p.MigrationsHistoryTable("__EFMigrationsHistory", "accreditation")));
         services.AddScoped<IAccreditationRepository, EfAccreditationRepository>();
         services.AddScoped<AccreditationService>();
+        services.AddScoped<IProgramAccreditationRepository, EfProgramAccreditationRepository>();
+        services.AddScoped<ProgramAccreditationService>();
         services.Configure<DocumentStorageOptions>(o => {
             o.Endpoint = configuration["OBJECT_STORAGE_ENDPOINT"] ?? "";
             o.Bucket = configuration["OBJECT_STORAGE_BUCKET"] ?? "";
@@ -83,6 +85,7 @@ public static class AccreditationModule
             => {await service.UpsertCriterionTranslationAsync(id,criterionId,language,request,ct);return Results.NoContent();}).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         group.MapPut("/frameworks/{id:long:min(1)}/requirements/{requirementId:long:min(1)}/translations/{language}", async (long id,long requirementId,string language,TranslationText request,AccreditationService service,CancellationToken ct)
             => {await service.UpsertRequirementTranslationAsync(id,requirementId,language,request,ct);return Results.NoContent();}).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        endpoints.MapAccreditationDirectory(Descriptor.ApiPrefix);
         return endpoints;
     }
 }

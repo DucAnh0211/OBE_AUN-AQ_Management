@@ -3,7 +3,7 @@ export { ReportingPage } from "./ReportingPage";
 
 export const reportingFrontend: FrontendModuleDefinition = {
   id: "reporting",
-  label: "Báo cáo và trợ lý",
+  label: "Báo cáo",
   shortLabel: "BC",
   owner: "SV5 - Chí Hoàng",
   route: "/reporting",

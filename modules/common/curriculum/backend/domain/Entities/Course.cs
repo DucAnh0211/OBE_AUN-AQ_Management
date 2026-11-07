@@ -4,6 +4,8 @@ public class Course
 {
     public long Id { get; set; }
 
+    public long UniversityId { get; set; }
+
     public string? InstitutionalCode { get; set; }
 
     public string Name { get; set; } = null!;
@@ -11,6 +13,8 @@ public class Course
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
+
+    public virtual University University { get; set; } = null!;
 
     public virtual ICollection<ProgramCourse> ProgramCourses { get; set; } = new List<ProgramCourse>();
 }
