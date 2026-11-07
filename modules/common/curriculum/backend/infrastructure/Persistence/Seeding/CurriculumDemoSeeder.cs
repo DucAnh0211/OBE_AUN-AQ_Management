@@ -69,14 +69,15 @@ public sealed class CurriculumDemoSeeder(CurriculumDbContext db)
             var code = Text(item, "course_code_source_value")?.Trim();
             var course = new ProgramCourse {
                 ProgramVersionId = version.Id, SourceRow = row,
-                Course = original?.Course ?? new Course { UniversityId = program.UniversityId, Name = Text(item, "name")! },
+                Course = original?.Course ?? new Course { UniversityId = program.UniversityId, Name = Text(item, "name")!, InstitutionalCode = (courses.Count + 1).ToString("D6"), LegacyInstitutionalCode = code },
                 Credits = original?.Credits ?? item.GetProperty("credits").GetInt32(),
                 CourseCodeSourceValue = original?.CourseCodeSourceValue ?? Text(item, "course_code_source_value"),
                 SemesterSourceValue = original?.SemesterSourceValue ?? Text(item, "semester_source_value"),
                 DatasetStatus = isBaseline ? Text(item, "dataset_status")! : "draft",
                 QualityFlags = original?.QualityFlags ?? flags.GetRawText(),
                 CourseNameSnapshot = original?.CourseNameSnapshot ?? Text(item, "name")!,
-                CourseCodeSnapshot = original?.CourseCodeSnapshot ?? (flags.EnumerateArray().Any(f => f.GetString() == "course_code_missing_or_placeholder") || string.IsNullOrWhiteSpace(code) ? null : code),
+                CourseCodeSnapshot = original?.CourseCodeSnapshot ?? (courses.Count + 1).ToString("D6"),
+                LegacyCourseCodeSnapshot = original?.LegacyCourseCodeSnapshot ?? code,
                 DisplayOrder = original?.DisplayOrder ?? courses.Count + 1
             };
             courses.Add(row, course);

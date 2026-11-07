@@ -7,15 +7,16 @@ namespace ObeAunQa.Modules.Identity;
 public sealed class AccessControlService(IdentityDbContext db,ICurrentUser currentUser) : IAccessControlService
 {
     private IQueryable<CourseAccessRow> LecturerCourses => from a in db.LecturerCourseAssignments join c in db.Set<CourseAccessRow>() on a.ProgramCourseId equals c.Id where a.UserId==currentUser.UserId select c;
+    private IQueryable<CourseAccessRow> ReadableLecturerCourses => LecturerCourses.Union(db.Set<CourseAccessRow>().Where(c => db.Set<OfferingAccessRow>().Any(o => o.ProgramCourseId == c.Id && o.LecturerId == currentUser.UserId)));
     private IQueryable<VersionAccessRow> StudentVersions => from a in db.StudentProgramAssignments join v in db.Set<VersionAccessRow>() on a.ProgramId equals v.ProgramId where a.UserId==currentUser.UserId && v.DatasetStatus=="finalized" && v.IsCurrent && v.ArchivedAt==null select v;
-    private IQueryable<VersionAccessRow> LecturerVersions => from c in LecturerCourses join v in db.Set<VersionAccessRow>() on c.ProgramVersionId equals v.Id select v;
+    private IQueryable<VersionAccessRow> LecturerVersions => from c in ReadableLecturerCourses join v in db.Set<VersionAccessRow>() on c.ProgramVersionId equals v.Id select v;
     private IQueryable<CourseAccessRow> StudentCourses => from v in StudentVersions join c in db.Set<CourseAccessRow>() on v.Id equals c.ProgramVersionId where c.ArchivedAt==null select c;
     public Task<bool> CanReadProgramAsync(long id,CancellationToken ct) => currentUser.Role switch {
         SystemRoles.Admin=>Task.FromResult(true),SystemRoles.Lecturer=>LecturerVersions.AnyAsync(v=>v.ProgramId==id,ct),SystemRoles.Student=>StudentVersions.AnyAsync(v=>v.ProgramId==id,ct),_=>Task.FromResult(false)};
     public Task<bool> CanReadVersionAsync(long id,CancellationToken ct) => currentUser.Role switch {
         SystemRoles.Admin=>Task.FromResult(true),SystemRoles.Lecturer=>LecturerVersions.AnyAsync(v=>v.Id==id,ct),SystemRoles.Student=>StudentVersions.AnyAsync(v=>v.Id==id,ct),_=>Task.FromResult(false)};
     public Task<bool> CanReadCourseAsync(long id,CancellationToken ct) => currentUser.Role switch {
-        SystemRoles.Admin=>Task.FromResult(true),SystemRoles.Lecturer=>LecturerCourses.AnyAsync(c=>c.Id==id,ct),SystemRoles.Student=>StudentCourses.AnyAsync(c=>c.Id==id,ct),_=>Task.FromResult(false)};
+        SystemRoles.Admin=>Task.FromResult(true),SystemRoles.Lecturer=>ReadableLecturerCourses.AnyAsync(c=>c.Id==id,ct),SystemRoles.Student=>StudentCourses.AnyAsync(c=>c.Id==id,ct),_=>Task.FromResult(false)};
     public Task<bool> CanEditCourseOutcomesAsync(long id,CancellationToken ct)
     {
         if(currentUser.Role==SystemRoles.Admin) return Task.FromResult(true);
@@ -27,7 +28,7 @@ public sealed class AccessControlService(IdentityDbContext db,ICurrentUser curre
         SystemRoles.Lecturer=>LecturerVersions.Select(v=>v.ProgramId).Distinct().ToArrayAsync(ct),
         SystemRoles.Student=>StudentVersions.Select(v=>v.ProgramId).Distinct().ToArrayAsync(ct),_=>Task.FromResult(Array.Empty<long>())};
     public Task<long[]> GetReadableCourseIdsAsync(long id,CancellationToken ct) => currentUser.Role switch {
-        SystemRoles.Lecturer=>LecturerCourses.Where(c=>c.ProgramVersionId==id).Select(c=>c.Id).ToArrayAsync(ct),
+        SystemRoles.Lecturer=>ReadableLecturerCourses.Where(c=>c.ProgramVersionId==id).Select(c=>c.Id).ToArrayAsync(ct),
         SystemRoles.Student=>StudentCourses.Where(c=>c.ProgramVersionId==id).Select(c=>c.Id).ToArrayAsync(ct),_=>Task.FromResult(Array.Empty<long>())};
     public Task<bool> CanReadFrameworkAsync(long id,CancellationToken ct) => currentUser.Role switch {
         SystemRoles.Admin=>Task.FromResult(true),SystemRoles.Lecturer=>db.Set<FrameworkAccessRow>().AnyAsync(f=>f.Id==id && f.Status=="published",ct),_=>Task.FromResult(false)};

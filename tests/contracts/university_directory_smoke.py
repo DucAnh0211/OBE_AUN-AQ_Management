@@ -66,7 +66,7 @@ assert [p['id'] for p in listed['items']] == [one['id']], listed
 def course_version(program):
     version = api(f"{cur}/programs/{program['id']}/versions", 'POST', {'versionCode': 'V1'}, 201)
     course = api(f"{cur}/program-versions/{version['id']}/courses", 'POST',
-        {'institutionalCode': 'CS101', 'name': f"Lập trình {program['universityCode']}", 'credits': 3, 'semester': '1', 'displayOrder': 1}, 201)
+        {'institutionalCode': '123456', 'name': f"Lập trình {program['universityCode']}", 'credits': 3, 'semester': '1', 'displayOrder': 1}, 201)
     return version, course
 
 

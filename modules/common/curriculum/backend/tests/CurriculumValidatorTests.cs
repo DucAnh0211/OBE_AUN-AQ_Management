@@ -46,20 +46,22 @@ public sealed class CurriculumValidatorTests
         Assert.NotEmpty(exception.Errors);
     }
 
-    [Fact]
-    public void Course_AllowsMissingInstitutionalCode()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("CS101")]
+    [InlineData("12345")]
+    [InlineData("1234567")]
+    [InlineData("１２３４５６")]
+    public void Course_RequiresSixAsciiDigits(string? code)
     {
-        var result = CurriculumValidator.Course(
-            null,
+        var exception = Assert.Throws<CurriculumValidationException>(() => CurriculumValidator.Course(
+            code,
             "Nhập môn lập trình",
             3,
             "Kỳ 1",
             null,
-            requireDisplayOrder: false);
-
-        Assert.Null(result.InstitutionalCode);
-        Assert.Equal("Nhập môn lập trình", result.Name);
-        Assert.Null(result.DisplayOrder);
+            requireDisplayOrder: false));
+        Assert.Contains("institutionalCode", exception.Errors.Keys);
     }
 
     [Theory]

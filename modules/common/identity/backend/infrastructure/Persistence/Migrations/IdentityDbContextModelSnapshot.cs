@@ -340,6 +340,28 @@ namespace ObeAunQa.Modules.Identity.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ObeAunQa.Modules.Identity.Infrastructure.OfferingAccessRow", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("LecturerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProgramCourseId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("course_offerings", "curriculum", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
             modelBuilder.Entity("ObeAunQa.Modules.Identity.Infrastructure.ProgramAccessRow", b =>
                 {
                     b.Property<long>("Id")

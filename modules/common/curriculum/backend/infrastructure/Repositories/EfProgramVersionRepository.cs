@@ -28,7 +28,11 @@ internal sealed class EfProgramVersionRepository(CurriculumDbContext db, Curricu
                 db.ProgramCourses.AddRange(courses.Select(c => new ProgramCourse { ProgramVersionId = version.Id, CourseId = c.CourseId,
                     SourceRow = c.SourceRow, CourseCodeSourceValue = c.CourseCodeSourceValue, Credits = c.Credits, SemesterSourceValue = c.SemesterSourceValue,
                     DatasetStatus = CurriculumStatuses.Draft, QualityFlags = c.QualityFlags, CourseCodeSnapshot = c.CourseCodeSnapshot,
-                    CourseNameSnapshot = c.CourseNameSnapshot, DisplayOrder = c.DisplayOrder }));
+                    CourseNameSnapshot = c.CourseNameSnapshot, LegacyCourseCodeSnapshot = c.LegacyCourseCodeSnapshot, DisplayOrder = c.DisplayOrder }));
+                var components = await db.Set<AssessmentComponent>().AsNoTracking().Where(c => c.ProgramVersionId == sourceId).OrderBy(c => c.DisplayOrder).ToArrayAsync(ct);
+                db.AddRange(components.Select(c => new AssessmentComponent { ProgramVersionId = version.Id, Code = c.Code, Name = c.Name,
+                    Weight = c.Weight, MaxScore = c.MaxScore, DisplayOrder = c.DisplayOrder }));
+                if (components.Length > 0) version.GradeSchemeRevision = 1;
             }
             return version.Id;
         }, ct);

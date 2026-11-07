@@ -11,6 +11,7 @@ internal sealed class ProgramCourseConfiguration : IEntityTypeConfiguration<Prog
         entity.HasKey(e => e.Id).HasName("program_courses_pkey");
 
         entity.ToTable("program_courses", "curriculum", table => {
+            table.HasCheckConstraint("course_snapshot_code_six_digits", "course_code_snapshot ~ '^[0-9]{6}$'");
             table.HasCheckConstraint("program_courses_credits_check", "credits > 0");
             table.HasCheckConstraint("program_courses_display_order_ck", "display_order > 0");
             table.HasCheckConstraint("program_courses_dataset_status_ck", "dataset_status IN ('draft','finalized','archived')");
@@ -30,7 +31,7 @@ internal sealed class ProgramCourseConfiguration : IEntityTypeConfiguration<Prog
             .UseIdentityAlwaysColumn()
             .HasColumnName("id");
         entity.Property(e => e.ArchivedAt).HasColumnName("archived_at");
-        entity.Property(e => e.CourseCodeSnapshot).HasColumnName("course_code_snapshot");
+        entity.Property(e => e.CourseCodeSnapshot).HasColumnName("course_code_snapshot").HasMaxLength(6).IsRequired();
         entity.Property(e => e.CourseCodeSourceValue).HasColumnName("course_code_source_value");
         entity.Property(e => e.CourseId).HasColumnName("course_id");
         entity.Property(e => e.CourseNameSnapshot).HasColumnName("course_name_snapshot");

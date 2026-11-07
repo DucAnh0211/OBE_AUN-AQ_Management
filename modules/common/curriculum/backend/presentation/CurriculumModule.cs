@@ -46,6 +46,11 @@ public static class CurriculumModule
         services.AddScoped<ICurriculumAnalysisRepository, EfCurriculumAnalysisRepository>();
         services.AddScoped<ICurriculumReportSource, EfCurriculumReportSource>();
         services.AddScoped<CurriculumService>();
+        services.AddScoped<IAcademicRepository, EfAcademicRepository>();
+        services.AddScoped<IAcademicSheetReader, AcademicSheetReader>();
+        services.AddScoped<AcademicService>();
+        services.AddScoped<ICourseOfferingRepository, EfCourseOfferingRepository>();
+        services.AddScoped<CourseOfferingService>();
         services.AddScoped<UniversityService>();
         services.AddExceptionHandler<CurriculumExceptionHandler>();
         return services;
@@ -99,6 +104,8 @@ public static class CurriculumModule
 
         group.MapUniversityEndpoints();
         group.MapOutcomeEndpoints();
+        group.MapAcademicEndpoints();
+        group.MapCourseOfferingEndpoints();
 
         return endpoints;
     }

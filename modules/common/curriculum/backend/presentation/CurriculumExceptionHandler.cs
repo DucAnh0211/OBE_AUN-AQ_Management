@@ -14,6 +14,7 @@ internal sealed class CurriculumExceptionHandler : IExceptionHandler
     {
         ProblemDetails? problem = exception switch
         {
+            AcademicAccessException denied => new ProblemDetails { Status = 403, Title = "Không có quyền", Detail = denied.Message },
             CurriculumValidationException validation => CreateValidationProblem(validation),
             CurriculumNotFoundException notFound => new ProblemDetails
             {
@@ -40,7 +41,11 @@ internal sealed class CurriculumExceptionHandler : IExceptionHandler
 
         problem.Extensions["traceId"] = httpContext.TraceIdentifier;
         httpContext.Response.StatusCode = problem.Status!.Value;
-        await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);
+        // Keep validation-specific fields when serializing through the ProblemDetails base type.
+        if (problem is HttpValidationProblemDetails validationProblem)
+            await httpContext.Response.WriteAsJsonAsync(validationProblem, cancellationToken);
+        else
+            await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);
         return true;
     }
 
