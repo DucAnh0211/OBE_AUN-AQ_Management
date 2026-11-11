@@ -52,6 +52,10 @@ public static class CurriculumModule
         services.AddScoped<ICourseOfferingRepository, EfCourseOfferingRepository>();
         services.AddScoped<CourseOfferingService>();
         services.AddScoped<UniversityService>();
+        services.AddScoped<IOrganizationRepository, EfOrganizationRepository>();
+        services.AddScoped<OrganizationService>();
+        services.AddScoped<IStudentDirectoryRepository, EfStudentDirectoryRepository>();
+        services.AddScoped<StudentDirectoryService>();
         services.AddExceptionHandler<CurriculumExceptionHandler>();
         return services;
     }
@@ -71,7 +75,12 @@ public static class CurriculumModule
             "courses",
             "plos",
             "clos",
-            "curriculum-mapping"
+            "curriculum-mapping",
+            "org-units",
+            "home-classes",
+            "course-offerings",
+            "gradebooks",
+            "transcripts"
         }));
 
         group.MapGet("/programs", GetProgramsAsync);
@@ -106,6 +115,8 @@ public static class CurriculumModule
         group.MapOutcomeEndpoints();
         group.MapAcademicEndpoints();
         group.MapCourseOfferingEndpoints();
+        group.MapOrganizationEndpoints();
+        group.MapStudentDirectoryEndpoints();
 
         return endpoints;
     }

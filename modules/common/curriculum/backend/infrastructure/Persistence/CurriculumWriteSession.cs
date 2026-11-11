@@ -48,6 +48,14 @@ internal sealed class CurriculumWriteSession(CurriculumDbContext db)
         "clos_program_course_id_code_key" => new("clo_code_exists", "Mã CLO đã tồn tại trong học phần."),
         "course_plos_program_course_id_plo_id_key" => new("course_plo_mapping_exists", "Học phần đã được ánh xạ với PLO này."),
         "clo_plos_pkey" => new("clo_plo_mapping_exists", "CLO đã được ánh xạ với PLO này."),
+        "IX_org_units_UniversityId_Code" => new("org_unit_code_exists", "Mã khoa/bộ môn đã tồn tại trong trường."),
+        "IX_home_classes_ProgramVersionId_Code" => new("home_class_code_exists", "Mã lớp sinh hoạt đã tồn tại trong phiên bản CTĐT."),
+        "IX_lecturer_profiles_LecturerCode" => new("lecturer_code_exists", "Mã giảng viên đã được dùng cho giảng viên khác."),
+        "IX_course_offerings_ProgramCourseId_AcademicPeriod_GroupName" => new("offering_group_exists", "Học phần đã có nhóm lớp này trong học kỳ."),
+        "IX_academic_students_UserId" => new("student_account_linked", "Tài khoản này đã được liên kết với hồ sơ sinh viên khác."),
+        "IX_academic_students_UniversityId_StudentCode" => new("student_code_exists", "Mã sinh viên đã tồn tại trong trường."),
+        "IX_grade_scales_UniversityId_Letter" => new("grade_letter_exists", "Điểm chữ bị trùng trong thang điểm."),
+        "offering_lecturers_one_main" => new("offering_main_lecturer", "Lớp học phần chỉ có một giảng viên chính."),
         _ => new("course_code_exists", "Dữ liệu trùng mã hoặc liên kết đã tồn tại.")
     };
 }

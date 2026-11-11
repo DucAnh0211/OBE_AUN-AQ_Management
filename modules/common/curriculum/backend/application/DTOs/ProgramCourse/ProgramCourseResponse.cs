@@ -13,4 +13,6 @@ public sealed record ProgramCourseResponse(
     int? SourceRow,
     DateTime? ArchivedAt,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    long? DepartmentId = null,
+    bool CountsTowardGpa = true);

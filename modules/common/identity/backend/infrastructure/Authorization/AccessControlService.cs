@@ -7,7 +7,8 @@ namespace ObeAunQa.Modules.Identity;
 public sealed class AccessControlService(IdentityDbContext db,ICurrentUser currentUser) : IAccessControlService
 {
     private IQueryable<CourseAccessRow> LecturerCourses => from a in db.LecturerCourseAssignments join c in db.Set<CourseAccessRow>() on a.ProgramCourseId equals c.Id where a.UserId==currentUser.UserId select c;
-    private IQueryable<CourseAccessRow> ReadableLecturerCourses => LecturerCourses.Union(db.Set<CourseAccessRow>().Where(c => db.Set<OfferingAccessRow>().Any(o => o.ProgramCourseId == c.Id && o.LecturerId == currentUser.UserId)));
+    private IQueryable<CourseAccessRow> ReadableLecturerCourses => LecturerCourses.Union(db.Set<CourseAccessRow>().Where(c => db.Set<OfferingAccessRow>().Any(o => o.ProgramCourseId == c.Id
+        && db.Set<OfferingLecturerAccessRow>().Any(l => l.OfferingId == o.Id && l.UserId == currentUser.UserId))));
     private IQueryable<VersionAccessRow> StudentVersions => from a in db.StudentProgramAssignments join v in db.Set<VersionAccessRow>() on a.ProgramId equals v.ProgramId where a.UserId==currentUser.UserId && v.DatasetStatus=="finalized" && v.IsCurrent && v.ArchivedAt==null select v;
     private IQueryable<VersionAccessRow> LecturerVersions => from c in ReadableLecturerCourses join v in db.Set<VersionAccessRow>() on c.ProgramVersionId equals v.Id select v;
     private IQueryable<CourseAccessRow> StudentCourses => from v in StudentVersions join c in db.Set<CourseAccessRow>() on v.Id equals c.ProgramVersionId where c.ArchivedAt==null select c;

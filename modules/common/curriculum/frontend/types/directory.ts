@@ -1,0 +1,14 @@
+export type OrgUnit = { id: number; universityId: number; parentId: number | null; kind: "faculty" | "department"; code: string; name: string; archived: boolean };
+export type LecturerProfile = { userId: number; fullName: string; email: string; lecturerCode: string | null; departmentId: number | null; departmentName: string | null;
+  academicTitle: string | null; degree: string | null };
+export type HomeClass = { id: number; versionId: number; cohortCode: string | null; code: string; name: string; advisorUserId: number | null; advisorName: string | null; studentCount: number };
+export type StudentStatus = "studying" | "suspended" | "dropped" | "graduated";
+export const studentStatusLabels: Record<StudentStatus, string> = { studying: "Đang học", suspended: "Bảo lưu", dropped: "Thôi học", graduated: "Đã tốt nghiệp" };
+export type Student = { id: number; studentCode: string; fullName: string; cohortCode: string | null; status: StudentStatus; homeClassId: number | null;
+  homeClassCode: string | null; programVersionId: number | null; userId: number | null };
+export type Account = { id: number; fullName: string; email: string };
+export type GpaSummary = { gpa: number | null; gpaCredits: number; earnedCredits: number };
+export type TranscriptRow = { period: string; courseCode: string; courseName: string; credits: number; countsTowardGpa: boolean; offeringCode: string;
+  finalScore: number | null; letterGrade: string | null; gradePoint: number | null; passed: boolean | null; attemptKind: "first" | "retake" | "improve"; countedInCumulative: boolean };
+export type Transcript = { student: Student; semesters: { period: string; rows: TranscriptRow[]; summary: GpaSummary }[]; cumulative: GpaSummary;
+  classification: string | null; retakePolicy: "highest" | "latest" };

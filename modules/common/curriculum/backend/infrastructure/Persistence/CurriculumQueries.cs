@@ -11,7 +11,7 @@ internal static class CurriculumQueries
         query.AsNoTracking().Select(p => new ProgramResponse(p.Id, p.UniversityId, p.University.Code, p.University.Name, p.Code, p.Name, p.ArchivedAt != null,
             p.ProgramVersions.LongCount(v => v.ArchivedAt == null),
             p.ProgramVersions.Where(v => v.IsCurrent && v.ArchivedAt == null).Select(v => (long?)v.Id).FirstOrDefault(),
-            p.ProgramVersions.Where(v => v.IsCurrent && v.ArchivedAt == null).Select(v => v.VersionCode).FirstOrDefault(), p.CreatedAt, p.UpdatedAt));
+            p.ProgramVersions.Where(v => v.IsCurrent && v.ArchivedAt == null).Select(v => v.VersionCode).FirstOrDefault(), p.CreatedAt, p.UpdatedAt, p.FacultyId));
     public static IQueryable<UniversityResponse> UniversityResponses(this IQueryable<University> query, long[]? programIds = null) =>
         query.AsNoTracking().Select(u => new UniversityResponse(u.Id, u.Code, u.Name, u.ArchivedAt != null,
             u.Programs.LongCount(p => p.ArchivedAt == null && (programIds == null || programIds.Contains(p.Id))), u.CreatedAt, u.UpdatedAt));
@@ -21,7 +21,8 @@ internal static class CurriculumQueries
             v.PublishedAt, v.ArchivedAt, v.CreatedAt, v.UpdatedAt));
     public static readonly Expression<Func<ProgramCourse, ProgramCourseResponse>> Course = c => new(
         c.Id, c.ProgramVersionId, c.CourseId, c.CourseCodeSnapshot, c.CourseNameSnapshot, c.Credits,
-        c.SemesterSourceValue, c.DisplayOrder, c.DatasetStatus, c.SourceRow, c.ArchivedAt, c.CreatedAt, c.UpdatedAt);
+        c.SemesterSourceValue, c.DisplayOrder, c.DatasetStatus, c.SourceRow, c.ArchivedAt, c.CreatedAt, c.UpdatedAt,
+        c.Course.DepartmentId, c.CountsTowardGpa);
     public static readonly Expression<Func<Plo, PloResponse>> Plo = p => new(p.Id, p.ProgramVersionId, p.Code, p.Statement, p.LevelCode, p.Provenance);
     public static readonly Expression<Func<Clo, CloResponse>> Clo = c => new(c.Id, c.ProgramCourseId, c.Code, c.Statement, c.LevelCode, c.Provenance, c.DatasetStatus);
     public static readonly Expression<Func<CoursePlo, CoursePloMappingResponse>> CoursePlo = m => new(m.Id, m.ProgramVersionId,

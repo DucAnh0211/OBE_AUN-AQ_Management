@@ -35,8 +35,11 @@ public sealed class CurriculumDemoSeeder(CurriculumDbContext db)
         await db.SaveChangesAsync(ct);
 
         var baseline = await AddVersionAsync(program, first, m1.RootElement, workbook, syllabus, null, ct);
-        await AddVersionAsync(program, v2.RootElement, m2.RootElement, workbook, syllabus, baseline, ct);
-        await new CurriculumDemoVerifier(db).VerifyAsync(ct);
+        var current = await AddVersionAsync(program, v2.RootElement, m2.RootElement, workbook, syllabus, baseline, ct);
+        await SeedAcademicsAsync(university, program, current, ct);
+        var verifier = new CurriculumDemoVerifier(db);
+        await verifier.VerifyAsync(ct);
+        await verifier.VerifyAcademicsAsync(ct);
         await transaction.CommitAsync(ct);
         return true;
     }
@@ -115,6 +118,72 @@ public sealed class CurriculumDemoSeeder(CurriculumDbContext db)
         db.ImportBatches.Add(batch);
         await db.SaveChangesAsync(ct);
         return version;
+    }
+
+    /// <summary>
+    /// Dữ liệu học vụ mẫu (giả lập, không phải dữ liệu thật): khoa/bộ môn, quy chế TT08, một lớp sinh hoạt,
+    /// cơ cấu điểm có liên kết CLO cho 3 học phần, lớp học phần đã công bố/đang nhập và một ca học lại.
+    /// </summary>
+    private async Task SeedAcademicsAsync(University university, CurriculumProgram program, ProgramVersion version, CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var policy = new GradingPolicy { UniversityId = university.Id, UpdatedAt = now };
+        db.Add(policy);
+        db.AddRange(Domain.GradeRules.DefaultBands.Select((b, i) => new GradeScaleBand { UniversityId = university.Id, Letter = b.Letter, MinScore = b.MinScore,
+            Point4 = b.Point4, IsPassing = b.IsPassing, DisplayOrder = i + 1 }));
+        var faculty = new OrgUnit { UniversityId = university.Id, Kind = Domain.AcademicCodes.Faculty, Code = "CNTT", Name = "Khoa Công nghệ thông tin", CreatedAt = now };
+        db.Add(faculty); await db.SaveChangesAsync(ct);
+        var department = new OrgUnit { UniversityId = university.Id, ParentId = faculty.Id, Kind = Domain.AcademicCodes.Department, Code = "KHMT", Name = "Bộ môn Khoa học máy tính", CreatedAt = now };
+        db.Add(department); await db.SaveChangesAsync(ct);
+        program.FacultyId = faculty.Id;
+        await db.Courses.Where(c => c.UniversityId == university.Id).ExecuteUpdateAsync(s => s.SetProperty(c => c.DepartmentId, department.Id), ct);
+
+        var homeClass = new HomeClass { ProgramVersionId = version.Id, CohortCode = "K66", Code = "KHMT01-K66", Name = "Khoa học máy tính 01 – K66", CreatedAt = now };
+        db.Add(homeClass); await db.SaveChangesAsync(ct);
+        var students = new[] { "Nguyễn Văn An", "Trần Thị Bình", "Lê Minh Châu", "Phạm Quốc Dũng" }.Select((name, i) => new AcademicStudent { UniversityId = university.Id,
+            StudentCode = $"DEMO{i + 1:000}", FullName = name, HomeClassId = homeClass.Id, ProgramVersionId = version.Id, CohortCode = "K66", CreatedAt = now }).ToArray();
+        db.AddRange(students); await db.SaveChangesAsync(ct);
+
+        var courses = await db.ProgramCourses.Where(c => c.ProgramVersionId == version.Id && c.Credits >= 2).OrderBy(c => c.DisplayOrder).Take(3).ToListAsync(ct);
+        var schemes = new Dictionary<long, AssessmentComponent[]>();
+        foreach (var course in courses)
+        {
+            var parts = new[] { new AssessmentComponent { ProgramCourseId = course.Id, Code = "QT", Name = "Quá trình", Kind = "process", Weight = 40, MaxScore = 10, DisplayOrder = 1 },
+                new AssessmentComponent { ProgramCourseId = course.Id, Code = "THI", Name = "Thi cuối kỳ", Kind = Domain.AcademicCodes.FinalExam, Weight = 60, MaxScore = 10, DisplayOrder = 2 } };
+            db.AddRange(parts); await db.SaveChangesAsync(ct);
+            var clos = await db.Clos.Where(c => c.ProgramCourseId == course.Id).OrderBy(c => c.Code).Select(c => c.Id).ToArrayAsync(ct);
+            if (clos.Length > 0) db.Add(new AssessmentComponentClo { ComponentId = parts[0].Id, CloId = clos[0], Weight = 100 });
+            db.AddRange(clos.Select(id => new AssessmentComponentClo { ComponentId = parts[1].Id, CloId = id, Weight = 100 }));
+            course.GradeSchemeRevision = 1; schemes[course.Id] = parts;
+        }
+        await db.SaveChangesAsync(ct);
+
+        var bands = Domain.GradeRules.DefaultBands;
+        async Task Offering(ProgramCourse course, string period, bool publish, (AcademicStudent Student, decimal Qt, decimal Thi, string Attempt)[] rows)
+        {
+            var offering = new CourseOffering { ProgramVersionId = version.Id, ProgramCourseId = course.Id, AcademicPeriod = period, GroupName = "N01", TargetHomeClassId = homeClass.Id,
+                Capacity = 60, GradeStatus = publish ? Domain.AcademicCodes.Published : Domain.AcademicCodes.Draft, PublishedAt = publish ? now : null, CreatedAt = now };
+            db.Add(offering); await db.SaveChangesAsync(ct);
+            foreach (var (student, qt, thi, attempt) in rows)
+            {
+                var e = new CourseEnrollment { OfferingId = offering.Id, ProgramCourseId = course.Id, StudentId = student.Id, AcademicPeriod = period, AttemptKind = attempt, Revision = 1, CreatedAt = now };
+                db.Add(e); await db.SaveChangesAsync(ct);
+                var parts = schemes[course.Id];
+                db.AddRange(new StudentGrade { EnrollmentId = e.Id, ComponentId = parts[0].Id, Score = qt, UpdatedAt = now, UpdatedBy = 0 },
+                    new StudentGrade { EnrollmentId = e.Id, ComponentId = parts[1].Id, Score = thi, UpdatedAt = now, UpdatedBy = 0 });
+                db.AddRange(new GradeChange { EnrollmentId = e.Id, ComponentId = parts[0].Id, NewScore = qt, ActorId = 0, ChangedAt = now, Source = "import", Reason = "Dữ liệu mẫu" },
+                    new GradeChange { EnrollmentId = e.Id, ComponentId = parts[1].Id, NewScore = thi, ActorId = 0, ChangedAt = now, Source = "import", Reason = "Dữ liệu mẫu" });
+                if (!publish) continue;
+                var outcome = Domain.GradeRules.Outcome(Domain.GradeRules.Total([(qt, 10m, 40m), (thi, 10m, 60m)], policy.CourseScoreDecimals), null, bands);
+                e.FinalScore = outcome.FinalScore; e.LetterGrade = outcome.Letter; e.GradePoint = outcome.Point4; e.Passed = outcome.Passed; e.PublishedAt = now;
+            }
+            await db.SaveChangesAsync(ct);
+        }
+        if (courses.Count < 3) return;
+        await Offering(courses[0], "2025-2026-HK1", true, [(students[0], 9, 8.5m, "first"), (students[1], 7, 7.5m, "first"), (students[2], 6, 6, "first"), (students[3], 2, 3, "first")]);
+        await Offering(courses[1], "2025-2026-HK1", true, [(students[0], 8, 9, "first"), (students[1], 9, 9.5m, "first"), (students[2], 5, 5.5m, "first"), (students[3], 6, 5, "first")]);
+        await Offering(courses[0], "2025-2026-HK2", true, [(students[3], 6, 7, "retake")]);
+        await Offering(courses[2], "2025-2026-HK2", false, [(students[0], 8, 7, "first"), (students[1], 9, 8, "first"), (students[2], 7, 6, "first")]);
     }
 
     private static string? Text(JsonElement item, string name) => item.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null ? value.GetString() : null;

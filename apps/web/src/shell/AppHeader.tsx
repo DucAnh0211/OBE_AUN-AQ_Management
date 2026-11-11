@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Books, CaretDown, GraduationCap, House, SignOut, Sparkle, UsersThree } from "@phosphor-icons/react";
+import { Books, CaretDown, ChalkboardTeacher, GraduationCap, House, SignOut, Sparkle, UsersThree } from "@phosphor-icons/react";
 import type { FrontendModuleDefinition } from "../../../../shared/frontend/module";
 import { moduleIcon } from "./module-icons";
 
@@ -35,6 +35,7 @@ function AccountMenu({ fullName, email, roleLabel, isAdmin, onLogout }: {
       {isAdmin && <>
         <Link className="account-menu__item" role="menuitem" to="/admin/knowledge" onClick={() => setOpen(false)}><Books size={17} aria-hidden="true" />Knowledge Base</Link>
         <Link className="account-menu__item" role="menuitem" to="/admin/users" onClick={() => setOpen(false)}><UsersThree size={17} aria-hidden="true" />Quản lý tài khoản</Link>
+        <Link className="account-menu__item" role="menuitem" to="/admin/lecturers" onClick={() => setOpen(false)}><ChalkboardTeacher size={17} aria-hidden="true" />Hồ sơ giảng viên</Link>
       </>}
       <button className="account-menu__item" role="menuitem" type="button" onClick={onLogout}><SignOut size={17} aria-hidden="true" />Đăng xuất</button>
     </div>}

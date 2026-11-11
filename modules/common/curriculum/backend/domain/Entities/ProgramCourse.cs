@@ -14,6 +14,11 @@ public class ProgramCourse
 
     public int Credits { get; set; }
 
+    /// <summary>False cho học phần điều kiện (GDTC, GDQP-AN): vẫn xét đạt nhưng không tính GPA.</summary>
+    public bool CountsTowardGpa { get; set; } = true;
+
+    public int GradeSchemeRevision { get; set; }
+
     public string? SemesterSourceValue { get; set; }
 
     public string DatasetStatus { get; set; } = null!;

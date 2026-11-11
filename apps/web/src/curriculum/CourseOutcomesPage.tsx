@@ -4,7 +4,8 @@ import { curriculumApi } from "../../../../modules/common/curriculum/frontend/ap
 import type { Clo, CloPloMapping, CoursePloMapping, Plo, ProgramCourse, ProgramVersion } from "../../../../modules/common/curriculum/frontend/types";
 import { useAuth } from "../auth/AuthContext";
 import { DialogFrame, useConfirmDialog } from "../components/Dialogs";
-import { VersionOutcomeNav } from "./OutcomeManagementPages";
+import { DomainEyebrow, domainPage } from "../../../../modules/common/curriculum/frontend/components/Domain";
+import { CourseNav } from "../../../../modules/common/curriculum/frontend/components/VersionNav";
 
 type CloDraft = { code: string; statement: string; levelCode: string };
 
@@ -16,7 +17,7 @@ function CloEditor({ initial, busy, onClose, onSave }: {
 }) {
   const [draft, setDraft] = useState<CloDraft>({ code: initial?.code ?? "", statement: initial?.statement ?? "", levelCode: initial?.levelCode ?? "" });
   function submit(event: FormEvent) { event.preventDefault(); void onSave(draft); }
-  return <DialogFrame title={initial ? `Cập nhật ${initial.code}` : "Thêm chuẩn đầu ra bộ môn"} description="CLO mô tả kết quả người học cần đạt sau khi hoàn thành bộ môn." onClose={onClose}>
+  return <DialogFrame title={initial ? `Cập nhật ${initial.code}` : "Thêm chuẩn đầu ra học phần"} description="CLO mô tả kết quả người học cần đạt sau khi hoàn thành học phần." onClose={onClose}>
     <form className="admin-form admin-form--grid" onSubmit={submit}>
       <label><span>Mã CLO</span><input required autoFocus value={draft.code} onChange={(event) => setDraft({ ...draft, code: event.target.value })} placeholder="CLO1" /></label>
       <label><span>Mức Bloom</span><input value={draft.levelCode} onChange={(event) => setDraft({ ...draft, levelCode: event.target.value })} placeholder="Ví dụ: L3" /></label>
@@ -56,7 +57,7 @@ export function CourseOutcomesPage() {
       setVersion(v); setCourse(c); setClos(cloItems); setCourseMappings(mappings); setPlos(ploItems);
       const pairs = await Promise.all(cloItems.map(async (clo) => [clo.id, await curriculumApi.listCloPloMappings(versionId, courseId, clo.id)] as const));
       setCloMappings(Object.fromEntries(pairs));
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "Không thể tải chuẩn đầu ra bộ môn."); }
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "Không thể tải chuẩn đầu ra học phần."); }
     finally { setLoading(false); }
   }, [versionId, courseId]);
   useEffect(() => { void load(); }, [load]);
@@ -77,7 +78,7 @@ export function CourseOutcomesPage() {
   async function remove(clo: Clo) {
     const accepted = await confirm({
       title: `Xóa ${clo.code}`,
-      description: "CLO sẽ bị xóa khỏi bộ môn. Thao tác không thể hoàn tác.",
+      description: "CLO sẽ bị xóa khỏi học phần. Thao tác không thể hoàn tác.",
       confirmLabel: "Xóa CLO",
       tone: "danger",
     });
@@ -97,24 +98,24 @@ export function CourseOutcomesPage() {
     catch (caught) { setError(caught instanceof Error ? caught.message : "Không thể xóa ánh xạ."); }
   }
 
-  if (loading) return <section className="admin-page"><div className="compact-loading">Đang tải chuẩn đầu ra bộ môn…</div></section>;
-  return <section className="admin-page">
-    <div className="breadcrumbs"><Link to={`/curriculum/versions/${versionId}`}>Bộ môn</Link><span>/</span><span>{course?.institutionalCode ?? course?.name ?? courseId}</span></div>
-    <header className="workspace-heading"><div><span className="eyebrow">{course?.institutionalCode ?? "Bộ môn"}</span><h1>Chuẩn đầu ra bộ môn</h1><p>{course?.name}</p></div>{editable && <button className="button button--primary" type="button" onClick={() => setEditing("new")}>Thêm CLO</button>}</header>
-    <VersionOutcomeNav versionId={versionId} />
+  if (loading) return <section className={domainPage("curriculum")}><div className="compact-loading">Đang tải chuẩn đầu ra học phần…</div></section>;
+  return <section className={domainPage("curriculum")}>
+    <div className="breadcrumbs"><Link to={`/curriculum/versions/${versionId}`}>Học phần</Link><span>/</span><span>{course?.institutionalCode ?? course?.name ?? courseId}</span></div>
+    <header className="workspace-heading"><div><DomainEyebrow domain="curriculum" detail={course?.institutionalCode ?? "Học phần"} /><h1>Chuẩn đầu ra học phần</h1><p>{course?.name}</p></div><div className="admin-heading__actions">{editable && <button className="button button--primary" type="button" onClick={() => setEditing("new")}>Thêm CLO</button>}</div></header>
+    <CourseNav versionId={versionId} courseId={courseId} staff={user?.role !== "student"} />
     {error && <div className="alert alert--error" role="alert">{error}</div>}
 
     {course && <div className="summary-strip"><div><span>Trạng thái phiên bản</span><strong>{version?.status === "draft" ? "Bản nháp" : "Chỉ đọc"}</strong></div><div><span>Tín chỉ</span><strong>{course.credits}</strong></div><div><span>Số CLO</span><strong>{clos.length}</strong></div></div>}
 
     <details className="reference-panel">
-      <summary>PLO được bộ môn đóng góp <span>{courseMappings.length}/{plos.length}</span></summary>
+      <summary>PLO được học phần đóng góp <span>{courseMappings.length}/{plos.length}</span></summary>
       <div className="reference-list">{courseMappings.map((mapping) => {
         const plo = plos.find((item) => item.id === mapping.ploId);
         return <div key={mapping.id}><strong>{mapping.ploCode}</strong><span>{plo?.statement ?? "Không có mô tả"}</span><small>{mapping.weightCode} · {mapping.progressionCode}</small></div>;
-      })}{!courseMappings.length && <div className="table-empty">Bộ môn chưa được ánh xạ với PLO.</div>}</div>
+      })}{!courseMappings.length && <div className="table-empty">Học phần chưa được ánh xạ với PLO.</div>}</div>
     </details>
 
-    <div className="section-heading"><div><h2>Danh sách CLO</h2><p>Ánh xạ từng CLO trong phạm vi PLO của bộ môn.</p></div><span>{clos.length} CLO</span></div>
+    <div className="section-heading"><div><h2>Danh sách CLO</h2><p>Ánh xạ từng CLO trong phạm vi PLO của học phần.</p></div><span>{clos.length} CLO</span></div>
     <div className="clo-list">{clos.map((clo) => {
       const mappings = cloMappings[clo.id] ?? [];
       const available = courseMappings.filter((mapping) => !mappings.some((item) => item.coursePloId === mapping.id));
@@ -124,7 +125,7 @@ export function CourseOutcomesPage() {
         <div className="clo-row__actions">{editable && <><select aria-label={`Thêm ánh xạ cho ${clo.code}`} value="" disabled={!available.length} onChange={(event) => void addMapping(clo, event.target.value)}><option value="">{available.length ? "Thêm ánh xạ…" : "Đã ánh xạ hết"}</option>{available.map((mapping) => <option key={mapping.id} value={mapping.id}>{mapping.ploCode} · {mapping.weightCode}/{mapping.progressionCode}</option>)}</select><div className="table-actions"><button className="button button--small button--ghost" type="button" onClick={() => setEditing(clo)}>Cập nhật</button><button className="button button--small button--danger" type="button" onClick={() => void remove(clo)}>Xóa</button></div></>}</div>
       </article>;
     })}</div>
-    {!clos.length && <div className="empty-state"><strong>Bộ môn chưa có CLO</strong><span>{editable ? "Thêm CLO đầu tiên để bắt đầu ánh xạ với PLO." : "Dữ liệu chưa được khai báo trong phiên bản này."}</span></div>}
+    {!clos.length && <div className="empty-state"><strong>Học phần chưa có CLO</strong><span>{editable ? "Thêm CLO đầu tiên để bắt đầu ánh xạ với PLO." : "Dữ liệu chưa được khai báo trong phiên bản này."}</span></div>}
     {editing && <CloEditor initial={editing === "new" ? undefined : editing} busy={busy} onClose={() => setEditing(null)} onSave={save} />}
     {confirmationDialog}
   </section>;

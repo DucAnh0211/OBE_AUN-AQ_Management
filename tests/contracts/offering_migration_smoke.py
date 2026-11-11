@@ -1,4 +1,6 @@
-"""Restore a supplied backup into the explicitly disposable test container; compare gradebook/mapping data before and after migration."""
+"""Restore a supplied backup into the explicitly disposable test container; compare gradebook/mapping data before and after migration.
+Scope: migration AddSemesterClassesAndCourseOfferings only — migrate the copy with `dotnet ef database update AddSemesterClassesAndCourseOfferings`.
+The later AlignAcademicRecordsWithRegulations migration intentionally rewrites these tables; see academic_records_migration_smoke.py."""
 import hashlib, json, os, subprocess, sys
 from pathlib import Path
 container='obe-academic-test-db'; database='offering_migration_test'

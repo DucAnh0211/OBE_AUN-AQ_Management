@@ -12,4 +12,5 @@ public sealed record ProgramResponse(
     long? CurrentVersionId,
     string? CurrentVersionCode,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    long? FacultyId = null);
