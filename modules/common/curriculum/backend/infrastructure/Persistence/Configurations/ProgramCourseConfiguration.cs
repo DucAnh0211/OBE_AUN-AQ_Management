@@ -63,5 +63,8 @@ internal sealed class ProgramCourseConfiguration : IEntityTypeConfiguration<Prog
             .HasForeignKey(d => d.ProgramVersionId)
             .OnDelete(DeleteBehavior.ClientSetNull)
             .HasConstraintName("program_courses_program_version_id_fkey");
+
+        entity.Property(e => e.CountsTowardGpa).HasColumnName("counts_toward_gpa");
+        entity.Property(e => e.GradeSchemeRevision).HasColumnName("grade_scheme_revision");
     }
 }

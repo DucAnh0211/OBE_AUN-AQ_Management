@@ -10,4 +10,5 @@ public sealed class GradeChange
     public long ActorId { get; set; }
     public DateTime ChangedAt { get; set; }
     public string Source { get; set; } = "manual";
+    public string? Reason { get; set; }
 }

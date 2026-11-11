@@ -59,6 +59,8 @@ export type ProgramCourse = {
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  departmentId?: number | null;
+  countsTowardGpa?: boolean;
 };
 
 export type CourseInput = {

@@ -2,7 +2,6 @@ namespace ObeAunQa.Modules.Curriculum.Domain.Entities;
 
 public class ProgramVersion
 {
-    public int GradeSchemeRevision { get; set; }
     public long Id { get; set; }
 
     public long ProgramId { get; set; }

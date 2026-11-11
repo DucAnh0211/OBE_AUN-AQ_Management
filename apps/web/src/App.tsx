@@ -1,7 +1,7 @@
 import { KnowledgeBasePage } from "./admin/KnowledgeBasePage";
 import { KnowledgeChatPage } from "./knowledge/KnowledgeChatPage";
 import { KnowledgeSourcePage } from "./knowledge/KnowledgeSourcePage";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { GraduationCap } from "@phosphor-icons/react";
 import type { FrontendModuleDefinition } from "../../../shared/frontend/module";
 import { AccreditationFrameworkDetailPage } from "./accreditation/AccreditationFrameworkDetailPage";
@@ -12,8 +12,10 @@ import { useAuth } from "./auth/AuthContext";
 import { CourseOutcomesPage } from "./curriculum/CourseOutcomesPage";
 import { ProgramCoursesPage, ProgramVersionsPage } from "./curriculum/CurriculumPages";
 import { SubjectOfferingsPage } from "../../../modules/common/curriculum/frontend/pages/SubjectOfferingsPage";
-import { AcademicClassesPage, AcademicClassPage } from "../../../modules/common/curriculum/frontend/pages/AcademicClassPages";
-import { AssessmentSchemePage, CourseStudentsPage, StudentGradesPage } from "../../../modules/common/curriculum/frontend/pages/AcademicPages";
+import { OfferingsByPeriodPage } from "../../../modules/common/curriculum/frontend/pages/OfferingPages";
+import { AssessmentOverviewPage, CourseAssessmentPage, CourseStudentsPage, StudentGradesPage } from "../../../modules/common/curriculum/frontend/pages/AcademicPages";
+import { HomeClassesPage, HomeClassPage, MyTranscriptPage, StudentDirectoryPage, TranscriptPage } from "../../../modules/common/curriculum/frontend/pages/DirectoryPages";
+import { GradingPolicyPage, LecturersPage, OrgUnitsPage } from "../../../modules/common/curriculum/frontend/pages/OrganizationPages";
 import { UniversitiesPage, UniversityProgramsPage } from "./curriculum/UniversityPages";
 import {
   CloPloMatrixPage,
@@ -34,8 +36,8 @@ const roleLabels = {
 
 const roleDescriptions = {
   admin: "Quản lý tài khoản, CTĐT và dữ liệu kiểm định.",
-  lecturer: "Theo dõi CTĐT và cập nhật CLO của học phần được phân công.",
-  student: "Tra cứu CTĐT và chuẩn đầu ra đã công bố.",
+  lecturer: "Theo dõi CTĐT, cập nhật CLO và nhập điểm các lớp học phần được phân công.",
+  student: "Tra cứu CTĐT, chuẩn đầu ra và bảng điểm đã công bố.",
 } as const;
 
 function ModulePage({ module }: { module: FrontendModuleDefinition }) {
@@ -51,6 +53,12 @@ function ModulePage({ module }: { module: FrontendModuleDefinition }) {
       {module.features.map((feature, index) => <div key={feature}><span>{String(index + 1).padStart(2, "0")}</span><strong>{feature}</strong><small>Chưa triển khai</small></div>)}
     </div>
   </section>;
+}
+
+/** "Lớp theo học kỳ" cũ đã tách thành lớp học phần theo học kỳ và lớp sinh hoạt. */
+function LegacyClassesRedirect() {
+  const { versionId } = useParams();
+  return <Navigate to={`/curriculum/versions/${versionId}/offerings`} replace />;
 }
 
 export function App() {
@@ -78,12 +86,21 @@ export function App() {
         <Route path="/curriculum/universities/:universityId" element={<UniversityProgramsPage />} />
         <Route path="/curriculum/programs/:programId" element={<ProgramVersionsPage />} />
         <Route path="/curriculum/versions/:versionId" element={<ProgramCoursesPage />} />
-        {canChat && <Route path="/curriculum/versions/:versionId/assessment-scheme" element={<AssessmentSchemePage isAdmin={isAdmin} />} />}
+        {canChat && <Route path="/curriculum/universities/:universityId/org-units" element={<OrgUnitsPage isAdmin={isAdmin} />} />}
+        {canChat && <Route path="/curriculum/universities/:universityId/grading-policy" element={<GradingPolicyPage isAdmin={isAdmin} />} />}
+        {isAdmin && <Route path="/curriculum/universities/:universityId/students" element={<StudentDirectoryPage />} />}
+        <Route path="/curriculum/universities/:universityId/students/:studentId/transcript" element={<TranscriptPage />} />
+        {canChat && <Route path="/curriculum/versions/:versionId/assessment-scheme" element={<AssessmentOverviewPage />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/courses/:courseId/assessment" element={<CourseAssessmentPage isAdmin={isAdmin} />} />}
         {canChat && <Route path="/curriculum/versions/:versionId/courses/:courseId/offerings" element={<SubjectOfferingsPage />} />}
-        {canChat && <Route path="/curriculum/versions/:versionId/classes" element={<AcademicClassesPage isAdmin={isAdmin} />} />}
-        {canChat && <Route path="/curriculum/versions/:versionId/classes/:classId" element={<AcademicClassPage isAdmin={isAdmin} />} />}
-        {canChat && <Route path="/curriculum/versions/:versionId/offerings/:offeringId/students" element={<CourseStudentsPage />} />}
-        {canChat && <Route path="/curriculum/versions/:versionId/offerings/:offeringId/students/:enrollmentId/grades" element={<StudentGradesPage />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/offerings" element={<OfferingsByPeriodPage isAdmin={isAdmin} />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/classes/*" element={<LegacyClassesRedirect />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/home-classes" element={<HomeClassesPage isAdmin={isAdmin} />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/home-classes/:homeClassId" element={<HomeClassPage isAdmin={isAdmin} />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/offerings/:offeringId/students" element={<CourseStudentsPage isAdmin={isAdmin} userId={user.id} />} />}
+        {canChat && <Route path="/curriculum/versions/:versionId/offerings/:offeringId/students/:enrollmentId/grades" element={<StudentGradesPage isAdmin={isAdmin} />} />}
+        {user.role === "student" && <Route path="/me/transcript" element={<MyTranscriptPage />} />}
+        {isAdmin && <Route path="/admin/lecturers" element={<LecturersPage />} />}
         <Route path="/curriculum/versions/:versionId/courses/:courseId/outcomes" element={<CourseOutcomesPage />} />
         <Route path="/curriculum/versions/:versionId/plos" element={<PloListPage />} />
         <Route path="/curriculum/versions/:versionId/course-plo-matrix" element={<CoursePloMatrixPage />} />

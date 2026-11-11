@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { Link, NavLink, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { curriculumApi } from "../../../../modules/common/curriculum/frontend/api";
+import { academicApi } from "../../../../modules/common/curriculum/frontend/api/academics";
 import type {
   Clo,
   CloPloMapping,
@@ -12,6 +13,8 @@ import type {
   ProgramVersion,
 } from "../../../../modules/common/curriculum/frontend/types";
 import { useAuth } from "../auth/AuthContext";
+import { DomainEyebrow, domainPage } from "../../../../modules/common/curriculum/frontend/components/Domain";
+import { VersionNav } from "../../../../modules/common/curriculum/frontend/components/VersionNav";
 import { DialogFrame, useConfirmDialog } from "../components/Dialogs";
 
 type MatrixData = {
@@ -47,19 +50,6 @@ async function loadMatrixData(versionId: number): Promise<MatrixData> {
   return { version, courses, plos, courseMappings: Object.fromEntries(mappings) };
 }
 
-export function VersionOutcomeNav({ versionId }: { versionId: number }) {
-  const items = [
-    ["PLO", `/curriculum/versions/${versionId}/plos`],
-    ["Bộ môn – PLO", `/curriculum/versions/${versionId}/course-plo-matrix`],
-    ["CLO – PLO", `/curriculum/versions/${versionId}/clo-plo-matrix`],
-    ["Kiểm tra dữ liệu", `/curriculum/versions/${versionId}/validation`],
-  ] as const;
-  return (
-    <nav className="outcome-nav" aria-label="Quản lý chuẩn đầu ra">
-      {items.map(([label, to]) => <NavLink key={to} to={to}>{label}</NavLink>)}
-    </nav>
-  );
-}
 
 function OutcomeShell({ versionId, version, title, description, children, actions }: {
   versionId: number;
@@ -69,10 +59,11 @@ function OutcomeShell({ versionId, version, title, description, children, action
   children: ReactNode;
   actions?: ReactNode;
 }) {
-  return <section className="admin-page">
-    <div className="breadcrumbs"><Link to={`/curriculum/versions/${versionId}`}>Bộ môn</Link><span>/</span><span>{version?.versionCode ?? "…"}</span><span>/</span><span>{title}</span></div>
-    <div className="admin-heading"><div><span className="eyebrow">Chuẩn đầu ra · {version?.versionCode ?? "…"}</span><h1>{title}</h1><p>{description}</p></div>{actions && <div className="admin-heading__actions">{actions}</div>}</div>
-    <VersionOutcomeNav versionId={versionId} />
+  const { user } = useAuth();
+  return <section className={domainPage("curriculum")}>
+    <div className="breadcrumbs"><Link to={`/curriculum/versions/${versionId}`}>Học phần</Link><span>/</span><span>{version?.versionCode ?? "…"}</span><span>/</span><span>{title}</span></div>
+    <div className="admin-heading"><div><DomainEyebrow domain="curriculum" detail={`Chuẩn đầu ra · ${version?.versionCode ?? "…"}`} /><h1>{title}</h1><p>{description}</p></div>{actions && <div className="admin-heading__actions">{actions}</div>}</div>
+    <VersionNav versionId={versionId} staff={user?.role !== "student"} />
     {children}
   </section>;
 }
@@ -184,7 +175,7 @@ function CourseMappingEditor({ state, busy, onCancel, onSave, onDelete }: {
   const [fitReason, setFitReason] = useState(state.mapping?.fitReason ?? "");
   return <DialogFrame
     title={`${state.course.institutionalCode ?? state.course.name} → ${state.plo.code}`}
-    description={state.mapping ? "Cập nhật thông tin ánh xạ" : "Thiết lập ánh xạ bộ môn với PLO"}
+    description={state.mapping ? "Cập nhật thông tin ánh xạ" : "Thiết lập ánh xạ học phần với PLO"}
     onClose={onCancel}
     className="matrix-dialog"
   >
@@ -192,7 +183,7 @@ function CourseMappingEditor({ state, busy, onCancel, onSave, onDelete }: {
       <label><span>Trọng số</span><select value={weightCode} onChange={(event) => setWeightCode(event.target.value)}><option value="X">X · Chính</option><option value="Y">Y · Hỗ trợ</option></select></label>
       <label><span>Mức tiến triển</span><select value={progressionCode} onChange={(event) => setProgressionCode(event.target.value)}><option value="I">I · Giới thiệu</option><option value="R">R · Củng cố</option><option value="E">E · Thành thạo</option></select></label>
       <label className="form-wide"><span>Mức phù hợp</span><input value={fit} onChange={(event) => setFit(event.target.value)} placeholder="Không bắt buộc" /></label>
-      <label className="form-wide"><span>Giải thích</span><textarea value={fitReason} onChange={(event) => setFitReason(event.target.value)} placeholder="Lý do bộ môn đóng góp cho PLO này" /></label>
+      <label className="form-wide"><span>Giải thích</span><textarea value={fitReason} onChange={(event) => setFitReason(event.target.value)} placeholder="Lý do học phần đóng góp cho PLO này" /></label>
       <div className="dialog__actions form-wide">{state.mapping && <button className="button button--danger" type="button" disabled={busy} onClick={() => void onDelete()}>Xóa ánh xạ</button>}<span className="dialog__spacer" /><button className="button button--ghost" type="button" onClick={onCancel}>Hủy</button><button className="button button--primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu ánh xạ"}</button></div>
     </form>
   </DialogFrame>;
@@ -202,19 +193,19 @@ export function CoursePloMatrixPage() {
   const { versionId: rawId } = useParams(); const versionId = Number(rawId); const { user } = useAuth();
   const [data, setData] = useState<MatrixData | null>(null); const [editor, setEditor] = useState<MappingEditorState | null>(null);
   const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
-  const load = useCallback(async () => { setLoading(true); setError(""); try { setData(await loadMatrixData(versionId)); } catch (caught) { setError(messageOf(caught, "Không tải được ma trận bộ môn–PLO.")); } finally { setLoading(false); } }, [versionId]);
+  const load = useCallback(async () => { setLoading(true); setError(""); try { setData(await loadMatrixData(versionId)); } catch (caught) { setError(messageOf(caught, "Không tải được ma trận học phần–PLO.")); } finally { setLoading(false); } }, [versionId]);
   useEffect(() => { void load(); }, [load]);
   const editable = user?.role === "admin" && data?.version.status === "draft";
   async function save(input: { weightCode: string; progressionCode: string; fit: string | null; fitReason: string | null }) {
     if (!editor) return; setBusy(true); setError("");
     try { if (editor.mapping) await curriculumApi.updateCoursePloMapping(versionId, editor.course.id, editor.mapping.id, input); else await curriculumApi.addCoursePloMapping(versionId, editor.course.id, { ploId: editor.plo.id, ...input }); setEditor(null); await load(); }
-    catch (caught) { setError(messageOf(caught, "Không lưu được ánh xạ bộ môn–PLO.")); }
+    catch (caught) { setError(messageOf(caught, "Không lưu được ánh xạ học phần–PLO.")); }
     finally { setBusy(false); }
   }
   async function remove() { if (!editor?.mapping) return; setBusy(true); try { await curriculumApi.deleteCoursePloMapping(versionId, editor.course.id, editor.mapping.id); setEditor(null); await load(); } catch (caught) { setError(messageOf(caught, "Không xóa được ánh xạ.")); } finally { setBusy(false); } }
-  return <OutcomeShell versionId={versionId} version={data?.version ?? null} title="Ma trận bộ môn – PLO" description={editable ? "Chọn một ô để thiết lập trọng số và mức tiến triển." : "Ma trận thể hiện mức đóng góp của từng bộ môn vào chuẩn đầu ra."}>
+  return <OutcomeShell versionId={versionId} version={data?.version ?? null} title="Ma trận học phần – PLO" description={editable ? "Chọn một ô để thiết lập trọng số và mức tiến triển." : "Ma trận thể hiện mức đóng góp của từng học phần vào chuẩn đầu ra."}>
     <ScreenState loading={loading} error={error} empty={!data?.courses.length || !data?.plos.length} retry={() => void load()}>
-      {data && <><div className="matrix-legend"><span><b>X</b> Đóng góp chính</span><span><b>Y</b> Đóng góp hỗ trợ</span><span><b>I/R/E</b> Giới thiệu / Củng cố / Thành thạo</span></div><div className="matrix-wrap"><table className="matrix-table"><thead><tr><th className="matrix-table__sticky">Bộ môn</th><th>TC</th>{data.plos.map((plo) => <th key={plo.id} title={plo.statement}>{plo.code}</th>)}</tr></thead><tbody>{data.courses.map((course) => <tr key={course.id}><th className="matrix-table__sticky"><Link to={`/curriculum/versions/${versionId}/courses/${course.id}/outcomes`}>{course.institutionalCode ?? `#${course.id}`}</Link><small>{course.name}</small></th><td>{course.credits}</td>{data.plos.map((plo) => { const mapping = data.courseMappings[course.id]?.find((item) => item.ploId === plo.id); return <td key={plo.id}><button className={`matrix-cell ${mapping ? "matrix-cell--mapped" : ""}`} disabled={!editable} title={mapping?.fitReason ?? (editable ? "Thiết lập ánh xạ" : "Chưa ánh xạ")} onClick={() => setEditor({ course, plo, mapping })}>{mapping ? <><strong>{mapping.weightCode}</strong><span>{mapping.progressionCode}</span></> : "—"}</button></td>; })}</tr>)}</tbody></table></div></>}
+      {data && <><div className="matrix-legend"><span><b>X</b> Đóng góp chính</span><span><b>Y</b> Đóng góp hỗ trợ</span><span><b>I/R/E</b> Giới thiệu / Củng cố / Thành thạo</span></div><div className="matrix-wrap"><table className="matrix-table"><thead><tr><th className="matrix-table__sticky">Học phần</th><th>TC</th>{data.plos.map((plo) => <th key={plo.id} title={plo.statement}>{plo.code}</th>)}</tr></thead><tbody>{data.courses.map((course) => <tr key={course.id}><th className="matrix-table__sticky"><Link to={`/curriculum/versions/${versionId}/courses/${course.id}/outcomes`}>{course.institutionalCode ?? `#${course.id}`}</Link><small>{course.name}</small></th><td>{course.credits}</td>{data.plos.map((plo) => { const mapping = data.courseMappings[course.id]?.find((item) => item.ploId === plo.id); return <td key={plo.id}><button className={`matrix-cell ${mapping ? "matrix-cell--mapped" : ""}`} disabled={!editable} title={mapping?.fitReason ?? (editable ? "Thiết lập ánh xạ" : "Chưa ánh xạ")} onClick={() => setEditor({ course, plo, mapping })}>{mapping ? <><strong>{mapping.weightCode}</strong><span>{mapping.progressionCode}</span></> : "—"}</button></td>; })}</tr>)}</tbody></table></div></>}
     </ScreenState>
     {editor && <CourseMappingEditor state={editor} busy={busy} onCancel={() => setEditor(null)} onSave={save} onDelete={remove} />}
   </OutcomeShell>;
@@ -249,9 +240,9 @@ export function CloPloMatrixPage() {
     catch (caught) { setError(messageOf(caught, "Không cập nhật được ánh xạ CLO–PLO.")); }
     finally { setBusyCell(""); }
   }
-  return <OutcomeShell versionId={versionId} version={data?.version ?? null} title="Ma trận CLO – PLO" description={editable ? "Đánh dấu CLO đóng góp cho PLO trong phạm vi ánh xạ của bộ môn." : "Ma trận chi tiết liên kết chuẩn đầu ra bộ môn với chuẩn đầu ra chương trình."}>
+  return <OutcomeShell versionId={versionId} version={data?.version ?? null} title="Ma trận CLO – PLO" description={editable ? "Đánh dấu CLO đóng góp cho PLO trong phạm vi ánh xạ của học phần." : "Ma trận chi tiết liên kết chuẩn đầu ra học phần với chuẩn đầu ra chương trình."}>
     <ScreenState loading={loading} error={error} empty={!rows.length || !data?.plos.length} retry={() => void load()}>
-      {data && <><div className="matrix-legend"><span><b>●</b> Đã ánh xạ</span><span><b>○</b> Có thể ánh xạ</span><span><b>—</b> Bộ môn chưa liên kết PLO</span></div><div className="matrix-wrap"><table className="matrix-table matrix-table--clo"><thead><tr><th className="matrix-table__sticky">Bộ môn / CLO</th>{data.plos.map((plo) => <th key={plo.id} title={plo.statement}>{plo.code}</th>)}</tr></thead><tbody>{rows.map(({ course, clo }) => <tr key={clo.id}><th className="matrix-table__sticky"><span>{course.institutionalCode ?? course.name}</span><Link to={`/curriculum/versions/${versionId}/courses/${course.id}/outcomes`}>{clo.code}</Link><small>{clo.statement}</small></th>{data.plos.map((plo) => { const base = data.courseMappings[course.id]?.find((item) => item.ploId === plo.id); const selected = base && data.cloMappings[clo.id]?.some((item) => item.coursePloId === base.id); const key = `${clo.id}-${plo.id}`; return <td key={plo.id}><button className={`matrix-cell matrix-cell--toggle ${selected ? "matrix-cell--selected" : ""}`} disabled={!editable || !base || busyCell === key} onClick={() => void toggle(course, clo, plo)} aria-label={`${selected ? "Bỏ" : "Thêm"} ánh xạ ${clo.code} với ${plo.code}`}>{!base ? "—" : selected ? "●" : "○"}</button></td>; })}</tr>)}</tbody></table></div></>}
+      {data && <><div className="matrix-legend"><span><b>●</b> Đã ánh xạ</span><span><b>○</b> Có thể ánh xạ</span><span><b>—</b> Học phần chưa liên kết PLO</span></div><div className="matrix-wrap"><table className="matrix-table matrix-table--clo"><thead><tr><th className="matrix-table__sticky">Học phần / CLO</th>{data.plos.map((plo) => <th key={plo.id} title={plo.statement}>{plo.code}</th>)}</tr></thead><tbody>{rows.map(({ course, clo }) => <tr key={clo.id}><th className="matrix-table__sticky"><span>{course.institutionalCode ?? course.name}</span><Link to={`/curriculum/versions/${versionId}/courses/${course.id}/outcomes`}>{clo.code}</Link><small>{clo.statement}</small></th>{data.plos.map((plo) => { const base = data.courseMappings[course.id]?.find((item) => item.ploId === plo.id); const selected = base && data.cloMappings[clo.id]?.some((item) => item.coursePloId === base.id); const key = `${clo.id}-${plo.id}`; return <td key={plo.id}><button className={`matrix-cell matrix-cell--toggle ${selected ? "matrix-cell--selected" : ""}`} disabled={!editable || !base || busyCell === key} onClick={() => void toggle(course, clo, plo)} aria-label={`${selected ? "Bỏ" : "Thêm"} ánh xạ ${clo.code} với ${plo.code}`}>{!base ? "—" : selected ? "●" : "○"}</button></td>; })}</tr>)}</tbody></table></div></>}
     </ScreenState>
   </OutcomeShell>;
 }
@@ -276,9 +267,17 @@ export function DataValidationPage() {
       creditResult.courses.filter((item) => !item.isValid).forEach((item) => next.push({ key: `credit-${item.programCourseId}`, severity: "error", title: `${item.institutionalCode ?? item.courseName}: số PLO chưa phù hợp`, detail: `${item.credits} tín chỉ yêu cầu tối đa ${item.requiredPloCount} PLO, hiện đang ánh xạ ${item.actualPloCount}.`, href: `/curriculum/versions/${versionId}/course-plo-matrix` }));
       balanceResult.items.filter((item) => item.exceedsTwentyPercent).forEach((item) => next.push({ key: `balance-${item.ploCode}`, severity: "warning", title: `${item.ploCode} mất cân bằng`, detail: `Điểm đóng góp ${item.score.toFixed(2)}, lệch ${item.deviation?.toFixed(2) ?? "—"} so với trung bình ${item.meanScore.toFixed(2)}.`, href: `/curriculum/versions/${versionId}/course-plo-matrix` }));
       courseDetails.forEach(({ course, clos, mappings, cloMappings }) => {
-        if (!mappings.length) next.push({ key: `course-map-${course.id}`, severity: "error", title: `${course.institutionalCode ?? course.name} chưa ánh xạ PLO`, detail: "Bộ môn cần được liên kết với ít nhất một PLO.", href: `/curriculum/versions/${versionId}/course-plo-matrix` });
-        if (!clos.length) next.push({ key: `course-clo-${course.id}`, severity: "error", title: `${course.institutionalCode ?? course.name} chưa có CLO`, detail: "Bộ môn cần khai báo chuẩn đầu ra bộ môn.", href: `/curriculum/versions/${versionId}/courses/${course.id}/outcomes` });
+        if (!mappings.length) next.push({ key: `course-map-${course.id}`, severity: "error", title: `${course.institutionalCode ?? course.name} chưa ánh xạ PLO`, detail: "Học phần cần được liên kết với ít nhất một PLO.", href: `/curriculum/versions/${versionId}/course-plo-matrix` });
+        if (!clos.length) next.push({ key: `course-clo-${course.id}`, severity: "error", title: `${course.institutionalCode ?? course.name} chưa có CLO`, detail: "Học phần cần khai báo chuẩn đầu ra học phần.", href: `/curriculum/versions/${versionId}/courses/${course.id}/outcomes` });
         clos.forEach((clo, index) => { if (!cloMappings[index]?.length) next.push({ key: `clo-${clo.id}`, severity: "warning", title: `${clo.code} chưa ánh xạ PLO`, detail: `${course.institutionalCode ?? course.name}: ${clo.statement}`, href: `/curriculum/versions/${versionId}/courses/${course.id}/outcomes` }); });
+      });
+      // Đề cương đánh giá: mọi học phần cần cơ cấu điểm, mỗi đầu điểm gắn CLO và mỗi CLO được đánh giá (chỉ admin/giảng viên đọc được).
+      const coverage = await academicApi.coverage(versionId).catch(() => []);
+      coverage.forEach((item) => {
+        const href = `/curriculum/versions/${versionId}/courses/${item.courseId}/assessment`;
+        if (!item.componentCount) { next.push({ key: `scheme-${item.courseId}`, severity: "warning", title: `${item.courseCode}: chưa có cơ cấu điểm`, detail: "Đề cương học phần cần khai báo đầu điểm, trọng số và CLO được đánh giá.", href }); return; }
+        if (item.unmappedComponents.length) next.push({ key: `scheme-map-${item.courseId}`, severity: "warning", title: `${item.courseCode}: đầu điểm chưa gắn CLO`, detail: item.unmappedComponents.join(", "), href });
+        if (item.unassessedClos.length) next.push({ key: `scheme-clo-${item.courseId}`, severity: "warning", title: `${item.courseCode}: CLO chưa được đánh giá`, detail: item.unassessedClos.join(", "), href });
       });
       setVersion(v); setCredit(creditResult); setBalance(balanceResult); setWarnings(next);
     } catch (caught) { setError(messageOf(caught, "Không thể kiểm tra tính hợp lệ của dữ liệu.")); }

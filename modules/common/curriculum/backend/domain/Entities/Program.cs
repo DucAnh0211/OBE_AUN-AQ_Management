@@ -6,6 +6,9 @@ public class Program
 
     public long UniversityId { get; set; }
 
+    /// <summary>Khoa quản lý ngành đào tạo.</summary>
+    public long? FacultyId { get; set; }
+
     public string Code { get; set; } = null!;
 
     public string Name { get; set; } = null!;

@@ -6,6 +6,9 @@ public class Course
 
     public long UniversityId { get; set; }
 
+    /// <summary>Bộ môn quản lý học phần.</summary>
+    public long? DepartmentId { get; set; }
+
     public string InstitutionalCode { get; set; } = null!;
     public string? LegacyInstitutionalCode { get; set; }
 

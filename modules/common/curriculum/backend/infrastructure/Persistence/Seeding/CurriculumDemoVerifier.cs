@@ -34,6 +34,21 @@ public sealed class CurriculumDemoVerifier(CurriculumDbContext db)
         }
     }
 
+    /// <summary>Học vụ mẫu chỉ có ở database seed sau khi có mô hình lớp học phần/đề cương; không kiểm tra cho demo cũ.</summary>
+    public async Task VerifyAcademicsAsync(CancellationToken ct = default)
+    {
+        var v = await db.ProgramVersions.AsNoTracking().SingleAsync(v => v.Program.Code == "CS" && v.VersionCode == "V2", ct);
+        var offerings = db.Set<Domain.Entities.CourseOffering>().Where(o => o.ProgramVersionId == v.Id);
+        var enrollments = db.Set<Domain.Entities.CourseEnrollment>().Where(e => offerings.Any(o => o.Id == e.OfferingId));
+        Check(await db.Set<Domain.Entities.OrgUnit>().CountAsync(ct) == 2, "academic org units");
+        Check(await db.Set<Domain.Entities.HomeClass>().CountAsync(c => c.ProgramVersionId == v.Id, ct) == 1, "academic home class");
+        Check(await db.Set<Domain.Entities.AcademicStudent>().CountAsync(s => s.ProgramVersionId == v.Id, ct) == 4, "academic students");
+        Check(await offerings.CountAsync(ct) == 4 && await offerings.CountAsync(o => o.GradeStatus == "published", ct) == 3, "academic offerings");
+        Check(await db.Set<Domain.Entities.AssessmentComponent>().CountAsync(c => c.ProgramCourseId != 0 && db.ProgramCourses.Any(p => p.Id == c.ProgramCourseId && p.ProgramVersionId == v.Id), ct) == 6, "academic schemes");
+        Check(!await enrollments.AnyAsync(e => e.PublishedAt != null && e.LetterGrade == null, ct), "published enrollments have letter grades");
+        Check(await enrollments.CountAsync(e => e.AttemptKind == "retake" && e.Passed == true, ct) == 1, "academic retake");
+    }
+
     private static void Check(bool condition, string rule)
     {
         if (!condition) throw new InvalidOperationException("Demo verification failed: " + rule);

@@ -25,14 +25,22 @@ internal sealed class EfProgramVersionRepository(CurriculumDbContext db, Curricu
             if (sourceId != null)
             {
                 var courses = await db.ProgramCourses.AsNoTracking().Where(c => c.ProgramVersionId == sourceId && c.ArchivedAt == null).ToListAsync(ct);
-                db.ProgramCourses.AddRange(courses.Select(c => new ProgramCourse { ProgramVersionId = version.Id, CourseId = c.CourseId,
+                var copies = courses.Select(c => (Source: c, Copy: new ProgramCourse { ProgramVersionId = version.Id, CourseId = c.CourseId,
                     SourceRow = c.SourceRow, CourseCodeSourceValue = c.CourseCodeSourceValue, Credits = c.Credits, SemesterSourceValue = c.SemesterSourceValue,
                     DatasetStatus = CurriculumStatuses.Draft, QualityFlags = c.QualityFlags, CourseCodeSnapshot = c.CourseCodeSnapshot,
-                    CourseNameSnapshot = c.CourseNameSnapshot, LegacyCourseCodeSnapshot = c.LegacyCourseCodeSnapshot, DisplayOrder = c.DisplayOrder }));
-                var components = await db.Set<AssessmentComponent>().AsNoTracking().Where(c => c.ProgramVersionId == sourceId).OrderBy(c => c.DisplayOrder).ToArrayAsync(ct);
-                db.AddRange(components.Select(c => new AssessmentComponent { ProgramVersionId = version.Id, Code = c.Code, Name = c.Name,
-                    Weight = c.Weight, MaxScore = c.MaxScore, DisplayOrder = c.DisplayOrder }));
-                if (components.Length > 0) version.GradeSchemeRevision = 1;
+                    CourseNameSnapshot = c.CourseNameSnapshot, LegacyCourseCodeSnapshot = c.LegacyCourseCodeSnapshot, DisplayOrder = c.DisplayOrder,
+                    CountsTowardGpa = c.CountsTowardGpa })).ToArray();
+                db.ProgramCourses.AddRange(copies.Select(c => c.Copy)); await db.SaveChangesAsync(ct);
+                // Đề cương học phần được sao chép cơ cấu điểm; CLO không sao chép nên liên kết đầu điểm–CLO cần khai báo lại.
+                var sourceIds = courses.Select(c => c.Id).ToArray();
+                var components = await db.Set<AssessmentComponent>().AsNoTracking().Where(c => sourceIds.Contains(c.ProgramCourseId)).OrderBy(c => c.DisplayOrder).ToArrayAsync(ct);
+                foreach (var (source, copy) in copies)
+                {
+                    var own = components.Where(c => c.ProgramCourseId == source.Id).ToArray();
+                    db.AddRange(own.Select(c => new AssessmentComponent { ProgramCourseId = copy.Id, Code = c.Code, Name = c.Name, Kind = c.Kind,
+                        Weight = c.Weight, MaxScore = c.MaxScore, DisplayOrder = c.DisplayOrder }));
+                    if (own.Length > 0) copy.GradeSchemeRevision = 1;
+                }
             }
             return version.Id;
         }, ct);

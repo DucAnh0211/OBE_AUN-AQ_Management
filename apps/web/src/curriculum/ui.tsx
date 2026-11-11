@@ -18,21 +18,26 @@ export function errorInfo(error: unknown): { message: string; fields: Record<str
   return { message: "Đã xảy ra lỗi không xác định.", fields: {} };
 }
 
-export function PageHeader({ eyebrow, title, description, actions }: {
-  eyebrow?: string;
+export function PageHeader({ eyebrow, title, description, actions, after }: {
+  eyebrow?: ReactNode;
   title: string;
   description: string;
   actions?: ReactNode;
+  /** Rendered right after the heading band (e.g. section navigation). */
+  after?: ReactNode;
 }) {
   return (
+    <>
     <div className="admin-heading">
       <div>
-        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+        {eyebrow && (typeof eyebrow === "string" ? <span className="eyebrow">{eyebrow}</span> : eyebrow)}
         <h1>{title}</h1>
         <p>{description}</p>
       </div>
       {actions && <div className="admin-heading__actions">{actions}</div>}
     </div>
+    {after}
+    </>
   );
 }
 

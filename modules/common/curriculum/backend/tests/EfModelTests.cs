@@ -55,9 +55,26 @@ public sealed class EfModelTests
         Assert.Contains(enrollment.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(CourseOffering) && fk.Properties.Select(p => p.Name).SequenceEqual(new[] { "OfferingId", "ProgramCourseId", "AcademicPeriod" }));
         var offering = db.Model.FindEntityType(typeof(CourseOffering))!;
         Assert.Contains(offering.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(ProgramCourse) && fk.Properties.Select(p => p.Name).SequenceEqual(new[] { "ProgramCourseId", "ProgramVersionId" }));
-        Assert.Contains(offering.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(AcademicClass) && fk.Properties.Select(p => p.Name).SequenceEqual(new[] { "AcademicClassId", "ProgramVersionId", "AcademicPeriod" }));
+        // Lớp học phần = học phần × học kỳ × nhóm lớp, không phụ thuộc lớp sinh hoạt.
+        Assert.Contains(offering.GetIndexes(), i => i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual(new[] { "ProgramCourseId", "AcademicPeriod", "GroupName" }));
+        Assert.Contains(offering.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(HomeClass) && !fk.IsRequired);
         Assert.Contains(offering.GetIndexes(), i => i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual(new[] { "Code" }));
         Assert.Contains("nextval", offering.FindProperty("Code")!.GetDefaultValueSql());
+        var lecturers = db.Model.FindEntityType(typeof(OfferingLecturer))!;
+        Assert.Contains(lecturers.GetIndexes(), i => i.IsUnique && i.GetFilter() == "\"Role\" = 'main'");
+    }
+
+    [Fact]
+    public void AssessmentSchemeBelongsToCourseSyllabusAndMapsClos()
+    {
+        using var db = Context();
+        var component = db.Model.FindEntityType(typeof(AssessmentComponent))!;
+        Assert.Contains(component.GetIndexes(), i => i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual(new[] { "ProgramCourseId", "Code" }));
+        Assert.Null(component.FindProperty("ProgramVersionId"));
+        var map = db.Model.FindEntityType(typeof(AssessmentComponentClo))!;
+        Assert.Equal(new[] { "ComponentId", "CloId" }, map.FindPrimaryKey()!.Properties.Select(p => p.Name));
+        Assert.Contains(map.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(Clo));
+        Assert.Null(db.Model.FindEntityType(typeof(ProgramVersion))!.FindProperty("GradeSchemeRevision"));
     }
 
     [Fact]

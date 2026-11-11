@@ -32,5 +32,9 @@ internal sealed class ProgramConfiguration : IEntityTypeConfiguration<Program>
             .HasForeignKey(d => d.UniversityId)
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("programs_university_id_fkey");
+
+        entity.Property(e => e.FacultyId).HasColumnName("faculty_id");
+        entity.HasOne<OrgUnit>().WithMany().HasForeignKey(e => e.FacultyId)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("programs_faculty_id_fkey");
     }
 }

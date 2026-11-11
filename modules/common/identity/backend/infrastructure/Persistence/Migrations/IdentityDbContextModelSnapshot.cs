@@ -348,15 +348,28 @@ namespace ObeAunQa.Modules.Identity.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long?>("LecturerId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("ProgramCourseId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.ToTable("course_offerings", "curriculum", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Identity.Infrastructure.OfferingLecturerAccessRow", b =>
+                {
+                    b.Property<long>("OfferingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("OfferingId", "UserId");
+
+                    b.ToTable("offering_lecturers", "curriculum", t =>
                         {
                             t.ExcludeFromMigrations();
                         });

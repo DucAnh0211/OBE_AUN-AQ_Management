@@ -8,6 +8,8 @@ import { useAuth } from "../auth/AuthContext";
 import { useConfirmDialog } from "../components/Dialogs";
 import { AccreditationStatusChip } from "./ProgramAccreditationPanel";
 import { Alert, Dialog, EmptyState, errorInfo, FieldError, formatDay, LoadingState, PageHeader, Pagination } from "./ui";
+import { DomainEyebrow, domainPage } from "../../../../modules/common/curriculum/frontend/components/Domain";
+import { UniversityNav } from "../../../../modules/common/curriculum/frontend/components/VersionNav";
 
 const pageSize = 10;
 
@@ -109,7 +111,7 @@ export function UniversitiesPage() {
   }
 
   return (
-    <section className="admin-page">
+    <section className={domainPage("curriculum")}>
       <PageHeader
         title="Trường đại học"
         description="Chọn trường để xem các ngành đã được kiểm định AUN-QA và chương trình đào tạo của từng ngành."
@@ -262,16 +264,17 @@ export function UniversityProgramsPage() {
     }
   }
 
-  if (!Number.isInteger(universityId) || universityId < 1) return <section className="admin-page"><Alert message="Mã trường không hợp lệ." /></section>;
+  if (!Number.isInteger(universityId) || universityId < 1) return <section className={domainPage("curriculum")}><Alert message="Mã trường không hợp lệ." /></section>;
 
   return (
-    <section className="admin-page">
+    <section className={domainPage("curriculum")}>
       <div className="breadcrumbs"><Link to="/curriculum">Trường đại học</Link><span>/</span><span>{university?.name ?? "…"}</span></div>
       <PageHeader
-        eyebrow={university?.code ?? "Trường"}
+        eyebrow={<DomainEyebrow domain="curriculum" detail={university?.code} />}
         title={university?.name ?? "Ngành của trường"}
         description="Chọn ngành để xem chương trình đào tạo và kết quả kiểm định."
         actions={isAdmin ? <button className="button button--primary" onClick={() => setDialog({ mode: "create" })}>Thêm CTĐT</button> : undefined}
+        after={user?.role === "student" ? undefined : <UniversityNav universityId={universityId} isAdmin={isAdmin} />}
       />
       <div className="toolbar">
         <form className="search-box" onSubmit={(event) => { event.preventDefault(); setPage(1); setSearch(searchInput.trim()); }}>
