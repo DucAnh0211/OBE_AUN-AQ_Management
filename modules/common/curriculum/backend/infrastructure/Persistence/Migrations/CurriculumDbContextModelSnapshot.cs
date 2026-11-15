@@ -52,6 +52,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Property<long?>("ProgramVersionId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -73,6 +77,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.HasIndex("HomeClassId");
 
                     b.HasIndex("ProgramVersionId");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -119,11 +125,17 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Property<long>("ProgramCourseId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<decimal>("Weight")
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("ProgramCourseId", "Code")
                         .IsUnique();
@@ -146,6 +158,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Property<long>("CloId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<decimal>("Weight")
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)");
@@ -153,6 +169,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.HasKey("ComponentId", "CloId");
 
                     b.HasIndex("CloId");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("assessment_component_clos", "curriculum", t =>
                         {
@@ -198,6 +216,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("provenance");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("SourceReference")
                         .HasColumnType("jsonb")
                         .HasColumnName("source_reference");
@@ -212,6 +234,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
                     b.HasAlternateKey("Id", "ProgramCourseId")
                         .HasName("clos_id_program_course_id_key");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "ProgramCourseId", "Code" }, "clos_program_course_id_code_key")
                         .IsUnique();
@@ -233,8 +257,14 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("program_course_id");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.HasKey("CloId", "CoursePloId")
                         .HasName("clo_plos_pkey");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("CloId", "ProgramCourseId");
 
@@ -276,6 +306,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<long>("UniversityId")
                         .HasColumnType("bigint")
                         .HasColumnName("university_id");
@@ -290,6 +324,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasName("courses_pkey");
 
                     b.HasIndex("DepartmentId");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "UniversityId", "InstitutionalCode" }, "courses_university_id_institutional_code_uq")
                         .IsUnique()
@@ -350,6 +386,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("integer");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("SpecialMark")
                         .HasMaxLength(2)
                         .HasColumnType("character varying(2)");
@@ -360,6 +400,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProgramCourseId");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("OfferingId", "StudentId")
                         .IsUnique();
@@ -424,6 +466,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Property<long?>("PublishedBy")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("StatusNote")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -441,6 +487,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("TargetHomeClassId");
 
@@ -500,6 +548,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("provenance");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<char>("WeightCode")
                         .HasMaxLength(1)
                         .HasColumnType("character(1)")
@@ -513,6 +565,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
                     b.HasIndex("ProgressionCode");
 
+                    b.HasIndex("SchoolId");
+
                     b.HasIndex("WeightCode");
 
                     b.HasIndex("PloId", "ProgramVersionId");
@@ -523,6 +577,45 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("course_plos", "curriculum");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.CurriculumAuditRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("ActorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Changes")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Entity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("SchoolId");
+
+                    b.ToTable("audit_events", "curriculum");
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.GradeChange", b =>
@@ -557,6 +650,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -566,9 +663,70 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
                     b.HasIndex("ComponentId");
 
+                    b.HasIndex("SchoolId");
+
                     b.HasIndex("EnrollmentId", "ChangedAt");
 
                     b.ToTable("grade_changes", "curriculum");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.GradeCorrectionRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BeforeJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("DecisionReason")
+                        .HasColumnType("text");
+
+                    b.Property<long>("EnrollmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("OfferingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ProposalJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("RequestedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("ReviewedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnrollmentId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'pending'");
+
+                    b.HasIndex("OfferingId");
+
+                    b.HasIndex("SchoolId");
+
+                    b.ToTable("grade_correction_requests", "curriculum", t =>
+                        {
+                            t.HasCheckConstraint("grade_correction_status_ck", "\"Status\" IN ('pending','approved','rejected')");
+                        });
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.GradeScaleBand", b =>
@@ -598,10 +756,16 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasPrecision(3, 2)
                         .HasColumnType("numeric(3,2)");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<long>("UniversityId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("UniversityId", "Letter")
                         .IsUnique();
@@ -637,10 +801,16 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("UniversityId");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("grading_policies", "curriculum", t =>
                         {
@@ -685,9 +855,15 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Property<long>("ProgramVersionId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AdvisorUserId");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("ProgramVersionId", "Code")
                         .IsUnique();
@@ -725,6 +901,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("program_version_id");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<long>("SyllabusDocumentId")
                         .HasColumnType("bigint")
                         .HasColumnName("syllabus_document_id");
@@ -737,6 +917,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasName("import_batches_pkey");
 
                     b.HasIndex("DatasetDocumentId");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("SyllabusDocumentId");
 
@@ -769,6 +951,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -776,7 +962,9 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
                     b.HasIndex("DepartmentId");
 
-                    b.HasIndex("LecturerCode")
+                    b.HasIndex("SchoolId");
+
+                    b.HasIndex("SchoolId", "LecturerCode")
                         .IsUnique();
 
                     b.ToTable("lecturer_profiles", "curriculum");
@@ -798,12 +986,18 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.HasKey("OfferingId", "UserId");
 
                     b.HasIndex("OfferingId")
                         .IsUnique()
                         .HasDatabaseName("offering_lecturers_one_main")
                         .HasFilter("\"Role\" = 'main'");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("UserId");
 
@@ -845,12 +1039,18 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Property<long?>("ParentId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<long>("UniversityId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ParentId");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("UniversityId", "Code")
                         .IsUnique();
@@ -859,6 +1059,97 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("org_unit_kind", "\"Kind\" IN ('faculty', 'department')");
                         });
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.OrgUnitAssignment", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("OrgUnitId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
+                    b.HasKey("UserId", "OrgUnitId");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("SchoolId");
+
+                    b.ToTable("org_unit_assignments", "curriculum");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.OutcomePolicyRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Json")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("integer");
+
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
+                    b.Property<long>("VersionId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolId");
+
+                    b.HasIndex("VersionId", "Revision")
+                        .IsUnique();
+
+                    b.ToTable("outcome_policies", "curriculum");
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.OutcomeSnapshotRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Json")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
+                    b.Property<long>("VersionId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolId");
+
+                    b.HasIndex("VersionId", "CreatedAt");
+
+                    b.ToTable("outcome_snapshots", "curriculum");
                 });
 
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.Plo", b =>
@@ -890,6 +1181,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnName("provenance")
                         .HasDefaultValueSql("'original_curriculum_map'::text");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("SourceCell")
                         .HasColumnType("text")
                         .HasColumnName("source_cell");
@@ -904,6 +1199,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
                     b.HasAlternateKey("Id", "ProgramVersionId")
                         .HasName("plos_id_program_version_id_key");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "ProgramVersionId", "Code" }, "plos_program_version_id_code_key")
                         .IsUnique();
@@ -975,6 +1272,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<long>("UniversityId")
                         .HasColumnType("bigint")
                         .HasColumnName("university_id");
@@ -989,6 +1290,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasName("programs_pkey");
 
                     b.HasIndex("FacultyId");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "UniversityId", "Code" }, "programs_university_id_code_key")
                         .IsUnique();
@@ -1071,6 +1374,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnName("quality_flags")
                         .HasDefaultValueSql("'[]'::jsonb");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("SemesterSourceValue")
                         .HasColumnType("text")
                         .HasColumnName("semester_source_value");
@@ -1092,6 +1399,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasName("program_courses_id_program_version_id_key");
 
                     b.HasIndex("CourseId");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "ProgramVersionId", "CourseId" }, "program_courses_active_course_uq")
                         .IsUnique()
@@ -1154,6 +1463,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("published_at");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<long?>("SourceVersionId")
                         .HasColumnType("bigint")
                         .HasColumnName("source_version_id");
@@ -1171,6 +1484,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("program_versions_pkey");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("SourceVersionId");
 
@@ -1242,8 +1557,14 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("raw_data");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.HasKey("ImportBatchId", "SourceRow")
                         .HasName("source_course_rows_pkey");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("source_course_rows", "curriculum");
                 });
@@ -1271,6 +1592,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("object_key");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Sha256")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -1280,6 +1605,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("source_documents_pkey");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "FileKind", "Sha256" }, "source_documents_file_kind_sha256_key")
                         .IsUnique();
@@ -1298,6 +1625,10 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.Property<long>("ComponentId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<decimal>("Score")
                         .HasPrecision(6, 2)
                         .HasColumnType("numeric(6,2)");
@@ -1311,6 +1642,8 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.HasKey("EnrollmentId", "ComponentId");
 
                     b.HasIndex("ComponentId");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("student_grades", "curriculum", t =>
                         {
@@ -1580,6 +1913,21 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.GradeCorrectionRequest", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.CourseEnrollment", null)
+                        .WithMany()
+                        .HasForeignKey("EnrollmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.CourseOffering", null)
+                        .WithMany()
+                        .HasForeignKey("OfferingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.GradeScaleBand", b =>
                 {
                     b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.University", null)
@@ -1669,6 +2017,33 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure.Migrations
                     b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.University", null)
                         .WithMany()
                         .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.OrgUnitAssignment", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.OutcomePolicyRecord", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.ProgramVersion", null)
+                        .WithMany()
+                        .HasForeignKey("VersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ObeAunQa.Modules.Curriculum.Domain.Entities.OutcomeSnapshotRecord", b =>
+                {
+                    b.HasOne("ObeAunQa.Modules.Curriculum.Domain.Entities.ProgramVersion", null)
+                        .WithMany()
+                        .HasForeignKey("VersionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

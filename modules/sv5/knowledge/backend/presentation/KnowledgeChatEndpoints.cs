@@ -10,7 +10,7 @@ internal static class KnowledgeChatEndpoints
     public static void Map(IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/knowledge/chat").WithTags("Knowledge Chat")
-            .RequireAuthorization(AuthorizationPolicies.AdminOrLecturer);
+            .RequireAuthorization(AuthorizationPolicies.PasswordChanged);
         group.MapGet("/threads", async (IChatThreadRepository repository, ICurrentUser user, CancellationToken ct, int page = 1) =>
             Results.Ok(await repository.ListAsync(user.UserId, page, ct)));
         group.MapPost("/threads", async (IChatThreadRepository repository, ICurrentUser user, CancellationToken ct) => {

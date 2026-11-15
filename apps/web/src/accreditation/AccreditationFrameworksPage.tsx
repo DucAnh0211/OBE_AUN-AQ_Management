@@ -138,7 +138,7 @@ function ImportFrameworkDialog({ onClose, onImported }: {
 
 export function AccreditationFrameworksPage() {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = (user?.role === "admin" || user?.role === "school_admin");
   const navigate = useNavigate();
   const [frameworks, setFrameworks] = useState<FrameworkSummary[]>([]);
   const [loading, setLoading] = useState(true);

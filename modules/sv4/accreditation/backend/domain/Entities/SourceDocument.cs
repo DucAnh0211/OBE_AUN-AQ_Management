@@ -2,6 +2,8 @@ namespace ObeAunQa.Modules.Accreditation.Domain.Entities;
 
 public sealed class SourceDocument
 {
+    public string AccessScope { get; set; } = "staff";
+    public long? OwnerUserId { get; set; }
     public Guid Id { get; set; }
     public string Title { get; set; } = "";
     public string FileName { get; set; } = "";

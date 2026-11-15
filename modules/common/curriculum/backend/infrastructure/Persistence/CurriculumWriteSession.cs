@@ -8,6 +8,14 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure;
 
 internal sealed class CurriculumWriteSession(CurriculumDbContext db)
 {
+    public async Task<int> DeleteAsync<T>(IQueryable<T> query, CancellationToken ct) where T:class
+    {
+        var rows=await query.ToArrayAsync(ct); db.RemoveRange(rows); await db.SaveChangesAsync(ct); return rows.Length;
+    }
+    public async Task<int> UpdateAsync<T>(IQueryable<T> query, Action<T> update, CancellationToken ct) where T:class
+    {
+        var rows=await query.ToArrayAsync(ct); foreach(var row in rows) update(row); await db.SaveChangesAsync(ct); return rows.Length;
+    }
     // PostgreSQL row locks preserve the existing edit-versus-publish guarantee.
     // EF Core does not expose FOR UPDATE in LINQ; all business CRUD uses tracked entities.
     public async Task<ProgramVersion> LockVersionAsync(long id, CancellationToken ct)
@@ -25,6 +33,9 @@ internal sealed class CurriculumWriteSession(CurriculumDbContext db)
     }
     public async Task<T> RunAsync<T>(Func<Task<T>> action, CancellationToken ct)
     {
+        if (db.Database.CurrentTransaction != null) {
+            var nested = await action(); await db.SaveChangesAsync(ct); return nested;
+        }
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         try
         {

@@ -32,7 +32,7 @@ class AgentState(TypedDict, total=False):
 
 
 class CurriculumToolCall(retrieval.StrictModel):
-    tool: Literal["programs", "versions", "courses", "plos", "clos", "course_plo", "clo_plo"]
+    tool: Literal["programs", "versions", "courses", "plos", "clos", "course_plo", "clo_plo", "my_transcript"]
     programId: int | None
     versionId: int | None
     courseId: int | None

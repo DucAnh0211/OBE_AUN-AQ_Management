@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using ObeAunQa.SharedKernel;
+using ObeAunQa.Modules.Identity;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ObeAunQa.Modules.Knowledge.Application;
@@ -21,6 +23,11 @@ public sealed class ChatAgentWorker(IServiceScopeFactory scopes, ILogger<ChatAge
                     using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken); timeout.CancelAfter(TimeSpan.FromMinutes(8));
                     try
                     {
+                        var owner=await scope.ServiceProvider.GetRequiredService<IIdentityRepository>().FindByIdAsync(await repository.OwnerAsync(run.ThreadId,timeout.Token),timeout.Token);
+                        var school=await repository.SchoolAsync(run.ThreadId,timeout.Token);
+                        if(owner==null || owner.Role!=await repository.OwnerRoleAsync(run.ThreadId,timeout.Token) || owner.Status!="active" || owner.MustChangePassword || school==null || owner.Role!="admin" && owner.UniversityId!=school)
+                            throw new KnowledgeException(403,"The conversation owner no longer has access to this school.");
+                        using var execution=scope.ServiceProvider.GetRequiredService<HttpCurrentUser>().ExecuteAs(owner.Id,owner.Role,school);
                         var history = await repository.HistoryAsync(run, timeout.Token);
                         var answer = await scope.ServiceProvider.GetRequiredService<IChatAgent>().RunAsync(new(run.ThreadId, run.Id, run.Lease!.Value, run.Question, history), timeout.Token);
                         await scope.ServiceProvider.GetRequiredService<KnowledgeChatService>().ValidateAnswerAsync(answer, timeout.Token,

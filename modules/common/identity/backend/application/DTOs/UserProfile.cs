@@ -8,4 +8,4 @@ public sealed record UserProfile(
     string Status,
     bool MustChangePassword,
     DateTime? LastLoginAt,
-    DateTime CreatedAt);
+    DateTime CreatedAt, long? UniversityId = null);

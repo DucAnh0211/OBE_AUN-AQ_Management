@@ -12,11 +12,11 @@ internal static class UniversityEndpoints
     public static RouteGroupBuilder MapUniversityEndpoints(this RouteGroupBuilder group)
     {
         group.MapGet("/universities", GetUniversitiesAsync);
-        group.MapPost("/universities", CreateUniversityAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPost("/universities", CreateUniversityAsync).RequireAuthorization(AuthorizationPolicies.GlobalAdminOnly);
         group.MapGet("/universities/{universityId:long:min(1)}", GetUniversityAsync)
             .WithName("GetCurriculumUniversity");
         group.MapPut("/universities/{universityId:long:min(1)}", UpdateUniversityAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
-        group.MapDelete("/universities/{universityId:long:min(1)}", ArchiveUniversityAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapDelete("/universities/{universityId:long:min(1)}", ArchiveUniversityAsync).RequireAuthorization(AuthorizationPolicies.GlobalAdminOnly);
         return group;
     }
 
@@ -31,7 +31,7 @@ internal static class UniversityEndpoints
         [FromQuery] bool includeArchived = false)
     {
         // Non-admins only see universities that own a program they can already read.
-        var scope = currentUser.Role == SystemRoles.Admin ? null : await access.GetReadableProgramIdsAsync(cancellationToken);
+        var scope = SystemRoles.IsAdmin(currentUser.Role) ? null : await access.GetReadableProgramIdsAsync(cancellationToken);
         return Results.Ok(await service.GetUniversitiesAsync(page, pageSize, search, scope is null && includeArchived, scope, cancellationToken));
     }
 
@@ -51,7 +51,7 @@ internal static class UniversityEndpoints
         IAccessControlService access,
         CancellationToken cancellationToken)
     {
-        if (currentUser.Role != SystemRoles.Admin)
+        if (!SystemRoles.IsAdmin(currentUser.Role))
         {
             var readable = await access.GetReadableProgramIdsAsync(cancellationToken);
             var owned = await service.GetProgramIdsAsync([universityId], cancellationToken);

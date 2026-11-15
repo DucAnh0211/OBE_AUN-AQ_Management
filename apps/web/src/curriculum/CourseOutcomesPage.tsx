@@ -62,7 +62,7 @@ export function CourseOutcomesPage() {
   }, [versionId, courseId]);
   useEffect(() => { void load(); }, [load]);
 
-  const editable = version?.status === "draft" && (user?.role === "admin" || user?.role === "lecturer");
+  const editable = version?.status === "draft" && ((user?.role === "admin" || user?.role === "school_admin"));
 
   async function save(draft: CloDraft) {
     setBusy(true); setError("");

@@ -57,9 +57,9 @@ internal sealed class EfProgramVersionRepository(CurriculumDbContext db, Curricu
             var version = await writes.DraftAsync(id, ct);
             if (!VersionRules.CanPublish(await db.ProgramCourses.CountAsync(c => c.ProgramVersionId == id && c.ArchivedAt == null, ct)))
                 throw new CurriculumConflictException("version_has_no_courses", "Phiên bản phải có ít nhất một học phần trước khi công bố.");
-            await db.ProgramVersions.Where(v => v.ProgramId == version.ProgramId && v.IsCurrent).ExecuteUpdateAsync(s => s.SetProperty(v => v.IsCurrent, false).SetProperty(v => v.UpdatedAt, DateTime.UtcNow), ct);
+            await writes.UpdateAsync(db.ProgramVersions.Where(v => v.ProgramId == version.ProgramId && v.IsCurrent),v=>{v.IsCurrent=false;v.UpdatedAt=DateTime.UtcNow;},ct);
             version.DatasetStatus = CurriculumStatuses.Finalized; version.IsCurrent = true; version.PublishedAt = version.UpdatedAt = DateTime.UtcNow;
-            await db.ProgramCourses.Where(c => c.ProgramVersionId == id && c.ArchivedAt == null).ExecuteUpdateAsync(s => s.SetProperty(c => c.DatasetStatus, CurriculumStatuses.Finalized).SetProperty(c => c.UpdatedAt, DateTime.UtcNow), ct);
+            await writes.UpdateAsync(db.ProgramCourses.Where(c => c.ProgramVersionId == id && c.ArchivedAt == null),c=>{c.DatasetStatus=CurriculumStatuses.Finalized;c.UpdatedAt=DateTime.UtcNow;},ct);
             return true;
         }, ct);
         return (await GetProgramVersionAsync(id, ct))!;

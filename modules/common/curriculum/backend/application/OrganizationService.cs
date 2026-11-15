@@ -4,12 +4,12 @@ namespace ObeAunQa.Modules.Curriculum.Application;
 /// <summary>Khoa/bộ môn, hồ sơ giảng viên và quy chế đánh giá của trường.</summary>
 public sealed class OrganizationService(IOrganizationRepository repository, ICurrentUser user, IAcademicStaffDirectory staff, UniversityService universities)
 {
-    private void Admin() { if (user.Role != SystemRoles.Admin) throw new AcademicAccessException(); }
-    private void Staff() { if (user.Role is not (SystemRoles.Admin or SystemRoles.Lecturer)) throw new AcademicAccessException(); }
+    private void Admin() { if (!SystemRoles.IsAdmin(user.Role)) throw new AcademicAccessException(); }
+    private void Staff() { if (user.Role is not (SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer)) throw new AcademicAccessException(); }
     public async Task<IReadOnlyList<OrgUnitInfo>> OrgUnitsAsync(long universityId, bool includeArchived, CancellationToken ct)
     {
         Staff(); await universities.GetUniversityAsync(universityId, ct);
-        return await repository.OrgUnitsAsync(universityId, includeArchived && user.Role == SystemRoles.Admin, ct);
+        return await repository.OrgUnitsAsync(universityId, includeArchived && SystemRoles.IsAdmin(user.Role), ct);
     }
     public async Task<OrgUnitInfo> SaveOrgUnitAsync(long universityId, long? id, SaveOrgUnit request, CancellationToken ct)
     {

@@ -27,7 +27,7 @@ internal static class AccreditationDirectoryEndpoints
     }
 
     private static async Task<long[]?> ScopeAsync(ICurrentUser user, IAccessControlService access, CancellationToken ct) =>
-        user.Role == SystemRoles.Admin ? null : await access.GetReadableProgramIdsAsync(ct);
+        SystemRoles.IsAdmin(user.Role) ? null : await access.GetReadableProgramIdsAsync(ct);
 
     private static async Task<IResult> GetUniversitiesAsync(
         ProgramAccreditationService service,

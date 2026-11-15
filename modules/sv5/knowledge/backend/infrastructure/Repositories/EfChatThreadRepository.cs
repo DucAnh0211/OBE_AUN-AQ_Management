@@ -4,11 +4,13 @@ using ObeAunQa.Modules.Knowledge.Application;
 using ObeAunQa.Modules.Knowledge.Domain;
 namespace ObeAunQa.Modules.Knowledge.Infrastructure;
 
-public sealed class EfChatThreadRepository(KnowledgeDbContext db) : IChatThreadRepository
+public sealed class EfChatThreadRepository(KnowledgeDbContext db, ObeAunQa.SharedKernel.ICurrentUser user) : IChatThreadRepository
 {
     public async Task<long> OwnerAsync(Guid threadId, CancellationToken ct) =>
-        await db.Set<ChatThread>().Where(x => x.Id == threadId).Select(x => (long?)x.OwnerId).SingleOrDefaultAsync(ct)
+        await db.Set<ChatThread>().IgnoreQueryFilters().Where(x => x.Id == threadId).Select(x => (long?)x.OwnerId).SingleOrDefaultAsync(ct)
         ?? throw new KnowledgeException(410, "Hội thoại đã bị xóa.");
+    public Task<long?> SchoolAsync(Guid threadId,CancellationToken ct) => db.Set<ChatThread>().IgnoreQueryFilters().Where(x=>x.Id==threadId).Select(x=>EF.Property<long?>(x,"SchoolId")).SingleAsync(ct);
+    public Task<string> OwnerRoleAsync(Guid threadId,CancellationToken ct) => db.Set<ChatThread>().IgnoreQueryFilters().Where(x=>x.Id==threadId).Select(x=>x.OwnerRole).SingleAsync(ct);
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private static ChatThreadInfo Info(ChatThread t) => new(t.Id, t.Title, t.CreatedAt, t.UpdatedAt);
     private static ChatExchangeInfo Info(ChatExchange e) => new(e.Id, e.Question,
@@ -21,7 +23,7 @@ public sealed class EfChatThreadRepository(KnowledgeDbContext db) : IChatThreadR
             .Skip((Math.Clamp(page, 1, 10000) - 1) * 30).Take(30).ToArrayAsync(ct)).Select(Info).ToArray();
     public async Task<ChatThreadInfo> CreateAsync(long owner, CancellationToken ct)
     {
-        var t = new ChatThread { Id = Guid.NewGuid(), OwnerId = owner, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var t = new ChatThread { Id = Guid.NewGuid(), OwnerId = owner, OwnerRole=user.Role, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
         db.Add(t); await db.SaveChangesAsync(ct); return Info(t);
     }
     public async Task<ChatThreadDetail> GetAsync(Guid id, long owner, CancellationToken ct)
@@ -102,7 +104,7 @@ public sealed class EfChatThreadRepository(KnowledgeDbContext db) : IChatThreadR
                 .SetProperty(x => x.Lease, (Guid?)null).SetProperty(x => x.LeaseUntil, (DateTime?)null), ct);
     public async Task DemandLeaseAsync(Guid threadId, Guid runId, Guid lease, CancellationToken ct)
     {
-        if (!await db.Set<ChatExchange>().AnyAsync(x => x.ThreadId == threadId && x.Id == runId && x.Status == "processing" && x.Lease == lease && x.LeaseUntil > DateTime.UtcNow, ct))
+        if (!await db.Set<ChatExchange>().IgnoreQueryFilters().AnyAsync(x => x.ThreadId == threadId && x.Id == runId && x.Status == "processing" && x.Lease == lease && x.LeaseUntil > DateTime.UtcNow, ct))
             throw new KnowledgeException(410, "Tiến trình không còn hiệu lực hoặc hội thoại đã bị xóa.");
     }
     private async Task Fence(Guid runId, Guid lease, CancellationToken ct)

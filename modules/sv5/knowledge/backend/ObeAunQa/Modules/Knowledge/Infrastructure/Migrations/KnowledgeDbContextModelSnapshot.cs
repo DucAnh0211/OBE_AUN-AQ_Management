@@ -42,7 +42,13 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.HasKey("ExchangeId", "CheckpointId");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("chat_checkpoints", "knowledge");
                 });
@@ -67,7 +73,13 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.HasKey("ExchangeId", "CheckpointId", "TaskId", "Index");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("chat_checkpoint_writes", "knowledge");
                 });
@@ -114,6 +126,10 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -123,6 +139,8 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("ThreadId")
                         .IsUnique()
@@ -147,6 +165,14 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                     b.Property<long>("OwnerId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("OwnerRole")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -156,6 +182,8 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("OwnerId", "UpdatedAt");
 
@@ -200,6 +228,10 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -213,6 +245,8 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.HasKey("DocumentId");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("Status", "UpdatedAt");
 
@@ -236,6 +270,10 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<int>("StartOffset")
                         .HasColumnType("integer");
 
@@ -245,6 +283,8 @@ namespace ObeAunQa.Modules.Knowledge.Infrastructure.Migrations
                         .HasColumnType("character varying(1200)");
 
                     b.HasKey("DocumentId", "Ordinal");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("chunks", "knowledge");
                 });

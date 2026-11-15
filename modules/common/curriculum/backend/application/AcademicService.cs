@@ -6,7 +6,7 @@ namespace ObeAunQa.Modules.Curriculum.Application;
 public sealed class AcademicService(CurriculumService curriculum, IAcademicRepository repository,
     ICurrentUser user, IAccessControlService access, CourseOfferingService offerings)
 {
-    private bool IsAdmin => user.Role == SystemRoles.Admin;
+    private bool IsAdmin => SystemRoles.IsAdmin(user.Role);
     public async Task<IReadOnlyList<AcademicPeriodBatch>> PeriodsAsync(long versionId, long offeringId, CancellationToken ct)
     {
         var offering = await CourseAccessAsync(versionId, offeringId, false, ct);
@@ -15,7 +15,7 @@ public sealed class AcademicService(CurriculumService curriculum, IAcademicRepos
     public Task<CourseOfferingInfo> CourseAccessAsync(long versionId, long offeringId, bool write, CancellationToken ct) => offerings.AccessAsync(versionId, offeringId, write, ct);
     public async Task<AssessmentScheme> SchemeAsync(long versionId, long courseId, CancellationToken ct)
     {
-        if (user.Role is not (SystemRoles.Admin or SystemRoles.Lecturer) || !await access.CanReadCourseAsync(courseId, ct)) Denied();
+        if (user.Role is not (SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer) || !await access.CanReadCourseAsync(courseId, ct)) Denied();
         _ = await curriculum.GetProgramCourseAsync(versionId, courseId, ct);
         return await repository.SchemeAsync(versionId, courseId, ct);
     }
@@ -42,13 +42,13 @@ public sealed class AcademicService(CurriculumService curriculum, IAcademicRepos
     }
     public async Task<GradingPolicyInfo> PolicyAsync(long versionId, CancellationToken ct)
     {
-        if (user.Role is not (SystemRoles.Admin or SystemRoles.Lecturer) || !await access.CanReadVersionAsync(versionId, ct)) Denied();
+        if (user.Role is not (SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer) || !await access.CanReadVersionAsync(versionId, ct)) Denied();
         _ = await curriculum.GetProgramVersionAsync(versionId, ct);
         return await repository.PolicyForVersionAsync(versionId, ct);
     }
     public async Task<IReadOnlyList<AssessmentCoverageItem>> CoverageAsync(long versionId, CancellationToken ct)
     {
-        if (user.Role is not (SystemRoles.Admin or SystemRoles.Lecturer) || !await access.CanReadVersionAsync(versionId, ct)) Denied();
+        if (user.Role is not (SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer) || !await access.CanReadVersionAsync(versionId, ct)) Denied();
         _ = await curriculum.GetProgramVersionAsync(versionId, ct);
         var rows = await repository.CoverageAsync(versionId, ct);
         if (IsAdmin) return rows;
@@ -63,6 +63,7 @@ public sealed class AcademicService(CurriculumService curriculum, IAcademicRepos
     }
     public async Task<EnrollmentInfo> EnrollAsync(long versionId, long offeringId, EnrollStudent request, CancellationToken ct)
     {
+        if (!IsAdmin) Denied();
         var offering = await Writable(versionId, offeringId, ct);
         if (offering.GradeStatus != AcademicCodes.Draft) throw new CurriculumConflictException("grades_not_draft", "Lớp học phần đã nộp hoặc công bố điểm, không thể thêm sinh viên.");
         return await repository.EnrollAsync(offering, AcademicValidator.Student(request with { AcademicPeriod = offering.AcademicPeriod }), ct);
@@ -83,6 +84,7 @@ public sealed class AcademicService(CurriculumService curriculum, IAcademicRepos
     }
     public async Task<AcademicImportPreview> ImportAsync(long versionId, long offeringId, AcademicImportRequest request, bool apply, CancellationToken ct)
     {
+        if (request.Mode == "students" && !IsAdmin) Denied();
         var offering = await Writable(versionId, offeringId, ct);
         if (offering.GradeStatus != AcademicCodes.Draft) throw new CurriculumConflictException("grades_not_draft", "Chỉ import khi sổ điểm còn ở trạng thái đang nhập.");
         if (request.OfferingId != offering.Id || request.AcademicPeriod != offering.AcademicPeriod)

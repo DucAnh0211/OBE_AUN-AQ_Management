@@ -32,6 +32,8 @@ public sealed class CurriculumDemoSeeder(CurriculumDbContext db)
         var program = new CurriculumProgram { UniversityId = university.Id, Code = "CS", Name = "Khoa học máy tính" };
         db.Programs.Add(program);
         db.SourceDocuments.AddRange(workbook, syllabus);
+        db.Entry(workbook).Property("SchoolId").CurrentValue = university.Id;
+        db.Entry(syllabus).Property("SchoolId").CurrentValue = university.Id;
         await db.SaveChangesAsync(ct);
 
         var baseline = await AddVersionAsync(program, first, m1.RootElement, workbook, syllabus, null, ct);
@@ -116,6 +118,8 @@ public sealed class CurriculumDemoSeeder(CurriculumDbContext db)
         foreach (var raw in data.GetProperty("curriculum_map_source_data").EnumerateArray())
             batch.SourceCourseRows.Add(new SourceCourseRow { SourceRow = raw.GetProperty("source_row").GetInt32(), RawData = raw.GetRawText() });
         db.ImportBatches.Add(batch);
+        db.Entry(document).Property("SchoolId").CurrentValue = program.UniversityId;
+        db.Entry(batch).Property("SchoolId").CurrentValue = program.UniversityId;
         await db.SaveChangesAsync(ct);
         return version;
     }
@@ -153,7 +157,7 @@ public sealed class CurriculumDemoSeeder(CurriculumDbContext db)
             db.AddRange(parts); await db.SaveChangesAsync(ct);
             var clos = await db.Clos.Where(c => c.ProgramCourseId == course.Id).OrderBy(c => c.Code).Select(c => c.Id).ToArrayAsync(ct);
             if (clos.Length > 0) db.Add(new AssessmentComponentClo { ComponentId = parts[0].Id, CloId = clos[0], Weight = 100 });
-            db.AddRange(clos.Select(id => new AssessmentComponentClo { ComponentId = parts[1].Id, CloId = id, Weight = 100 }));
+            db.AddRange(clos.Select((id,index) => new AssessmentComponentClo { ComponentId = parts[1].Id, CloId = id, Weight = index == clos.Length-1 ? 100m-decimal.Round(100m/clos.Length,2)*(clos.Length-1) : decimal.Round(100m/clos.Length,2) }));
             course.GradeSchemeRevision = 1; schemes[course.Id] = parts;
         }
         await db.SaveChangesAsync(ct);

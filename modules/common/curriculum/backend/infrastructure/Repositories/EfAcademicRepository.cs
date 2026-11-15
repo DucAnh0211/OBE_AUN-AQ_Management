@@ -49,7 +49,7 @@ internal sealed class EfAcademicRepository(CurriculumDbContext db, CurriculumWri
             var clos = await db.Clos.Where(c => c.ProgramCourseId == courseId).ToDictionaryAsync(c => c.Code, c => c.Id, ct);
             var existing = await db.Set<AssessmentComponent>().Where(c => c.ProgramCourseId == courseId).ToListAsync(ct);
             var existingIds = existing.Select(c => c.Id).ToArray();
-            await db.Set<AssessmentComponentClo>().Where(m => existingIds.Contains(m.ComponentId)).ExecuteDeleteAsync(ct);
+            await writes.DeleteAsync(db.Set<AssessmentComponentClo>().Where(m => existingIds.Contains(m.ComponentId)),ct);
             if (sameStructure)
             {
                 foreach (var component in existing) component.Name = request.Components.Single(c => c.Code == component.Code).Name.Trim();
@@ -57,7 +57,7 @@ internal sealed class EfAcademicRepository(CurriculumDbContext db, CurriculumWri
             }
             else
             {
-                await db.Set<AssessmentComponent>().Where(c => c.ProgramCourseId == courseId).ExecuteDeleteAsync(ct);
+                await writes.DeleteAsync(db.Set<AssessmentComponent>().Where(c => c.ProgramCourseId == courseId),ct);
                 var added = request.Components.Select((c, i) => (Input: c, Entity: new AssessmentComponent { ProgramCourseId = courseId, Code = c.Code,
                     Name = c.Name.Trim(), Kind = c.Kind, Weight = c.Weight, MaxScore = c.MaxScore, DisplayOrder = i + 1 })).ToArray();
                 db.AddRange(added.Select(a => a.Entity)); await db.SaveChangesAsync(ct);
@@ -106,7 +106,9 @@ internal sealed class EfAcademicRepository(CurriculumDbContext db, CurriculumWri
         await writes.LockVersionAsync(info.VersionId, ct);
         var offering = await db.Set<CourseOffering>().Include(o => o.Lecturers).SingleOrDefaultAsync(o => o.Id == info.Id && o.ProgramVersionId == info.VersionId, ct)
             ?? throw new CurriculumNotFoundException("lớp học phần", info.Id);
-        if (user.Role != SystemRoles.Admin && (user.Role != SystemRoles.Lecturer || offering.Lecturers.All(l => l.UserId != user.UserId))) throw new AcademicAccessException();
+        if (!SystemRoles.IsAdmin(user.Role) && (user.Role != SystemRoles.Lecturer || offering.Lecturers.All(l => l.UserId != user.UserId))) throw new AcademicAccessException();
+        if(user.Role==SystemRoles.Lecturer && !await (from c in db.ProgramCourses join p in db.Set<LecturerProfile>() on c.Course.DepartmentId equals p.DepartmentId
+            where c.Id==offering.ProgramCourseId && p.UserId==user.UserId && p.DepartmentId!=null select c.Id).AnyAsync(ct)) throw new AcademicAccessException();
         if (!await db.ProgramCourses.AnyAsync(c => c.Id == offering.ProgramCourseId && c.ArchivedAt == null, ct))
             throw new CurriculumNotFoundException("học phần đang hoạt động", offering.ProgramCourseId);
         return offering;
@@ -182,13 +184,18 @@ internal sealed class EfAcademicRepository(CurriculumDbContext db, CurriculumWri
         return new(info, await SchemeAsync(offering.VersionId, offering.ProgramCourseId, ct),
             components.ToDictionary(c => c.Code, c => (decimal?)grades.SingleOrDefault(g => g.ComponentId == c.Id)?.Score), history);
     }
-    public async Task<StudentGradebook> SaveGradesAsync(CourseOfferingInfo info, long enrollmentId, SaveStudentGrades request, long actorId, CancellationToken ct)
+    public Task<StudentGradebook> SaveGradesAsync(CourseOfferingInfo info, long enrollmentId, SaveStudentGrades request, long actorId, CancellationToken ct)
+        => SaveGradesCoreAsync(info,enrollmentId,request,actorId,false,ct);
+    internal Task<StudentGradebook> SaveApprovedGradesAsync(CourseOfferingInfo info, long enrollmentId, SaveStudentGrades request, long actorId, CancellationToken ct)
+        => SaveGradesCoreAsync(info,enrollmentId,request,actorId,true,ct);
+    private async Task<StudentGradebook> SaveGradesCoreAsync(CourseOfferingInfo info, long enrollmentId, SaveStudentGrades request, long actorId, bool approved, CancellationToken ct)
     {
         await writes.RunAsync(async () => {
             var offering = await LockOffering(info, ct);
-            if (offering.GradeStatus != AcademicCodes.Draft && user.Role != SystemRoles.Admin)
+            if (offering.GradeStatus != AcademicCodes.Draft && !SystemRoles.IsAdmin(user.Role))
                 throw new CurriculumConflictException("grades_locked", "Điểm đã nộp hoặc đã công bố. Liên hệ phòng đào tạo để trả lại hoặc phúc khảo.");
             var published = offering.GradeStatus == AcademicCodes.Published;
+            if(published && !approved) throw new CurriculumConflictException("approval_required", "?i?m ?? c?ng b? ch? ???c s?a th?ng qua y?u c?u ???c ph? duy?t.");
             if (published && request.Reason is null) AcademicValidator.Invalid("reason", "Sửa điểm đã công bố cần ghi lý do (ví dụ kết quả phúc khảo).");
             var scheme = await SchemeAsync(offering.ProgramVersionId, offering.ProgramCourseId, ct); Revision(scheme.Revision, request.SchemeRevision);
             AcademicValidator.Scores(request.Scores, scheme, allowEmpty: true);
@@ -260,7 +267,7 @@ internal sealed class EfAcademicRepository(CurriculumDbContext db, CurriculumWri
                 offering.GradeStatus = AcademicCodes.Published; offering.PublishedAt = now; offering.PublishedBy = actorId;
                 break;
             case "reopen":
-                if (offering.GradeStatus == AcademicCodes.Draft) throw new CurriculumConflictException("grade_status", "Sổ điểm đang ở trạng thái đang nhập.");
+                if (offering.GradeStatus != AcademicCodes.Submitted) throw new CurriculumConflictException("grade_status", "Chỉ trả lại điểm đã nộp. Điểm đã công bố phải sửa qua yêu cầu phê duyệt.");
                 foreach (var e in enrollments) ClearSnapshot(e);
                 offering.GradeStatus = AcademicCodes.Draft; offering.StatusNote = reason;
                 offering.SubmittedAt = null; offering.SubmittedBy = null; offering.PublishedAt = null; offering.PublishedBy = null;

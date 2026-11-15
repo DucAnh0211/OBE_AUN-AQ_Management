@@ -14,4 +14,4 @@ public sealed record SecurityUser(
     DateTime? LockedUntil,
     DateTime? LastLoginAt,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt, long? UniversityId = null);

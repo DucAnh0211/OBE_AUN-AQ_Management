@@ -33,7 +33,8 @@ public static class IdentityModule
             throw new InvalidOperationException("Jwt:SigningKey phải có ít nhất 32 byte.");
 
         services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUser,HttpCurrentUser>();
+        services.AddScoped<HttpCurrentUser>();
+        services.AddScoped<ICurrentUser>(sp=>sp.GetRequiredService<HttpCurrentUser>());
         services.AddScoped<IAccessControlService,AccessControlService>();
         services.AddScoped<IAcademicStaffDirectory, AcademicStaffDirectory>();
         services.AddDbContext<IdentityDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("Postgres"), p => p.MigrationsHistoryTable("__EFMigrationsHistory", "security")));
@@ -46,6 +47,7 @@ public static class IdentityModule
         services.AddSingleton<IPasswordHasher<SecurityUser>,PasswordHasher<SecurityUser>>();
         services.AddHostedService<BootstrapAdminService>();
         services.AddExceptionHandler<IdentityExceptionHandler>();
+        services.AddExceptionHandler<SchoolAccessExceptionHandler>();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -80,8 +82,10 @@ public static class IdentityModule
                 .RequireAuthenticatedUser().RequireClaim("must_change_password","false").Build())
             .AddPolicy(AuthorizationPolicies.Authenticated,p=>p.RequireAuthenticatedUser())
             .AddPolicy(AuthorizationPolicies.PasswordChanged,p=>p.RequireAuthenticatedUser().RequireClaim("must_change_password","false"))
-            .AddPolicy(AuthorizationPolicies.AdminOnly,p=>p.RequireRole(SystemRoles.Admin).RequireClaim("must_change_password","false"))
-            .AddPolicy(AuthorizationPolicies.AdminOrLecturer,p=>p.RequireRole(SystemRoles.Admin,SystemRoles.Lecturer).RequireClaim("must_change_password","false"));
+            .AddPolicy(AuthorizationPolicies.GlobalAdminOnly,p=>p.RequireRole(SystemRoles.Admin).RequireClaim("must_change_password","false"))
+            .AddPolicy(AuthorizationPolicies.AdminOnly,p=>p.RequireRole(SystemRoles.Admin,SystemRoles.SchoolAdmin).RequireClaim("must_change_password","false"))
+            .AddPolicy(AuthorizationPolicies.CurriculumManagers,p=>p.RequireRole(SystemRoles.Admin,SystemRoles.SchoolAdmin).RequireClaim("must_change_password","false"))
+            .AddPolicy(AuthorizationPolicies.AdminOrLecturer,p=>p.RequireRole(SystemRoles.Admin,SystemRoles.SchoolAdmin,SystemRoles.Lecturer).RequireClaim("must_change_password","false"));
         return services;
     }
 
@@ -92,6 +96,9 @@ public static class IdentityModule
         auth.MapPost("/refresh",RefreshAsync).AllowAnonymous();
         auth.MapPost("/logout",LogoutAsync).AllowAnonymous();
         auth.MapGet("/me",GetMeAsync).RequireAuthorization(AuthorizationPolicies.Authenticated);
+        auth.MapGet("/school",async(ICurrentUser user,IIdentityRepository repository,CancellationToken ct)=>
+            Results.Ok(user.UniversityId is long id ? new {id,name=await repository.SchoolNameAsync(id,ct)} : null))
+            .RequireAuthorization(AuthorizationPolicies.PasswordChanged);
         auth.MapPost("/change-password",ChangePasswordAsync).RequireAuthorization(AuthorizationPolicies.Authenticated);
 
         var admin=endpoints.MapGroup("/api/admin").WithTags("Administration")
@@ -101,11 +108,11 @@ public static class IdentityModule
         admin.MapPost("/users",CreateUserAsync);
         admin.MapPut("/users/{id:long:min(1)}",UpdateUserAsync);
         admin.MapPost("/users/{id:long:min(1)}/reset-password",ResetPasswordAsync);
-        admin.MapGet("/users/{id:long:min(1)}/course-assignments",async(long id,IIdentityRepository repository,CancellationToken ct)
-            =>Results.Ok(await repository.GetCourseAssignmentsAsync(id,ct)));
+        admin.MapGet("/users/{id:long:min(1)}/course-assignments",async(long id,IIdentityRepository repository,IdentityService identity,CancellationToken ct)
+            => { await identity.DemandManageAsync(id,ct); return Results.Ok(await repository.GetCourseAssignmentsAsync(id,ct)); });
         admin.MapPut("/users/{id:long:min(1)}/course-assignments",ReplaceCourseAssignmentsAsync);
-        admin.MapGet("/users/{id:long:min(1)}/program-assignments",async(long id,IIdentityRepository repository,CancellationToken ct)
-            =>Results.Ok(await repository.GetProgramAssignmentsAsync(id,ct)));
+        admin.MapGet("/users/{id:long:min(1)}/program-assignments",async(long id,IIdentityRepository repository,IdentityService identity,CancellationToken ct)
+            => { await identity.DemandManageAsync(id,ct); return Results.Ok(await repository.GetProgramAssignmentsAsync(id,ct)); });
         admin.MapPut("/users/{id:long:min(1)}/program-assignments",ReplaceProgramAssignmentsAsync);
         admin.MapGet("/audit-logs",async(IIdentityRepository repository,CancellationToken ct,int page=1,int pageSize=50)
             =>Results.Ok(await repository.GetAuditLogsAsync(Math.Max(1,page),Math.Clamp(pageSize,1,100),ct)));
@@ -137,6 +144,10 @@ public static class IdentityModule
         RefreshCookieName,session.RefreshToken,new CookieOptions{HttpOnly=true,Secure=!http.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment(),SameSite=SameSiteMode.Strict,Expires=session.RefreshExpiresAt,Path="/api/auth"});
     private static void DeleteRefreshCookie(HttpContext http) => http.Response.Cookies.Delete(RefreshCookieName,new CookieOptions{Path="/api/auth"});
     private static string? Ip(HttpContext http)=>http.Connection.RemoteIpAddress?.ToString();
-    private static string[] Permissions(string role)=>role switch
-    { SystemRoles.Admin=>["users.manage","curriculum.manage","accreditation.manage"], SystemRoles.Lecturer=>["assigned_courses.read","assigned_clos.manage","accreditation.read"], SystemRoles.Student=>["assigned_program.read"], _=>[] };
+    private static string[] Permissions(string role)=>role switch {
+        SystemRoles.Admin=>["schools.manage","school_admins.manage","users.manage","curriculum.manage","accreditation.manage","grade_corrections.review","chat.use"],
+        SystemRoles.SchoolAdmin=>["users.manage","school_resources.manage","curriculum.manage","accreditation.manage","grade_corrections.review","chat.use"],
+        SystemRoles.Lecturer=>["school_resources.read","assigned_grades.manage","grade_corrections.request","chat.use"],
+        SystemRoles.Student=>["personal_grades.read","personal_resources.read","chat.use"],_=>[]
+    };
 }

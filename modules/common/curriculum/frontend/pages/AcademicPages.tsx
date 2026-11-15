@@ -1,3 +1,5 @@
+import { apiJson } from "../../../../../shared/frontend/auth-client";
+import { getCurrentUser } from "../../../../../shared/frontend/auth-client";
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { curriculumApi } from "../api";
@@ -114,7 +116,7 @@ export function CourseAssessmentPage({ isAdmin }: { isAdmin: boolean }) {
     <fieldset className="academic-fieldset"><legend>Thông tin quản lý học phần</legend><div className="academic-form-row">
       <label>Bộ môn quản lý<select value={department} disabled={!isAdmin || busy} onChange={e => setDepartment(e.target.value)}><option value="">Chưa gán bộ môn</option>{departments.map(d => <option key={d.id} value={d.id}>{d.code} · {d.name}</option>)}</select></label>
       <label className="check-control"><input type="checkbox" checked={countsTowardGpa} disabled={!isAdmin || busy} onChange={e => setCountsTowardGpa(e.target.checked)} /> Tính vào điểm trung bình (bỏ chọn với GDTC, GDQP-AN)</label>
-      {isAdmin && <button type="button" className="button button--secondary" disabled={busy} onClick={() => void saveCatalog()}>Lưu thông tin</button>}</div></fieldset>
+      {["admin","school_admin"].includes(getCurrentUser()?.role ?? "") && <button type="button" className="button button--secondary" disabled={busy} onClick={() => void saveCatalog()}>Lưu thông tin</button>}</div></fieldset>
     <h2>Cơ cấu điểm trong đề cương</h2>
     {structureLocked && <p className="academic-notice">Đã có lịch sử nhập điểm: chỉ sửa được tên đầu điểm và liên kết CLO. Thay đổi trọng số, thang điểm hoặc loại đánh giá cần phiên bản CTĐT mới.</p>}
     {policy && <p>Quy chế của trường: tối thiểu {minComponents} đầu điểm{policy.minFinalWeight ? `, cuối kỳ ≥ ${policy.minFinalWeight}%` : ""}; điểm học phần làm tròn {policy.courseScoreDecimals} chữ số thập phân rồi quy đổi điểm chữ.</p>}
@@ -160,7 +162,7 @@ function GradebookWorkflow({ offering, isAdmin, userId, busy, onAction }: { offe
     : `Điểm đã công bố${offering.publishedAt ? ` lúc ${new Date(offering.publishedAt).toLocaleString("vi-VN")}` : ""}. Sửa điểm (phúc khảo) cần phòng đào tạo và phải ghi lý do.`}
     {offering.statusNote && s === "draft" ? ` Lý do trả lại gần nhất: ${offering.statusNote}` : ""}</p>;
   return <GradeStatusStepper status={s} detail={detail} actions={<>
-    {s !== "draft" && isAdmin && <button className="button button--secondary" disabled={busy} onClick={() => onAction("reopen")}>Trả lại để sửa</button>}
+    {s === "submitted" && isAdmin && <button className="button button--secondary" disabled={busy} onClick={() => onAction("reopen")}>Trả lại để sửa</button>}
     {s === "draft" && (isAdmin || isMain) && <button className="button button--primary" disabled={busy || offering.readOnly} onClick={() => onAction("submit")}>Nộp điểm</button>}
     {s === "submitted" && isAdmin && <button className="button button--primary" disabled={busy} onClick={() => onAction("publish")}>Công bố điểm</button>}
   </>} />;
@@ -205,6 +207,7 @@ export function CourseStudentsPage({ isAdmin, userId }: { isAdmin: boolean; user
     {period && <><div className="toolbar academic-roster-toolbar"><h2>Sinh viên</h2><input aria-label="Tìm sinh viên" placeholder="Tìm MSSV hoặc họ tên" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
       <button className="button button--secondary" disabled={!writable || loading} onClick={() => { setError(""); setDialog("add"); }}>Thêm sinh viên</button>
       <button className="button button--secondary" disabled={!writable || loading} onClick={() => { setError(""); setDialog("import"); }}>Import sinh viên / điểm</button>
+      <Link className="button button--secondary" to={`/curriculum/versions/${versionId}/offerings/${offeringId}/grade-grid`}>Bảng nhập điểm</Link>
       {isAdmin && <button className="button button--secondary" disabled={!writable || loading} onClick={openHomeClass}>Thêm cả lớp sinh hoạt</button>}</div>
       {!scheme?.components.length && <p className="academic-notice">Học phần chưa có cơ cấu điểm trong đề cương. Vẫn có thể thêm sinh viên; admin cần cấu hình trước khi nhập điểm.</p>}
       {loading ? <p role="status">Đang tải…</p> : !rows?.items.length ? <p className="empty-state">Chưa có sinh viên trong lớp học phần hoặc không có kết quả tìm kiếm.</p> : <><div className="data-table-wrap"><table className="data-table"><thead><tr><th>MSSV</th><th>Họ tên</th><th>Lớp SH</th><th>Lần học</th><th>Đầu điểm</th><th className="align-right">Điểm HP</th><th>Điểm chữ</th><th className="align-right">Hệ 4</th><th>Kết quả</th><th><span className="sr-only">Thao tác</span></th></tr></thead>
@@ -243,11 +246,19 @@ export function StudentGradesPage({ isAdmin }: { isAdmin: boolean }) {
   const total = raw == null ? null : round(raw, policy?.courseScoreDecimals ?? 1);
   const preview = total == null || !policy ? undefined : band(total, policy.bands);
   const status = offering?.gradeStatus ?? "draft";
-  const writable = !!offering && !offering.readOnly && !!course && !course.archivedAt && !!components.length && (status === "draft" || isAdmin);
+  const writable = !!offering && !offering.readOnly && !!course && !course.archivedAt && !!components.length && (status === "draft" || status === "published" && !isAdmin);
   async function save(event: FormEvent) {
     event.preventDefault(); if (!book) return; setBusy(true); setError(""); setNotice("");
     try { const values = Object.fromEntries(Object.entries(scores).map(([k, v]) => [k, v.trim() ? Number(v) : null]));
-      accept(await academicApi.saveGrades(versionId, offeringId, enrollmentId, book, values, mark || null, reason.trim() || null)); setNotice(status === "published" ? "Đã sửa điểm đã công bố, ghi lý do vào lịch sử và cập nhật bảng điểm." : "Đã lưu điểm và lịch sử thay đổi."); }
+      if(status === "published") {
+        await apiJson(`/api/curriculum/program-versions/${versionId}/offerings/${offeringId}/students/${enrollmentId}/grade-correction-requests`, {
+          method:"POST",body:JSON.stringify({revision:book.enrollment.revision,schemeRevision:book.scheme.revision,scores:values,specialMark:mark||null,reason:reason.trim()})
+        });
+        setNotice("Đã gửi yêu cầu sửa điểm. Điểm hiện tại giữ nguyên cho đến khi admin trường phê duyệt.");
+      } else {
+        accept(await academicApi.saveGrades(versionId,offeringId,enrollmentId,book,values,mark||null,reason.trim()||null));
+        setNotice("Đã lưu điểm và lịch sử thay đổi.");
+      } }
     catch (e) { setError(message(e)); } finally { setBusy(false); }
   }
   const studentsLink = `/curriculum/versions/${versionId}/offerings/${offeringId}/students`;
@@ -260,14 +271,14 @@ export function StudentGradesPage({ isAdmin }: { isAdmin: boolean }) {
       <SummaryCard label="Sinh viên" items={[["Sinh viên", <strong key="n">{book.enrollment.studentCode} · {book.enrollment.fullName}</strong>], ["Lớp sinh hoạt", book.enrollment.homeClassCode],
         ["Lớp học phần", `${offering?.code ?? ""} · ${offering?.groupName ?? ""} · ${book.enrollment.academicPeriod}`], ["Lần học", <AttemptChip key="a" kind={book.enrollment.attemptKind} />],
         ["Sổ điểm", gradeStatusLabels[status]]]} />
-      {status !== "draft" && !isAdmin && <p className="academic-notice">Sổ điểm đã nộp/công bố, giảng viên chỉ xem. Đề nghị phòng đào tạo trả lại nếu cần sửa.</p>}
+        {status === "published" && <p className="academic-notice">Điểm đã công bố được khóa. Giảng viên gửi điểm đề nghị và lý do; admin trường phê duyệt hoặc từ chối tại <Link to="/grade-correction-requests">Yêu cầu sửa điểm</Link>.</p>}
       <form onSubmit={event => void save(event)} className="grade-entry">
         <div className="admin-form">
           <div className="data-table-wrap"><table className="data-table"><thead><tr><th>Đầu điểm</th><th>Loại</th><th className="align-right">Trọng số</th><th>Thang</th><th>CLO đánh giá</th><th>Điểm sinh viên</th></tr></thead>
             <tbody>{components.map(c => <tr key={c.code}><td><strong>{c.code}</strong> · {c.name}</td><td>{kindLabel(c.kind)}</td><td className="align-right">{c.weight}%</td><td>0–{c.maxScore}</td><td>{Object.keys(c.clos ?? {}).join(", ") || "—"}</td>
               <td><input aria-label={`Điểm ${c.code}`} type="number" min="0" max={c.maxScore} step="0.01" value={scores[c.code] ?? ""} placeholder="Chưa nhập" disabled={!writable || busy} onChange={e => setScores(s => ({ ...s, [c.code]: e.target.value }))} /></td></tr>)}</tbody></table></div>
           <div className="academic-form-row"><label>Điểm đặc biệt<select value={mark} disabled={!writable || busy} onChange={e => setMark(e.target.value)}>{specialMarks.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}</select></label>
-            {status === "published" && isAdmin && <label>Lý do sửa điểm (bắt buộc)<input required minLength={5} maxLength={500} placeholder="Ví dụ: kết quả phúc khảo ngày…" value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>}</div>
+            {status === "published" && !isAdmin && <label>Lý do sửa điểm (bắt buộc)<input required minLength={5} maxLength={500} placeholder="Ví dụ: kết quả phúc khảo ngày…" value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>}</div>
           <p className="muted-inline">Để trống = chưa có điểm / xóa điểm đã lưu. Nhập 0 = điểm 0.</p>
           {!components.length && <p>Cần admin <Link to={`/curriculum/versions/${versionId}/courses/${offering?.programCourseId}/assessment`}>cấu hình cơ cấu điểm trong đề cương</Link> trước.</p>}
         </div>
@@ -278,7 +289,7 @@ export function StudentGradesPage({ isAdmin }: { isAdmin: boolean }) {
             <div className="result-card__meta"><LetterChip letter={preview?.letter} /><span>Hệ 4: <strong>{preview ? preview.point4 : "—"}</strong></span>{preview && <ResultChip passed={preview.isPassing} />}</div>
             <p className="result-card__line">Điểm học phần dự kiến: {total == null ? "chưa đủ điểm" : `${score(total)} /10`}{preview ? ` → ${preview.letter} · hệ 4: ${preview.point4} · ${preview.isPassing ? "Đạt" : "Không đạt"}` : ""}.</p></>}
           {book.enrollment.published && <p className="result-card__line">Đã công bố: <LetterChip letter={book.enrollment.letterGrade} /> ({score(book.enrollment.totalScore)}).</p>}
-          <button className="button button--primary" disabled={!writable || busy || (status === "published" && reason.trim().length < 5)}>{busy ? "Đang lưu…" : "Lưu điểm"}</button>
+          <button className="button button--primary" disabled={!writable || busy || (status === "published" && reason.trim().length < 5)}>{busy ? "Đang lưu…" : status === "published" ? "Gửi yêu cầu sửa điểm" : "Lưu điểm"}</button>
           <button type="button" className="button button--ghost" disabled={busy} onClick={() => void load()}>Tải lại dữ liệu</button>
         </aside>
       </form>

@@ -1,3 +1,3 @@
 namespace ObeAunQa.Modules.Identity;
 
-public sealed record CreateUserRequest(string? Email, string? FullName, string? Role, string? TemporaryPassword);
+public sealed record CreateUserRequest(string? Email, string? FullName, string? Role, string? TemporaryPassword, long? UniversityId = null);

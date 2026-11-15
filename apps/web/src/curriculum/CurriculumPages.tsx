@@ -1,3 +1,4 @@
+import { apiJson } from "../../../../shared/frontend/auth-client";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { curriculumApi } from "../../../../modules/common/curriculum/frontend/api";
@@ -60,7 +61,7 @@ function VersionForm({ state, versions, programId, onClose, onSaved }: {
 
 export function ProgramVersionsPage() {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = (user?.role === "admin" || user?.role === "school_admin");
   const { confirm, confirmationDialog } = useConfirmDialog();
   const { programId: rawId } = useParams();
   const programId = Number(rawId);
@@ -136,7 +137,7 @@ export function ProgramVersionsPage() {
             return <article className={`version-card ${version.status === "archived" ? "version-card--archived" : ""}`} key={version.id}>
               <div className="version-card__top"><div><span className={`status status--${version.status}`}>{statusLabel(version.status)}</span>{version.isCurrent && <span className="status status--current">Hiện hành</span>}</div><strong>{version.versionCode}</strong></div>
               <dl><div><dt>Học phần</dt><dd>{version.courseCount}</dd></div><div><dt>Nguồn sao chép</dt><dd>{source?.versionCode ?? (version.sourceVersionId ? `#${version.sourceVersionId}` : "Tạo mới")}</dd></div><div><dt>Ngày công bố</dt><dd>{formatDate(version.publishedAt)}</dd></div></dl>
-              <div className="version-card__actions"><button className="button button--secondary" onClick={() => navigate(`/curriculum/versions/${version.id}`)}>Xem học phần</button><Link className="button button--ghost" to={`/curriculum/versions/${version.id}/plos`}>Chuẩn đầu ra</Link>{isAdmin && version.status === "draft" && <><button className="button button--ghost" onClick={() => setDialog({ mode: "edit", version })}>Đổi mã</button><button className="button button--primary" disabled={busyId === version.id} onClick={() => void publish(version)}>Công bố</button></>}{isAdmin && version.status !== "archived" && <button className="button button--danger" disabled={busyId === version.id} onClick={() => void archive(version)}>Lưu trữ</button>}</div>
+              <div className="version-card__actions">{isAdmin && version.status === "draft" && version.sourceVersionId && <button className="button button--ghost" onClick={() => void apiJson(`/api/curriculum/program-versions/${version.id}/copy-outcomes/${version.sourceVersionId}`, {method:"POST"}).then(()=>load()).catch(e=>setError(String(e)))}>Sao chép PLO/CLO và ánh xạ từ nguồn</button>}<button className="button button--secondary" onClick={() => navigate(`/curriculum/versions/${version.id}`)}>Xem học phần</button><Link className="button button--ghost" to={`/curriculum/versions/${version.id}/plos`}>Chuẩn đầu ra</Link>{isAdmin && version.status === "draft" && <><button className="button button--ghost" onClick={() => setDialog({ mode: "edit", version })}>Đổi mã</button><button className="button button--primary" disabled={busyId === version.id} onClick={() => void publish(version)}>Công bố</button></>}{isAdmin && version.status !== "archived" && <button className="button button--danger" disabled={busyId === version.id} onClick={() => void archive(version)}>Lưu trữ</button>}</div>
             </article>;
           })}
         </div>
@@ -208,6 +209,7 @@ function CourseForm({ state, versionId, onClose, onSaved }: {
 
 export function ProgramCoursesPage() {
   const { user } = useAuth();
+  const { confirm, confirmationDialog } = useConfirmDialog();
   const { versionId: rawId } = useParams();
   const versionId = Number(rawId);
   const [version, setVersion] = useState<ProgramVersion | null>(null);
@@ -244,14 +246,18 @@ export function ProgramCoursesPage() {
   }, [includeArchived, page, search, semester, versionId]);
 
   useEffect(() => { void load(); }, [load]);
-  const editable = user?.role === "admin" && version?.status === "draft";
+  const editable = ((user?.role === "admin" || user?.role === "school_admin")) && version?.status === "draft";
+  async function archiveCourse(course: ProgramCourse) {
+    if (!await confirm({title:`Lưu trữ học phần ${course.institutionalCode}?`,description:"Học phần sẽ được ẩn khỏi danh sách đang hoạt động.",confirmLabel:"Lưu trữ"})) return;
+    try {await curriculumApi.archiveCourse(versionId,course.id);await load();}catch(e){setError(errorInfo(e).message);}
+  }
 
   if (!Number.isInteger(versionId) || versionId < 1) return <section className={domainPage("curriculum")}><Alert message="Mã phiên bản không hợp lệ." /></section>;
 
   return (
     <section className={domainPage("curriculum")}>
       <div className="breadcrumbs"><Link to="/curriculum">Trường đại học</Link><span>/</span>{program && <><Link to={`/curriculum/universities/${program.universityId}`}>{program.universityName}</Link><span>/</span><Link to={`/curriculum/programs/${program.id}`}>{program.code}</Link></>}<span>/</span><span>{version?.versionCode ?? "…"}</span></div>
-      <PageHeader eyebrow={<DomainEyebrow domain="curriculum" detail={`${program?.code ?? "CTĐT"} · ${version?.versionCode ?? "Phiên bản"}`} />} title="Danh sách học phần" description={editable ? "Phiên bản đang ở trạng thái bản nháp và có thể chỉnh sửa." : "Phiên bản chỉ đọc; các thao tác thay đổi học phần đã được khóa."} actions={user?.role === "admin" ? <button className="button button--primary" disabled={!editable} onClick={() => setDialog({ mode: "create" })}>Thêm học phần</button> : undefined} after={<VersionNav versionId={versionId} staff={user?.role !== "student"} />} />
+      <PageHeader eyebrow={<DomainEyebrow domain="curriculum" detail={`${program?.code ?? "CTĐT"} · ${version?.versionCode ?? "Phiên bản"}`} />} title="Danh sách học phần" description={editable ? "Phiên bản đang ở trạng thái bản nháp và có thể chỉnh sửa." : "Phiên bản chỉ đọc; các thao tác thay đổi học phần đã được khóa."} actions={(user?.role === "admin" || user?.role === "school_admin") ? <button className="button button--primary" disabled={!editable} onClick={() => setDialog({ mode: "create" })}>Thêm học phần</button> : undefined} after={<VersionNav versionId={versionId} staff={user?.role !== "student"} />} />
       {version && <div className="summary-strip"><div><span>Trạng thái</span><strong className={`status status--${version.status}`}>{statusLabel(version.status)}</strong></div><div><span>Tổng học phần</span><strong>{data?.totalItems ?? version.courseCount}</strong></div><div><span>Công bố</span><strong>{formatDate(version.publishedAt)}</strong></div></div>}
       <div className="toolbar">
         <form className="search-box search-box--courses" onSubmit={(event) => { event.preventDefault(); setPage(1); setSearch(searchInput.trim()); setSemester(semesterInput.trim()); }}>
@@ -265,10 +271,11 @@ export function ProgramCoursesPage() {
       {loading ? <LoadingState /> : !data?.items.length ? <EmptyState>Không có học phần phù hợp.</EmptyState> : <>
         <div className="data-table-wrap"><table className="data-table"><thead><tr><th>STT</th><th>Mã học phần</th><th>Tên học phần</th><th>Tín chỉ</th><th>Học kỳ</th><th>Trạng thái</th><th className="align-right">Thao tác</th></tr></thead><tbody>{data.items.map((course) => {
           const archived = Boolean(course.archivedAt) || course.status === "archived";
-          return <tr key={course.id} className={archived ? "row--archived" : ""}><td>{course.displayOrder}</td><td>{course.institutionalCode}</td><td>{user?.role !== "student" ? <Link to={`/curriculum/versions/${versionId}/courses/${course.id}/offerings`}><strong>{course.name}</strong></Link> : <strong>{course.name}</strong>}</td><td>{course.credits}</td><td>{course.semester ?? "—"}</td><td><span className={`status status--${archived ? "archived" : "active"}`}>{archived ? "Đã lưu trữ" : "Đang sử dụng"}</span></td><td><div className="table-actions">{user?.role !== "student" && <Link className="button button--small button--secondary" to={`/curriculum/versions/${versionId}/courses/${course.id}/offerings`}>Danh sách lớp học phần</Link>}<Link className="button button--small button--secondary" to={`/curriculum/versions/${versionId}/courses/${course.id}/outcomes`}>CLO/PLO</Link></div></td></tr>;
+          return <tr key={course.id} className={archived ? "row--archived" : ""}><td>{course.displayOrder}</td><td>{course.institutionalCode}</td><td>{user?.role !== "student" ? <Link to={`/curriculum/versions/${versionId}/courses/${course.id}/offerings`}><strong>{course.name}</strong></Link> : <strong>{course.name}</strong>}</td><td>{course.credits}</td><td>{course.semester ?? "—"}</td><td><span className={`status status--${archived ? "archived" : "active"}`}>{archived ? "Đã lưu trữ" : "Đang sử dụng"}</span></td><td><div className="table-actions">{editable && !archived && <><button className="button button--small button--ghost" onClick={()=>setDialog({mode:"edit",course})}>Sửa</button><button className="button button--small button--danger" onClick={()=>void archiveCourse(course)}>Lưu trữ</button></>}{user?.role !== "student" && <Link className="button button--small button--secondary" to={`/curriculum/versions/${versionId}/courses/${course.id}/offerings`}>Danh sách lớp học phần</Link>}<Link className="button button--small button--secondary" to={`/curriculum/versions/${versionId}/courses/${course.id}/outcomes`}>CLO/PLO</Link></div></td></tr>;
         })}</tbody></table></div>
         <Pagination page={data.page} totalPages={data.totalPages} totalItems={data.totalItems} onChange={setPage} />
       </>}
+      {confirmationDialog}
       {dialog && <CourseForm state={dialog} versionId={versionId} onClose={() => setDialog(null)} onSaved={() => { setDialog(null); void load(); }} />}
     </section>
   );

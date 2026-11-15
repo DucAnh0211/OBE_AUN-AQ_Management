@@ -10,7 +10,8 @@ internal sealed class AunFrameworkConfiguration : IEntityTypeConfiguration<AunFr
 
         entity.ToTable("aun_frameworks", "accreditation", t => { t.HasCheckConstraint("aun_frameworks_status_ck", "status IN ('draft', 'published', 'retired')"); t.HasCheckConstraint("aun_frameworks_level_ck", "assessment_level = 'programme'"); });
 
-        entity.HasIndex(e => new { e.Code, e.Version }, "aun_frameworks_code_version_uq").IsUnique();
+        entity.Property<long?>("SchoolId").HasColumnName("school_id");
+        entity.HasIndex("SchoolId",nameof(AunFramework.Code),nameof(AunFramework.Version)).IsUnique().HasDatabaseName("aun_frameworks_code_version_uq");
 
         entity.HasIndex(e => new { e.Status, e.CreatedAt }, "aun_frameworks_status_ix").IsDescending(false, true);
 

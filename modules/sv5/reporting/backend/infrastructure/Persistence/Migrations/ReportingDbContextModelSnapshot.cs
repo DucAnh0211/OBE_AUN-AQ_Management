@@ -51,10 +51,16 @@ namespace ObeAunQa.Modules.Reporting.infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("report_id");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.HasKey("Id")
                         .HasName("audit_events_pkey");
 
                     b.HasIndex("ReportId");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("audit_events", "reporting", t =>
                         {
@@ -99,6 +105,10 @@ namespace ObeAunQa.Modules.Reporting.infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("revoked_by");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("SnapshotHash")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -117,6 +127,8 @@ namespace ObeAunQa.Modules.Reporting.infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("reports_pkey");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "ProgramId", "CreatedAt", "Id" }, "reports_program_created_idx")
                         .IsDescending(false, true, false);

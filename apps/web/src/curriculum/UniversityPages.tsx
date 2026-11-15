@@ -214,7 +214,7 @@ function ProgramForm({ universityId, state, onClose, onSaved }: {
 
 export function UniversityProgramsPage() {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = (user?.role === "admin" || user?.role === "school_admin");
   const { confirm, confirmationDialog } = useConfirmDialog();
   const { universityId: rawId } = useParams();
   const universityId = Number(rawId);

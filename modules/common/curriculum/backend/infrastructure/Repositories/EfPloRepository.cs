@@ -33,6 +33,6 @@ internal sealed class EfPloRepository(CurriculumDbContext db, CurriculumWriteSes
         await writes.DraftAsync(versionId, ct);
         if (await db.CoursePlos.AnyAsync(m => m.PloId == id && m.ProgramVersionId == versionId, ct))
             throw new CurriculumConflictException("plo_has_course_mappings", "Không thể xóa PLO đang được ánh xạ với học phần.");
-        return await db.Plos.Where(p => p.Id == id && p.ProgramVersionId == versionId).ExecuteDeleteAsync(ct) == 1;
+        return await writes.DeleteAsync(db.Plos.Where(p => p.Id == id && p.ProgramVersionId == versionId),ct) == 1;
     }, ct);
 }

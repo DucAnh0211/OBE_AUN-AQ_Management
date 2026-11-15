@@ -35,6 +35,10 @@ public static class CurriculumModule
         services.AddDbContext<CurriculumDbContext>(options => options.UseNpgsql(connectionString,
             postgres => postgres.MigrationsHistoryTable("__EFMigrationsHistory", "curriculum")));
         services.AddScoped<CurriculumWriteSession>();
+        services.AddScoped<EfOutcomeService>();
+        services.AddScoped<IOutcomeCloneService, EfOutcomeCloneService>();
+        services.AddScoped<IOutcomeAnalyticsService>(sp => sp.GetRequiredService<EfOutcomeService>());
+        services.AddScoped<IOutcomeReadService>(sp => sp.GetRequiredService<EfOutcomeService>());
         services.AddScoped<IUniversityRepository, EfUniversityRepository>();
         services.AddScoped<IProgramRepository, EfProgramRepository>();
         services.AddScoped<IProgramVersionRepository, EfProgramVersionRepository>();
@@ -46,7 +50,9 @@ public static class CurriculumModule
         services.AddScoped<ICurriculumAnalysisRepository, EfCurriculumAnalysisRepository>();
         services.AddScoped<ICurriculumReportSource, EfCurriculumReportSource>();
         services.AddScoped<CurriculumService>();
-        services.AddScoped<IAcademicRepository, EfAcademicRepository>();
+        services.AddScoped<EfAcademicRepository>();
+        services.AddScoped<IAcademicRepository>(sp=>sp.GetRequiredService<EfAcademicRepository>());
+        services.AddScoped<IGradeCorrectionService, EfGradeCorrectionService>();
         services.AddScoped<IAcademicSheetReader, AcademicSheetReader>();
         services.AddScoped<AcademicService>();
         services.AddScoped<ICourseOfferingRepository, EfCourseOfferingRepository>();
@@ -84,35 +90,36 @@ public static class CurriculumModule
         }));
 
         group.MapGet("/programs", GetProgramsAsync);
-        group.MapPost("/programs", CreateProgramAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPost("/programs", CreateProgramAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
         group.MapGet("/programs/{programId:long:min(1)}", GetProgramAsync)
             .WithName("GetCurriculumProgram");
-        group.MapPut("/programs/{programId:long:min(1)}", UpdateProgramAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
-        group.MapDelete("/programs/{programId:long:min(1)}", ArchiveProgramAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPut("/programs/{programId:long:min(1)}", UpdateProgramAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
+        group.MapDelete("/programs/{programId:long:min(1)}", ArchiveProgramAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
 
         group.MapGet("/programs/{programId:long:min(1)}/versions", GetProgramVersionsAsync);
-        group.MapPost("/programs/{programId:long:min(1)}/versions", CreateProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPost("/programs/{programId:long:min(1)}/versions", CreateProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
         group.MapGet("/program-versions/{versionId:long:min(1)}", GetProgramVersionAsync)
             .WithName("GetCurriculumProgramVersion");
-        group.MapPut("/program-versions/{versionId:long:min(1)}", UpdateProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
-        group.MapPost("/program-versions/{versionId:long:min(1)}/publish", PublishProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
-        group.MapDelete("/program-versions/{versionId:long:min(1)}", ArchiveProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPut("/program-versions/{versionId:long:min(1)}", UpdateProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
+        group.MapPost("/program-versions/{versionId:long:min(1)}/publish", PublishProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
+        group.MapDelete("/program-versions/{versionId:long:min(1)}", ArchiveProgramVersionAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
 
         group.MapGet("/program-versions/{versionId:long:min(1)}/courses", GetProgramCoursesAsync);
-        group.MapPost("/program-versions/{versionId:long:min(1)}/courses", CreateProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPost("/program-versions/{versionId:long:min(1)}/courses", CreateProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
         group.MapGet(
                 "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}",
                 GetProgramCourseAsync)
             .WithName("GetCurriculumProgramCourse");
         group.MapPut(
             "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}",
-            UpdateProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+            UpdateProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
         group.MapDelete(
             "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}",
-            ArchiveProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+            ArchiveProgramCourseAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
 
         group.MapUniversityEndpoints();
         group.MapOutcomeEndpoints();
+        group.MapOutcomeAnalytics();
         group.MapAcademicEndpoints();
         group.MapCourseOfferingEndpoints();
         group.MapOrganizationEndpoints();
@@ -132,7 +139,7 @@ public static class CurriculumModule
         [FromQuery] bool includeArchived = false,
         [FromQuery] long? universityId = null)
     {
-        if (currentUser.Role == SystemRoles.Admin)
+        if (SystemRoles.IsAdmin(currentUser.Role))
             return Results.Ok(await service.GetProgramsAsync(page,pageSize,search,includeArchived,cancellationToken,universityId));
         var allowed = (await access.GetReadableProgramIdsAsync(cancellationToken)).ToHashSet();
         var all = new List<ProgramResponse>();
@@ -201,9 +208,9 @@ public static class CurriculumModule
         if (!await access.CanReadProgramAsync(programId,cancellationToken)) return Results.Forbid();
         var versions = await service.GetProgramVersionsAsync(
             programId,
-            currentUser.Role == SystemRoles.Admin && includeArchived,
+            SystemRoles.IsAdmin(currentUser.Role) && includeArchived,
             cancellationToken);
-        if (currentUser.Role == SystemRoles.Admin) return Results.Ok(versions);
+        if (SystemRoles.IsAdmin(currentUser.Role)) return Results.Ok(versions);
         var readable = new List<ProgramVersionResponse>();
         foreach (var version in versions)
             if (await access.CanReadVersionAsync(version.Id,cancellationToken)) readable.Add(version);
@@ -278,9 +285,9 @@ public static class CurriculumModule
         [FromQuery] bool includeArchived = false)
     {
         if (!await access.CanReadVersionAsync(versionId,cancellationToken)) return Results.Forbid();
-        if (currentUser.Role == SystemRoles.Admin || currentUser.Role == SystemRoles.Student)
+        if (SystemRoles.IsAdmin(currentUser.Role) || currentUser.Role == SystemRoles.Student)
             return Results.Ok(await service.GetProgramCoursesAsync(versionId,page,pageSize,search,semester,
-                currentUser.Role == SystemRoles.Admin && includeArchived,cancellationToken));
+                SystemRoles.IsAdmin(currentUser.Role) && includeArchived,cancellationToken));
         var allowed = (await access.GetReadableCourseIdsAsync(versionId,cancellationToken)).ToHashSet();
         var all = new List<ProgramCourseResponse>();
         for(var fetchPage=1;;fetchPage++)

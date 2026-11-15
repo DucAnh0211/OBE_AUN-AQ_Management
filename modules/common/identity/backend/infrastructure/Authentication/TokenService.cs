@@ -24,6 +24,7 @@ public sealed class TokenService(IOptions<JwtOptions> options) : IIdentityTokenS
             new Claim(ClaimTypes.Email,user.Email),
             new Claim(ClaimTypes.Name,user.FullName),
             new Claim(ClaimTypes.Role,user.Role),
+            new Claim("university_id",user.UniversityId?.ToString() ?? ""),
             new Claim("token_version",user.TokenVersion.ToString()),
             new Claim("must_change_password",user.MustChangePassword ? "true" : "false")
         };

@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using ObeAunQa.Modules.Identity;
+using ObeAunQa.SharedKernel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -22,7 +24,14 @@ internal static class ChatAgentInternalEndpoints
             if (!Guid.TryParse(http.Request.Headers["X-Run-Lease"], out var lease)) return Results.Unauthorized();
             await http.RequestServices.GetRequiredService<IChatThreadRepository>().DemandLeaseAsync(
                 Guid.Parse(http.Request.RouteValues["threadId"]!.ToString()!), Guid.Parse(http.Request.RouteValues["runId"]!.ToString()!), lease, http.RequestAborted);
-            http.Items["ChatLease"] = lease; return await next(context);
+            http.Items["ChatLease"] = lease;
+            var threads=http.RequestServices.GetRequiredService<IChatThreadRepository>();
+            var threadId=Guid.Parse(http.Request.RouteValues["threadId"]!.ToString()!);
+            var owner=await http.RequestServices.GetRequiredService<IIdentityRepository>().FindByIdAsync(await threads.OwnerAsync(threadId,http.RequestAborted),http.RequestAborted);
+            var school=await threads.SchoolAsync(threadId,http.RequestAborted);
+            if(owner==null || owner.Role!=await threads.OwnerRoleAsync(threadId,http.RequestAborted) || owner.Status!="active" || owner.MustChangePassword || school==null || owner.Role!="admin" && owner.UniversityId!=school) return Results.Forbid();
+            using var execution=http.RequestServices.GetRequiredService<HttpCurrentUser>().ExecuteAs(owner.Id,owner.Role,school);
+            return await next(context);
         });
         group.MapGet("/checkpoint", async (Guid runId, IChatThreadRepository repository, CancellationToken ct, string? checkpointId = null) =>
             Results.Ok(await repository.CheckpointAsync(runId, checkpointId, ct)));

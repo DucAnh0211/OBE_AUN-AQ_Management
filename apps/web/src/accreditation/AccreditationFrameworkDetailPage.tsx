@@ -163,7 +163,7 @@ export function AccreditationFrameworkDetailPage() {
   const frameworkId = Number(rawId);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = (user?.role === "admin" || user?.role === "school_admin");
   const [framework, setFramework] = useState<FrameworkSummary | null>(null);
   const [tree, setTree] = useState<FrameworkTree | null>(null);
   const [language, setLanguage] = useState("vi");

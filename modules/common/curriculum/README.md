@@ -1,5 +1,7 @@
 # Curriculum
 
+Phần chung OBE: xem [hợp đồng đầu ra và cách chạy](../../../docs/SHARED_OUTPUT_CONTRACTS.md) và [bằng chứng kiểm thử](../../../docs/SHARED_IMPLEMENTATION_STATUS.md). Kết quả CLO/PLO có tab riêng trong phiên bản CTĐT; engine, policy và snapshot nằm trong module này.
+
 - Phạm vi trách nhiệm: dùng chung.
 - Đồng sở hữu: SV4 và SV5.
 - Nghiệp vụ: CTĐT, phiên bản chương trình, học phần, PLO/CLO, mức Bloom, mapping

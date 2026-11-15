@@ -9,13 +9,17 @@ internal static class AcademicEndpoints
 {
     public static void MapAcademicEndpoints(this RouteGroupBuilder curriculum)
     {
+        curriculum.MapGet("/grade-correction-requests",async(IGradeCorrectionService service,CancellationToken ct,int page=1,string? status=null)
+            =>Results.Ok(await service.ListAsync(page,status,ct))).RequireAuthorization(AuthorizationPolicies.AdminOrLecturer);
+        curriculum.MapPost("/grade-correction-requests/{id:guid}/decision",async(Guid id,GradeCorrectionDecision decision,IGradeCorrectionService service,CancellationToken ct)
+            =>Results.Ok(await service.DecideAsync(id,decision,ct))).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         var group = curriculum.MapGroup("/program-versions/{versionId:long:min(1)}").RequireAuthorization(AuthorizationPolicies.AdminOrLecturer);
         group.AddEndpointFilter(async (context, next) => { context.HttpContext.Response.Headers.CacheControl = "no-store"; return await next(context); });
         // Cơ cấu điểm thuộc đề cương từng học phần.
         group.MapGet("/courses/{courseId:long:min(1)}/assessment-scheme", async (long versionId, long courseId, AcademicService service, CancellationToken ct) =>
             Results.Ok(await service.SchemeAsync(versionId, courseId, ct)));
         group.MapPut("/courses/{courseId:long:min(1)}/assessment-scheme", async (long versionId, long courseId, SaveAssessmentScheme request, AcademicService service, CancellationToken ct) =>
-            Results.Ok(await service.SaveSchemeAsync(versionId, courseId, request, ct))).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+            Results.Ok(await service.SaveSchemeAsync(versionId, courseId, request, ct))).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
         group.MapPost("/assessment-scheme/apply-template", async (long versionId, ApplySchemeTemplate request, AcademicService service, CancellationToken ct) =>
             Results.Ok(await service.ApplyTemplateAsync(versionId, request, ct))).RequireAuthorization(AuthorizationPolicies.AdminOnly);
         group.MapGet("/assessment-coverage", async (long versionId, AcademicService service, CancellationToken ct) => Results.Ok(await service.CoverageAsync(versionId, ct)));
@@ -34,6 +38,8 @@ internal static class AcademicEndpoints
             Results.Ok(await service.GradesAsync(versionId, offeringId, enrollmentId, ct)));
         courses.MapPut("/students/{enrollmentId:long:min(1)}/grades", async (long versionId, long offeringId, long enrollmentId, SaveStudentGrades request, AcademicService service, CancellationToken ct) =>
             Results.Ok(await service.SaveGradesAsync(versionId, offeringId, enrollmentId, request, ct)));
+        courses.MapPost("/students/{enrollmentId:long:min(1)}/grade-correction-requests",async(long versionId,long offeringId,long enrollmentId,SaveStudentGrades request,IGradeCorrectionService service,CancellationToken ct)
+            =>Results.Ok(await service.RequestAsync(versionId,offeringId,enrollmentId,request,ct)));
         courses.MapPost("/grades/{action:regex(^(submit|publish|reopen)$)}", async (long versionId, long offeringId, string action, GradeStatusChange? request, AcademicService service, CancellationToken ct) =>
             Results.Ok(await service.ChangeGradeStatusAsync(versionId, offeringId, action, request ?? new(null), ct)));
         courses.MapGet("/import/template", async (long versionId, long offeringId, string mode, AcademicService service, IAcademicSheetReader sheets, CancellationToken ct) => {

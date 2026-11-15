@@ -61,7 +61,7 @@ public sealed class IngestionProcessorTests
         public Task<byte[]> ReadAsync(Guid id, CancellationToken ct) => Task.FromResult(new byte[] { 65 });
         public Task DisableAsync(Guid id, long actor, CancellationToken ct) => throw new NotSupportedException();
         public Task<IReadOnlyList<SourceDocumentInfo>> ListAsync(int page, CancellationToken ct) => throw new NotSupportedException();
-        public Task<SourceDocumentInfo> UploadAsync(string title, string fileName, byte[] bytes, long actor, CancellationToken ct) => throw new NotSupportedException();
+        public Task<SourceDocumentInfo> UploadAsync(string title, string fileName, byte[] bytes, long actor, CancellationToken ct, DocumentAccess? access = null) => throw new NotSupportedException();
     }
     private sealed class Pipeline : IKnowledgePipeline
     {

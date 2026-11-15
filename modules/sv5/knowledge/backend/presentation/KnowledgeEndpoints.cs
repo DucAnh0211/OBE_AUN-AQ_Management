@@ -38,7 +38,7 @@ internal static class KnowledgeEndpoints
             if (file is null || form.Files.Count != 1 || file.Length is <= 0 or > 20 * 1024 * 1024)
                 throw new KnowledgeException(400, "Chọn một file PDF, DOCX, TXT hoặc Markdown, tối đa 20 MB.");
             using var buffer = new MemoryStream(); await file.CopyToAsync(buffer, ct);
-            var document = await documents.UploadAsync(form["title"].ToString(), file.FileName, buffer.ToArray(), user.UserId, ct);
+            var document = await documents.UploadAsync(form["title"].ToString(), file.FileName, buffer.ToArray(), user.UserId, ct, new DocumentAccess(form["accessScope"].FirstOrDefault() ?? "school", long.TryParse(form["ownerUserId"],out var owner) ? owner : null));
             return Results.Created($"/api/knowledge/documents/{document.Id}", document);
         }).RequireRateLimiting("report-work");
         group.MapPost("/documents/{id:guid}/process", async (Guid id, IDocumentLibrary documents, IKnowledgeRepository repository, IKnowledgePipeline pipeline, CancellationToken ct, bool forceOcr = false) => {

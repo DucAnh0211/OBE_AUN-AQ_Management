@@ -6,10 +6,10 @@ namespace ObeAunQa.Modules.Curriculum.Application;
 public sealed class CourseOfferingService(ICourseOfferingRepository repository, CurriculumService curriculum,
     ICurrentUser user, IAccessControlService access, IAcademicStaffDirectory staff)
 {
-    private long? Lecturer => user.Role == SystemRoles.Admin ? null : user.UserId;
-    private void Admin() { if (user.Role != SystemRoles.Admin) throw new AcademicAccessException(); }
+    private long? Lecturer => SystemRoles.IsAdmin(user.Role) ? null : user.UserId;
+    private void Admin() { if (!SystemRoles.IsAdmin(user.Role)) throw new AcademicAccessException(); }
     private async Task Version(long id, CancellationToken ct) {
-        if (user.Role is not (SystemRoles.Admin or SystemRoles.Lecturer) || !await access.CanReadVersionAsync(id, ct)) throw new AcademicAccessException();
+        if (user.Role is not (SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer) || !await access.CanReadVersionAsync(id, ct)) throw new AcademicAccessException();
         _ = await curriculum.GetProgramVersionAsync(id, ct);
     }
     public async Task<IReadOnlyList<AcademicPeriodBatch>> PeriodsAsync(long version, CancellationToken ct) {
@@ -28,9 +28,10 @@ public sealed class CourseOfferingService(ICourseOfferingRepository repository, 
     }
     /// <summary>Admin hoặc giảng viên được phân công (mọi vai trò) mới đọc được; ghi kiểm tra thêm trạng thái lưu trữ.</summary>
     public async Task<CourseOfferingInfo> AccessAsync(long version, long id, bool write, CancellationToken ct) {
-        if (user.Role is not (SystemRoles.Admin or SystemRoles.Lecturer)) throw new AcademicAccessException();
+        if (user.Role is not (SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer)) throw new AcademicAccessException();
         var row = await repository.OfferingAsync(version, id, ct);
-        if (user.Role != SystemRoles.Admin && row.Lecturers.All(l => l.UserId != user.UserId)) throw new AcademicAccessException();
+        if (!SystemRoles.IsAdmin(user.Role) && row.Lecturers.All(l => l.UserId != user.UserId)) throw new AcademicAccessException();
+        if (write && user.Role == SystemRoles.Lecturer && !await repository.CanTeachAsync(id,user.UserId,ct)) throw new AcademicAccessException();
         if (write && row.ReadOnly) throw new CurriculumConflictException("archived", "Học phần hoặc phiên bản đã lưu trữ, không thể nhập thêm dữ liệu.");
         return await Named(row, ct);
     }

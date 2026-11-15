@@ -5,17 +5,17 @@ namespace ObeAunQa.Modules.Curriculum.Application;
 public sealed class StudentDirectoryService(IStudentDirectoryRepository repository, CurriculumService curriculum, UniversityService universities,
     ICurrentUser user, IAccessControlService access, IAcademicStaffDirectory staff)
 {
-    private bool IsAdmin => user.Role == SystemRoles.Admin;
+    private bool IsAdmin => SystemRoles.IsAdmin(user.Role);
     private void Admin() { if (!IsAdmin) throw new AcademicAccessException(); }
     private async Task Version(long id, CancellationToken ct)
     {
-        if (user.Role is not (SystemRoles.Admin or SystemRoles.Lecturer) || !await access.CanReadVersionAsync(id, ct)) throw new AcademicAccessException();
+        if (user.Role is not (SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer) || !await access.CanReadVersionAsync(id, ct)) throw new AcademicAccessException();
         _ = await curriculum.GetProgramVersionAsync(id, ct);
     }
     /// <summary>Admin và giảng viên đọc được phiên bản thấy mọi lớp; cố vấn học tập luôn thấy lớp mình phụ trách.</summary>
     private async Task<long?> AdvisorScope(long versionId, CancellationToken ct)
     {
-        if (user.Role is not (SystemRoles.Admin or SystemRoles.Lecturer)) throw new AcademicAccessException();
+        if (user.Role is not (SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer)) throw new AcademicAccessException();
         _ = await curriculum.GetProgramVersionAsync(versionId, ct);
         return IsAdmin || await access.CanReadVersionAsync(versionId, ct) ? null : user.UserId;
     }
