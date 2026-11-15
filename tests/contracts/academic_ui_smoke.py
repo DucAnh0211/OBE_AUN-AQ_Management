@@ -1,12 +1,15 @@
 """UI on a disposable stack only; run academic_smoke.py first (it writes tmp/academic-test/fixture.json).
 SMOKE_WEB = web origin (default Vite :5173), SMOKE_CHANNEL = browser channel (default msedge; empty = bundled Chromium)."""
-import json, os
+import json, os, uuid
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 web=os.environ.get('SMOKE_WEB','http://localhost:5173').rstrip('/')
 folder=Path('tmp/academic-test'); f=json.loads((folder/'fixture.json').read_text())
 v=f['versionId']; u=f['universityId']; year=f['period'].rsplit('-HK',1)[0]
+ui_tag=uuid.uuid4().hex[:8].upper()
+ui_name='Nguyễn Thị Giao Diện '+ui_tag
+ui_import_name='Trần Thị Trang Tính '+ui_tag
 def login(page, email):
     page.get_by_label('Email',exact=True).fill(email)
     page.get_by_label('Mật khẩu',exact=True).fill('IsolatedAcademic456!')
@@ -41,7 +44,7 @@ with sync_playwright() as p:
     picker.select_option(index=1); dialog.get_by_role('button',name='Thêm giảng viên',exact=True).click()
     expect(dialog.get_by_role('combobox',name='Vai trò của Academic lecturer',exact=True)).to_have_value('main')
     dialog.get_by_role('button',name='Mở lớp học phần',exact=True).click()
-    expect(page.get_by_role('status')).to_contain_text('Đã mở lớp học phần')
+    expect(page.get_by_role('status').filter(has_text='Đã mở lớp học phần')).to_be_visible()
     expect(page.locator('tbody tr')).to_have_count(before+1)
     assert page.locator('tbody tr').first.locator('td').first.inner_text().isdigit()
     page.screenshot(path=str(folder/'offerings-desktop.png'),full_page=True)
@@ -51,30 +54,30 @@ with sync_playwright() as p:
     expect(page.get_by_text('Sổ điểm: Đang nhập điểm')).to_be_visible()
     page.get_by_role('button',name='Thêm sinh viên',exact=True).click()
     dialog=page.get_by_role('dialog')
-    dialog.get_by_label('Mã sinh viên',exact=True).fill('UI'+f['tag'])
-    dialog.get_by_label('Họ và tên',exact=True).fill('Nguyễn Thị Giao Diện')
+    dialog.get_by_label('Mã sinh viên',exact=True).fill('UI'+ui_tag)
+    dialog.get_by_label('Họ và tên',exact=True).fill(ui_name)
     dialog.get_by_role('button',name='Lưu sinh viên',exact=True).click()
-    expect(page.get_by_role('link',name='Nguyễn Thị Giao Diện',exact=True)).to_be_visible()
-    page.get_by_role('link',name='Nguyễn Thị Giao Diện',exact=True).click()
+    expect(page.get_by_role('link',name=ui_name,exact=True)).to_be_visible()
+    page.get_by_role('link',name=ui_name,exact=True).click()
     page.get_by_label('Điểm QT',exact=True).fill('8.5'); page.get_by_label('Điểm THI',exact=True).fill('75')
     expect(page.get_by_text('Điểm học phần dự kiến')).to_contain_text('7,9')
     expect(page.get_by_text('Điểm học phần dự kiến')).to_contain_text('B')
     page.get_by_role('button',name='Lưu điểm',exact=True).click()
-    expect(page.get_by_role('status')).to_contain_text('Đã lưu điểm')
+    expect(page.get_by_role('status').filter(has_text='Đã lưu điểm')).to_be_visible()
     page.reload(); expect(page.get_by_label('Điểm QT',exact=True)).to_have_value('8.5')
     page.screenshot(path=str(folder/'grade-entry-desktop.png'),full_page=True)
     page.get_by_role('link',name='Danh sách sinh viên',exact=True).click()
-    row=page.locator('tbody tr',has_text='Nguyễn Thị Giao Diện'); expect(row).to_contain_text('B'); expect(row).to_contain_text('dự kiến')
+    row=page.locator('tbody tr',has_text=ui_name); expect(row).to_contain_text('B'); expect(row).to_contain_text('dự kiến')
     page.get_by_role('button',name='Import sinh viên / điểm',exact=True).click()
-    dialog=page.get_by_role('dialog'); dialog.get_by_label('Hoặc dán bảng từ trang tính',exact=True).fill('MSSV\tHoTen\nUJ'+f['tag']+'\tTrần Thị Trang Tính')
+    dialog=page.get_by_role('dialog'); dialog.get_by_label('Hoặc dán bảng từ trang tính',exact=True).fill('MSSV\tHoTen\nUJ'+ui_tag+'\t'+ui_import_name)
     dialog.get_by_role('button',name='Xem trước và kiểm tra',exact=True).click()
     expect(dialog.get_by_role('status')).to_contain_text('Có thể nhập dữ liệu')
     dialog.get_by_role('button',name='Xác nhận import',exact=True).click()
-    expect(page.get_by_role('link',name='Trần Thị Trang Tính',exact=True)).to_be_visible()
+    expect(page.get_by_role('link',name=ui_import_name,exact=True)).to_be_visible()
     page.get_by_role('button',name='Thêm cả lớp sinh hoạt',exact=True).click()
     dialog=page.get_by_role('dialog'); dialog.get_by_role('combobox',name='Lớp sinh hoạt',exact=True).select_option(str(f['homeClassId']))
     dialog.get_by_role('button',name='Thêm sinh viên',exact=True).click()
-    expect(page.get_by_role('status')).to_contain_text('Đã thêm')
+    expect(page.get_by_role('status').filter(has_text='Đã thêm')).to_be_visible()
     page.set_viewport_size({'width':390,'height':844})
     page.screenshot(path=str(folder/'students-mobile.png'),full_page=True)
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Horizontal page overflow'

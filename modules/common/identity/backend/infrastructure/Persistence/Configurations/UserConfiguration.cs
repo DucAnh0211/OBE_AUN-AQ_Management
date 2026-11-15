@@ -8,7 +8,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
     {
         entity.HasKey(e => e.Id).HasName("users_pkey");
 
-        entity.ToTable("users", "security", t => { t.HasCheckConstraint("security_users_role_ck", "role IN ('admin', 'lecturer', 'student')"); t.HasCheckConstraint("security_users_status_ck", "status IN ('active', 'disabled')"); t.HasCheckConstraint("security_users_failed_login_ck", "failed_login_count >= 0"); });
+        entity.ToTable("users", "security", t => { t.HasCheckConstraint("security_users_role_ck", "role IN ('admin', 'lecturer', 'student', 'school_admin')"); t.HasCheckConstraint("security_users_status_ck", "status IN ('active', 'disabled')"); t.HasCheckConstraint("security_users_failed_login_ck", "failed_login_count >= 0"); });
 
         entity.HasIndex(e => e.NormalizedEmail, "users_normalized_email_key").IsUnique();
 

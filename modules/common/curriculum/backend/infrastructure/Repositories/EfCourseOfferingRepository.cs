@@ -6,6 +6,16 @@ namespace ObeAunQa.Modules.Curriculum.Infrastructure;
 
 internal sealed class EfCourseOfferingRepository(CurriculumDbContext db, CurriculumWriteSession writes) : ICourseOfferingRepository
 {
+    public Task<bool> CanTeachAsync(long offeringId,long userId,CancellationToken ct) =>
+        (from o in db.Set<CourseOffering>() join c in db.ProgramCourses on o.ProgramCourseId equals c.Id
+         join p in db.Set<LecturerProfile>() on c.Course.DepartmentId equals p.DepartmentId
+         where o.Id==offeringId && p.UserId==userId && p.DepartmentId!=null select o.Id).AnyAsync(ct);
+    private async Task Teachers(long courseId,IReadOnlyList<OfferingLecturerInput>? lecturers,CancellationToken ct) {
+        var department=await db.ProgramCourses.Where(c=>c.Id==courseId).Select(c=>c.Course.DepartmentId).SingleAsync(ct);
+        foreach(var teacher in lecturers ?? [])
+            if(department==null || !await db.Set<LecturerProfile>().AnyAsync(p=>p.UserId==teacher.UserId && p.DepartmentId==department,ct))
+                throw new CurriculumConflictException("teaching_department","Hãy phân công giảng viên vào đúng bộ môn phụ trách học phần trước khi giao lớp.");
+    }
     private IQueryable<CourseOffering> Offerings(long version, long? lecturer) => db.Set<CourseOffering>().AsNoTracking()
         .Where(o => o.ProgramVersionId == version && (lecturer == null || o.Lecturers.Any(l => l.UserId == lecturer)));
     private IQueryable<CourseOfferingInfo> OfferingInfos(IQueryable<CourseOffering> query) => query.Select(o => new CourseOfferingInfo(o.Id, o.ProgramVersionId,
@@ -55,6 +65,7 @@ internal sealed class EfCourseOfferingRepository(CurriculumDbContext db, Curricu
             if (!await db.ProgramCourses.AnyAsync(c => c.Id == request.ProgramCourseId && c.ProgramVersionId == versionId && c.ArchivedAt == null, ct))
                 throw new CurriculumNotFoundException("học phần đang hoạt động", request.ProgramCourseId);
             await TargetClass(versionId, request.TargetHomeClassId, ct);
+            await Teachers(request.ProgramCourseId,request.Lecturers,ct);
             var used = (await db.Set<CourseOffering>().Where(o => o.ProgramCourseId == request.ProgramCourseId && o.AcademicPeriod == request.AcademicPeriod)
                 .Select(o => o.GroupName).ToArrayAsync(ct)).ToHashSet(StringComparer.Ordinal);
             var group = request.GroupName ?? Enumerable.Range(1, 999).Select(n => $"N{n:00}").First(n => !used.Contains(n));
@@ -86,6 +97,7 @@ internal sealed class EfCourseOfferingRepository(CurriculumDbContext db, Curricu
         await writes.RunAsync(async () => {
             var row = await Lock(versionId, offeringId, ct);
             row.Lecturers.Clear(); await db.SaveChangesAsync(ct);
+            await Teachers(row.ProgramCourseId,lecturers,ct);
             foreach (var l in lecturers) row.Lecturers.Add(new OfferingLecturer { UserId = l.UserId, Role = l.Role, AssignedAt = DateTime.UtcNow });
             return true;
         }, ct);

@@ -27,7 +27,7 @@ public static class ReportingModule
         services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, ReportingAuthenticationHandler>(ReportingAuthenticationHandler.SchemeName, _ => { });
         services.AddTransient<IClaimsTransformation, ReportingClaimsTransformation>();
         services.AddAuthorization(options => options.AddPolicy("Reporting", policy =>
-            policy.AddAuthenticationSchemes("Bearer", ReportingAuthenticationHandler.SchemeName)
+            policy.AddAuthenticationSchemes("Bearer")
                 .RequireAuthenticatedUser().RequireClaim("reporting:access", "true")));
         services.AddRateLimiter(options => {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -40,6 +40,7 @@ public static class ReportingModule
             postgres => postgres.MigrationsHistoryTable("__EFMigrationsHistory", "reporting")));
         services.AddScoped<IReportRepository, EfReportRepository>();
         services.AddScoped<ReportService>();
+        services.AddScoped<OutcomeReportSource>();
         services.AddSingleton<IReportExporter, ReportExporter>();
         services.AddExceptionHandler<ReportingExceptionHandler>();
         return services;

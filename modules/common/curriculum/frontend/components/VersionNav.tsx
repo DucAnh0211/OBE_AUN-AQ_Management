@@ -16,7 +16,7 @@ function ScrollingNav({ label, className = "section-nav", children }: { label: s
 export function VersionNav({ versionId, staff }: { versionId: number; staff: boolean }) {
   const v = `/curriculum/versions/${versionId}`;
   const groups: [DomainKey, Item[]][] = [
-    ["curriculum", [["Học phần", v, true], ["Chuẩn đầu ra", `${v}/plos`], ["HP – PLO", `${v}/course-plo-matrix`], ["CLO – PLO", `${v}/clo-plo-matrix`], ["Kiểm tra dữ liệu", `${v}/validation`]]],
+    ["curriculum", [["Học phần", v, true], ["Chuẩn đầu ra", `${v}/plos`], ["HP – PLO", `${v}/course-plo-matrix`], ["CLO – PLO", `${v}/clo-plo-matrix`], ["Kiểm tra dữ liệu", `${v}/validation`], ["Kết quả CLO/PLO", `${v}/outcome-dashboard`]]],
     ...(staff ? [["teaching", [["Lớp học phần", `${v}/offerings`], ["Lớp sinh hoạt", `${v}/home-classes`]]], ["assessment", [["Cơ cấu điểm", `${v}/assessment-scheme`]]]] as [DomainKey, Item[]][] : []),
   ];
   return <ScrollingNav label="Chức năng của phiên bản CTĐT">

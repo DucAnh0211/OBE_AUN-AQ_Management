@@ -2,10 +2,12 @@ using ObeAunQa.SharedKernel;
 namespace ObeAunQa.Modules.Identity;
 public interface IIdentityRepository : IAssignmentCloneService
 {
+    Task<bool> IsUniversityActiveAsync(long id,CancellationToken ct);
+    Task<string?> SchoolNameAsync(long id,CancellationToken ct);
     Task<SecurityUser?> FindByEmailAsync(string email,CancellationToken ct);
     Task<SecurityUser?> FindByIdAsync(long id,CancellationToken ct);
     Task<long> CountActiveAdminsAsync(CancellationToken ct);
-    Task<SecurityUser> CreateUserAsync(string email,string normalizedEmail,string fullName,string passwordHash,string role,bool mustChangePassword,CancellationToken ct);
+    Task<SecurityUser> CreateUserAsync(string email,string normalizedEmail,string fullName,string passwordHash,string role,bool mustChangePassword,CancellationToken ct,long? universityId=null);
     Task RecordFailedLoginAsync(long id,bool lockAccount,CancellationToken ct);
     Task RecordSuccessfulLoginAsync(long id,CancellationToken ct);
     Task SaveRefreshTokenAsync(Guid id,long userId,string hash,DateTimeOffset expiresAt,string? ip,CancellationToken ct);

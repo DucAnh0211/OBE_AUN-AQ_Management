@@ -64,7 +64,7 @@ internal sealed class EfOrganizationRepository(CurriculumDbContext db, Curriculu
             if (row is null) { row = new GradingPolicy { UniversityId = universityId }; db.Add(row); }
             row.CourseScoreDecimals = request.CourseScoreDecimals; row.MinComponents = request.MinComponents; row.MinFinalWeight = request.MinFinalWeight;
             row.RetakePolicy = request.RetakePolicy; row.GpaDecimals = request.GpaDecimals; row.UpdatedAt = DateTime.UtcNow;
-            await db.Set<GradeScaleBand>().Where(b => b.UniversityId == universityId).ExecuteDeleteAsync(ct);
+            await writes.DeleteAsync(db.Set<GradeScaleBand>().Where(b => b.UniversityId == universityId),ct);
             db.AddRange(request.Bands.OrderByDescending(b => b.MinScore).Select((b, i) => new GradeScaleBand { UniversityId = universityId, Letter = b.Letter,
                 MinScore = b.MinScore, Point4 = b.Point4, IsPassing = b.IsPassing, DisplayOrder = i + 1 }));
             return true;

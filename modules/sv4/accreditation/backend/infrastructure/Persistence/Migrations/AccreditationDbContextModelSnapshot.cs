@@ -50,6 +50,10 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("framework_id");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -58,6 +62,8 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("aun_criteria_pkey");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "FrameworkId", "Code" }, "aun_criteria_framework_id_code_key")
                         .IsUnique();
@@ -93,6 +99,10 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text")
@@ -117,6 +127,8 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
 
                     b.HasKey("CriterionId", "LanguageCode")
                         .HasName("aun_criterion_translations_pkey");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("aun_criterion_translations", "accreditation", t =>
                         {
@@ -172,6 +184,10 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("retired_at");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("SourceTitle")
                         .IsRequired()
                         .HasColumnType("text")
@@ -202,8 +218,11 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("aun_frameworks_pkey");
 
-                    b.HasIndex(new[] { "Code", "Version" }, "aun_frameworks_code_version_uq")
-                        .IsUnique();
+                    b.HasIndex("SchoolId");
+
+                    b.HasIndex("SchoolId", "Code", "Version")
+                        .IsUnique()
+                        .HasDatabaseName("aun_frameworks_code_version_uq");
 
                     b.HasIndex(new[] { "Status", "CreatedAt" }, "aun_frameworks_status_ix")
                         .IsDescending(false, true);
@@ -244,6 +263,10 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("display_order");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<int?>("SourcePage")
                         .HasColumnType("integer")
                         .HasColumnName("source_page");
@@ -256,6 +279,8 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("aun_requirements_pkey");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "CriterionId", "Code" }, "aun_requirements_criterion_id_code_key")
                         .IsUnique();
@@ -293,6 +318,10 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("guidance");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Statement")
                         .IsRequired()
                         .HasColumnType("text")
@@ -317,6 +346,8 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
 
                     b.HasKey("RequirementId", "LanguageCode")
                         .HasName("aun_requirement_translations_pkey");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("aun_requirement_translations", "accreditation", t =>
                         {
@@ -359,6 +390,10 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("program_id");
 
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text")
@@ -383,6 +418,8 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
 
                     b.HasIndex("FrameworkId");
 
+                    b.HasIndex("SchoolId");
+
                     b.HasIndex(new[] { "ProgramId", "FrameworkId", "AssessedOn" }, "program_accreditations_round_key")
                         .IsUnique();
 
@@ -401,6 +438,10 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("AccessScope")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Bucket")
                         .IsRequired()
@@ -434,6 +475,13 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
+                    b.Property<long?>("OwnerUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SchoolId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("school_id");
+
                     b.Property<string>("Sha256")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -450,6 +498,8 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt");
+
+                    b.HasIndex("SchoolId");
 
                     b.HasIndex("Bucket", "ObjectKey")
                         .IsUnique();

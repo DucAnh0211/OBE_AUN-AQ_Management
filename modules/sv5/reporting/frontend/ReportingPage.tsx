@@ -15,7 +15,7 @@ export function ReportingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
-    if (getCurrentUser()?.role !== "admin") return;
+    if (!["admin","school_admin"].includes(getCurrentUser()?.role ?? "")) return;
     let active = true;
     setBusy(true);
     reportingApi("").session().then(user => { if (active) setSession({ token: "", user }); })

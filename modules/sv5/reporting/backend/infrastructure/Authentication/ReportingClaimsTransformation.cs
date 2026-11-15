@@ -11,7 +11,7 @@ internal sealed class ReportingClaimsTransformation(IProgramRepository programs,
     public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
     {
         if (accessor.HttpContext?.Request.Path.StartsWithSegments("/api/reporting") != true
-            || principal.Identity?.IsAuthenticated != true || !principal.IsInRole(SystemRoles.Admin)
+            || principal.Identity?.IsAuthenticated != true || !(principal.IsInRole(SystemRoles.Admin) || principal.IsInRole(SystemRoles.SchoolAdmin))
             || !principal.HasClaim("must_change_password", "false") || !principal.HasClaim(c => c.Type == "token_version")
             || principal.HasClaim("reporting:access", "true")) return principal;
 

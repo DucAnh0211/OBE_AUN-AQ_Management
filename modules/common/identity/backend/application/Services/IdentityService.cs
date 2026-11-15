@@ -13,7 +13,7 @@ public sealed class IdentityService(
     {
         var email=NormalizeEmail(request.Email);
         var user=await repository.FindByEmailAsync(email,ct);
-        if(user is null || user.Status!="active") throw InvalidCredentials();
+        if(user is null || user.Status!="active" || user.Role != SystemRoles.Admin && (user.UniversityId == null || !await repository.IsUniversityActiveAsync(user.UniversityId.Value,ct))) throw InvalidCredentials();
         if(user.LockedUntil>DateTime.UtcNow)
             throw new IdentityApiException(423,"account_locked","Tài khoản đang tạm khóa. Vui lòng thử lại sau.");
         var result=passwordHasher.VerifyHashedPassword(user,user.PasswordHash,request.Password??string.Empty);
@@ -45,7 +45,7 @@ public sealed class IdentityService(
         if(stored.ExpiresAt<=DateTime.UtcNow)
             throw new IdentityApiException(401,"refresh_token_expired","Phiên đăng nhập đã hết hạn.");
         var user=await repository.FindByIdAsync(stored.UserId,ct);
-        if(user is null || user.Status!="active")
+        if(user is null || user.Status!="active" || user.Role != SystemRoles.Admin && (user.UniversityId == null || !await repository.IsUniversityActiveAsync(user.UniversityId.Value,ct)))
             throw new IdentityApiException(401,"account_unavailable","Tài khoản không còn hoạt động.");
         var refresh=tokens.CreateRefreshToken();
         await repository.SaveRefreshTokenAsync(refresh.Id,user.Id,refresh.Hash,refresh.ExpiresAt,ip,ct);
@@ -85,9 +85,13 @@ public sealed class IdentityService(
         var email=NormalizeEmail(request.Email);
         var name=Required(request.FullName,"fullName",150);
         var role=ValidateRole(request.Role);
+        if (currentUser.Role != SystemRoles.Admin && role is not (SystemRoles.Lecturer or SystemRoles.Student)) throw Forbidden();
+        var school = role == SystemRoles.Admin ? null : currentUser.Role == SystemRoles.SchoolAdmin ? currentUser.UniversityId : request.UniversityId ?? currentUser.UniversityId;
+        if (role != SystemRoles.Admin && (school == null || !await repository.IsUniversityActiveAsync(school.Value, ct)))
+            throw new IdentityApiException(400,"school_required","Hãy tạo và chọn trường đang hoạt động trước khi tạo tài khoản.");
         ValidatePassword(request.TemporaryPassword);
         var placeholder=new SecurityUser(0,email,email,name,string.Empty,role,"active",true,1,0,null,null,DateTime.UtcNow,DateTime.UtcNow);
-        var created=await repository.CreateUserAsync(email,email,name,passwordHasher.HashPassword(placeholder,request.TemporaryPassword!),role,true,ct);
+        var created=await repository.CreateUserAsync(email,email,name,passwordHasher.HashPassword(placeholder,request.TemporaryPassword!),role,true,ct,school);
         await repository.WriteAuditAsync(currentUser.UserId,"user_created","user",created.Id.ToString(),new{created.Email,created.Role},ip,ct);
         return ToProfile(created);
     }
@@ -95,9 +99,13 @@ public sealed class IdentityService(
     public async Task<UserProfile> UpdateUserAsync(long id,UpdateUserRequest request,string? ip,CancellationToken ct)
     {
         var existing=await RequireUserAsync(id,ct);
+        Manage(existing);
         var role=ValidateRole(request.Role);
+        if (currentUser.Role != SystemRoles.Admin && role is not (SystemRoles.Lecturer or SystemRoles.Student)) throw Forbidden();
+        if ((existing.Role == SystemRoles.Admin) != (role == SystemRoles.Admin))
+            throw new IdentityApiException(409,"school_membership_immutable","Hãy tạo tài khoản riêng khi đổi giữa quản trị toàn hệ thống và thành viên trường.");
         var status=ValidateStatus(request.Status);
-        if(id==currentUser.UserId && (role!=SystemRoles.Admin || status!="active"))
+        if(id==currentUser.UserId && (role!=existing.Role || status!="active"))
             throw new IdentityApiException(409,"cannot_restrict_self","Không thể tự khóa hoặc hạ quyền tài khoản đang đăng nhập.");
         if(existing.Role==SystemRoles.Admin && existing.Status=="active" && (role!=SystemRoles.Admin || status!="active")
             && await repository.CountActiveAdminsAsync(ct)<=1)
@@ -111,6 +119,7 @@ public sealed class IdentityService(
     public async Task ResetPasswordAsync(long id,ResetPasswordRequest request,string? ip,CancellationToken ct)
     {
         var user=await RequireUserAsync(id,ct);
+        Manage(user);
         ValidatePassword(request.TemporaryPassword);
         await repository.SetPasswordAsync(id,passwordHasher.HashPassword(user,request.TemporaryPassword!),true,ct);
         await repository.WriteAuditAsync(currentUser.UserId,"password_reset","user",id.ToString(),null,ip,ct);
@@ -118,6 +127,7 @@ public sealed class IdentityService(
 
     public async Task ReplaceCourseAssignmentsAsync(long id,long[]? ids,string? ip,CancellationToken ct)
     {
+        Manage(await RequireUserAsync(id,ct));
         var normalized=(ids??[]).Where(x=>x>0).Distinct().ToArray();
         await repository.ReplaceCourseAssignmentsAsync(id,currentUser.UserId,normalized,ct);
         await repository.WriteAuditAsync(currentUser.UserId,"course_assignments_replaced","user",id.ToString(),new{ids=normalized},ip,ct);
@@ -125,6 +135,7 @@ public sealed class IdentityService(
 
     public async Task ReplaceProgramAssignmentsAsync(long id,long[]? ids,string? ip,CancellationToken ct)
     {
+        Manage(await RequireUserAsync(id,ct));
         var normalized=(ids??[]).Where(x=>x>0).Distinct().ToArray();
         await repository.ReplaceProgramAssignmentsAsync(id,currentUser.UserId,normalized,ct);
         await repository.WriteAuditAsync(currentUser.UserId,"program_assignments_replaced","user",id.ToString(),new{ids=normalized},ip,ct);
@@ -141,7 +152,14 @@ public sealed class IdentityService(
     private async Task<SecurityUser> RequireUserAsync(long id,CancellationToken ct) =>
         await repository.FindByIdAsync(id,ct) ?? throw new IdentityApiException(404,"user_not_found","Không tìm thấy người dùng.");
 
-    private static UserProfile ToProfile(SecurityUser user) => new(user.Id,user.Email,user.FullName,user.Role,user.Status,user.MustChangePassword,user.LastLoginAt,user.CreatedAt);
+    public async Task DemandManageAsync(long id, CancellationToken ct) => Manage(await RequireUserAsync(id,ct));
+    private void Manage(SecurityUser target) {
+        if (currentUser.Role == SystemRoles.Admin) return;
+        if (currentUser.Role != SystemRoles.SchoolAdmin || target.UniversityId != currentUser.UniversityId
+            || target.Role is not (SystemRoles.Lecturer or SystemRoles.Student)) throw Forbidden();
+    }
+    private static IdentityApiException Forbidden() => new(403,"school_access_denied","Bạn không có quyền quản lý tài khoản này.");
+    private static UserProfile ToProfile(SecurityUser user) => new(user.Id,user.Email,user.FullName,user.Role,user.Status,user.MustChangePassword,user.LastLoginAt,user.CreatedAt,user.UniversityId);
     private static IdentityApiException InvalidCredentials() => new(401,"invalid_credentials","Email hoặc mật khẩu không đúng.");
     private static int NormalizePage(int value)=>value<1?1:value;
     private static int NormalizePageSize(int value)=>Math.Clamp(value,1,100);
@@ -162,7 +180,7 @@ public sealed class IdentityService(
     private static string ValidateRole(string? role)
     {
         var value=Clean(role)?.ToLowerInvariant();
-        return value is SystemRoles.Admin or SystemRoles.Lecturer or SystemRoles.Student
+        return value is SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer or SystemRoles.Student
             ? value : throw new IdentityApiException(400,"validation_failed","Vai trò không hợp lệ.");
     }
     private static string ValidateStatus(string? status)

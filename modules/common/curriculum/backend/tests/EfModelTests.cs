@@ -31,7 +31,7 @@ public sealed class EfModelTests
         var cloPlo = db.Model.FindEntityType(typeof(CloPlo))!;
         Assert.Equal(new[] { "CloId", "CoursePloId" }, cloPlo.FindPrimaryKey()!.Properties.Select(p => p.Name));
         Assert.All(cloPlo.GetForeignKeys(), fk => Assert.Contains(fk.Properties, p => p.Name == "ProgramCourseId"));
-        Assert.DoesNotContain(db.Model.GetEntityTypes().SelectMany(e => e.GetProperties()), p => p.IsShadowProperty());
+        Assert.DoesNotContain(db.Model.GetEntityTypes().SelectMany(e => e.GetProperties()), p => p.IsShadowProperty() && p.Name != "SchoolId");
     }
 
     [Fact]
@@ -82,6 +82,21 @@ public sealed class EfModelTests
     {
         using var db = Context();
         Assert.False(db.Database.HasPendingModelChanges());
+    }
+
+    [Fact]
+    public void Every_resource_table_has_a_school_and_filter_values_do_not_leak_between_contexts()
+    {
+        var options=new DbContextOptionsBuilder<CurriculumDbContext>().UseNpgsql("Host=localhost;Database=model_only;Username=unused").Options;
+        using var first=new CurriculumDbContext(options,new SchoolUser(7));
+        using var second=new CurriculumDbContext(options,new SchoolUser(8));
+        Assert.All(first.Model.GetEntityTypes().Where(e=>e.GetViewName()==null && e.ClrType!=typeof(University)
+            && e.ClrType!=typeof(WeightCode) && e.ClrType!=typeof(ProgressionCode)), e=>Assert.NotNull(e.FindProperty("SchoolId")));
+        var a=first.ProgramCourses.ToQueryString();var b=second.ProgramCourses.ToQueryString();
+        Assert.Contains("school_id",a);Assert.Contains("ScopeSchoolId",a);Assert.NotEqual(a,b);
+    }
+    private sealed record SchoolUser(long School) : ObeAunQa.SharedKernel.ICurrentUser {
+        public bool IsAuthenticated=>true;public long UserId=>1;public string Role=>"school_admin";public bool MustChangePassword=>false;public long? UniversityId=>School;
     }
 
     [Fact]

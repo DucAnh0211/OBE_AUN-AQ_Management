@@ -35,7 +35,7 @@ internal sealed class EfCloRepository(CurriculumDbContext db, CurriculumWriteSes
     public Task<bool> DeleteCloAsync(long versionId, long courseId, long id, CancellationToken ct) => writes.RunAsync(async () => {
         await writes.DraftAsync(versionId, ct);
         if (!await Scope(versionId, courseId).AnyAsync(c => c.Id == id && c.ProgramCourse.ArchivedAt == null, ct)) return false;
-        await db.CloPlos.Where(m => m.CloId == id).ExecuteDeleteAsync(ct);
-        return await Scope(versionId, courseId).Where(c => c.Id == id).ExecuteDeleteAsync(ct) == 1;
+        await writes.DeleteAsync(db.CloPlos.Where(m => m.CloId == id),ct);
+        return await writes.DeleteAsync(Scope(versionId, courseId).Where(c => c.Id == id),ct) == 1;
     }, ct);
 }

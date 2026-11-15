@@ -4,11 +4,12 @@ using ObeAunQa.Modules.Curriculum.Domain.Entities;
 
 namespace ObeAunQa.Modules.Curriculum.Infrastructure;
 
-internal sealed class EfUniversityRepository(CurriculumDbContext db, CurriculumWriteSession writes) : IUniversityRepository
+internal sealed class EfUniversityRepository(CurriculumDbContext db, CurriculumWriteSession writes, ObeAunQa.SharedKernel.ICurrentUser user) : IUniversityRepository
 {
+    private IQueryable<University> Universities => user.Role=="admin" ? db.Universities.IgnoreQueryFilters() : db.Universities;
     public async Task<PagedResult<UniversityResponse>> GetUniversitiesAsync(int page, int pageSize, string? search, bool includeArchived, long[]? programIds, CancellationToken ct)
     {
-        var query = db.Universities.AsNoTracking().Where(u => includeArchived || u.ArchivedAt == null);
+        var query = Universities.AsNoTracking().Where(u => includeArchived || u.ArchivedAt == null);
         if (programIds != null) query = query.Where(u => u.Programs.Any(p => p.ArchivedAt == null && programIds.Contains(p.Id)));
         if (search != null) query = query.Where(u => EF.Functions.ILike(u.Code, "%" + search + "%") || EF.Functions.ILike(u.Name, "%" + search + "%"));
         var count = await query.LongCountAsync(ct);
@@ -17,7 +18,7 @@ internal sealed class EfUniversityRepository(CurriculumDbContext db, CurriculumW
     }
 
     public Task<UniversityResponse?> GetUniversityAsync(long id, CancellationToken ct) =>
-        db.Universities.Where(u => u.Id == id).UniversityResponses().SingleOrDefaultAsync(ct);
+        Universities.Where(u => u.Id == id).UniversityResponses().SingleOrDefaultAsync(ct);
 
     public async Task<UniversityResponse> CreateUniversityAsync(string code, string name, CancellationToken ct)
     {
@@ -40,8 +41,7 @@ internal sealed class EfUniversityRepository(CurriculumDbContext db, CurriculumW
     {
         if (await db.Programs.AnyAsync(p => p.UniversityId == id && p.ArchivedAt == null, ct))
             throw new CurriculumConflictException("university_has_programs", "Chỉ lưu trữ được trường khi không còn CTĐT đang hoạt động.");
-        return await db.Universities.Where(u => u.Id == id && u.ArchivedAt == null).ExecuteUpdateAsync(s => s
-            .SetProperty(u => u.ArchivedAt, DateTime.UtcNow).SetProperty(u => u.UpdatedAt, DateTime.UtcNow), ct) == 1;
+        return await writes.UpdateAsync(db.Universities.Where(u=>u.Id==id&&u.ArchivedAt==null),u=>{u.ArchivedAt=DateTime.UtcNow;u.UpdatedAt=DateTime.UtcNow;},ct)==1;
     }, ct);
 
     public async Task<IReadOnlyDictionary<long, long[]>> GetProgramIdsAsync(long[] universityIds, CancellationToken ct)

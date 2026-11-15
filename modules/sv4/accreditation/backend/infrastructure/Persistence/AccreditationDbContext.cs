@@ -7,9 +7,16 @@ namespace ObeAunQa.Modules.Accreditation.Infrastructure;
 
 public partial class AccreditationDbContext : DbContext
 {
-    public AccreditationDbContext(DbContextOptions<AccreditationDbContext> options)
+    private readonly ObeAunQa.SharedKernel.ICurrentUser? currentUser;
+    public AccreditationDbContext(DbContextOptions<AccreditationDbContext> options, ObeAunQa.SharedKernel.ICurrentUser? currentUser = null)
         : base(options)
     {
+        this.currentUser = currentUser;
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken ct = default) {
+        await ObeAunQa.SharedKernel.SchoolData.GuardAsync(this, currentUser, ct);
+        return await base.SaveChangesAsync(ct);
     }
 
     public virtual DbSet<AunCriterion> AunCriteria { get; set; }
@@ -24,10 +31,16 @@ public partial class AccreditationDbContext : DbContext
 
     public virtual DbSet<ProgramAccreditation> ProgramAccreditations { get; set; }
 
+    public long? ScopeSchoolId => currentUser?.UniversityId;
+    public bool ScopeBypass => currentUser == null || currentUser.IsSystemContext || currentUser.Role == "admin" && currentUser.UniversityId == null;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AccreditationDbContext).Assembly);
+        ObeAunQa.SharedKernel.SchoolData.Configure(modelBuilder, this, "ProgressionCode", "WeightCode", "PloBalance");
+        modelBuilder.Entity<SourceDocument>().HasQueryFilter("Audience", d => currentUser == null || currentUser.IsSystemContext
+            || currentUser.Role != "student" || d.AccessScope == "school" || d.AccessScope == "personal" && d.OwnerUserId == currentUser.UserId);
     }
 
 }

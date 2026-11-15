@@ -1,8 +1,9 @@
 import { apiBaseUrl } from "./api-config";
 
-export type UserRole = "admin" | "lecturer" | "student";
+export type UserRole = "admin" | "lecturer" | "student" | "school_admin";
 export type AuthUser = {
   id: number;
+  universityId: number | null;
   email: string;
   fullName: string;
   role: UserRole;
@@ -41,6 +42,14 @@ export function subscribeSession(listener: SessionListener) {
   return () => { listeners.delete(listener); };
 }
 
+export function getSelectedSchool(): number | null {
+  if (currentUser?.role !== "admin") return currentUser?.universityId ?? null;
+  const id = Number(localStorage.getItem(`obe-school-${currentUser.id}`)); return id > 0 ? id : null;
+}
+export function setSelectedSchool(id: number | null) {
+  if(currentUser?.role !== "admin") return;
+  if(id) localStorage.setItem(`obe-school-${currentUser.id}`,String(id)); else localStorage.removeItem(`obe-school-${currentUser.id}`);
+}
 export function getCurrentUser() { return currentUser; }
 
 export async function login(email: string, password: string): Promise<AuthUser> {
@@ -93,6 +102,8 @@ export async function authenticatedFetch(
 ): Promise<Response> {
   const headers = new Headers(init.headers);
   if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
+  const school = getSelectedSchool();
+  if (currentUser?.role === "admin" && school) headers.set("X-University-Id", String(school));
   let response = await fetch(input, { ...init, headers, credentials: "include" });
   if (response.status === 401 && retry) {
     const user = await refreshSession();

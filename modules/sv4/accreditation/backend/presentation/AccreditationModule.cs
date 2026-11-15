@@ -44,7 +44,7 @@ public static class AccreditationModule
         group.MapGet("/health", () => Results.Ok(new ModuleHealth(Descriptor.Key,"ready",DateTimeOffset.UtcNow)));
         group.MapGet("/capabilities", () => Results.Ok(new[] { "aun-framework-versioning", "aun-criteria", "aun-requirements", "framework-import" }));
         group.MapGet("/frameworks", async (AccreditationService service, ICurrentUser user, CancellationToken ct, string? status=null, string? q=null)
-            => Results.Ok(await service.GetFrameworksAsync(user.Role==SystemRoles.Admin?status:"published",q,ct)));
+            => Results.Ok(await service.GetFrameworksAsync(SystemRoles.IsAdmin(user.Role)?status:"published",q,ct)));
         group.MapGet("/frameworks/{id:long:min(1)}", async (long id, AccreditationService service, IAccessControlService access, CancellationToken ct)
             => await access.CanReadFrameworkAsync(id,ct)?Results.Ok(await service.GetFrameworkAsync(id,ct)):Results.Forbid()).WithName("GetAunFramework");
         group.MapGet("/frameworks/{id:long:min(1)}/tree", async (long id, AccreditationService service, IAccessControlService access, CancellationToken ct, string? language=null)

@@ -11,11 +11,11 @@ internal static class OutcomeEndpoints
     public static RouteGroupBuilder MapOutcomeEndpoints(this RouteGroupBuilder group)
     {
         group.MapGet("/program-versions/{versionId:long:min(1)}/plos", GetPlosAsync);
-        group.MapPost("/program-versions/{versionId:long:min(1)}/plos", CreatePloAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPost("/program-versions/{versionId:long:min(1)}/plos", CreatePloAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
         group.MapGet("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", GetPloAsync)
             .WithName("GetCurriculumPlo");
-        group.MapPut("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", UpdatePloAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
-        group.MapDelete("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", DeletePloAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPut("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", UpdatePloAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
+        group.MapDelete("/program-versions/{versionId:long:min(1)}/plos/{ploId:long:min(1)}", DeletePloAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
 
         var coursePath = "/program-versions/{versionId:long:min(1)}/courses/{programCourseId:long:min(1)}";
         group.MapGet(coursePath + "/clos", GetClosAsync);
@@ -26,13 +26,13 @@ internal static class OutcomeEndpoints
         group.MapDelete(coursePath + "/clos/{cloId:long:min(1)}", DeleteCloAsync);
 
         group.MapGet(coursePath + "/plo-mappings", GetCoursePloMappingsAsync);
-        group.MapPost(coursePath + "/plo-mappings", CreateCoursePloMappingAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+        group.MapPost(coursePath + "/plo-mappings", CreateCoursePloMappingAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
         group.MapPut(
             coursePath + "/plo-mappings/{mappingId:long:min(1)}",
-            UpdateCoursePloMappingAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+            UpdateCoursePloMappingAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
         group.MapDelete(
             coursePath + "/plo-mappings/{mappingId:long:min(1)}",
-            DeleteCoursePloMappingAsync).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+            DeleteCoursePloMappingAsync).RequireAuthorization(AuthorizationPolicies.CurriculumManagers);
 
         var cloMappingPath = coursePath + "/clos/{cloId:long:min(1)}/plo-mappings";
         group.MapGet(cloMappingPath, GetCloPloMappingsAsync);

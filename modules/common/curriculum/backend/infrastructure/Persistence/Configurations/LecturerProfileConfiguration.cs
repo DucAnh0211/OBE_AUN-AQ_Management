@@ -10,7 +10,8 @@ internal sealed class LecturerProfileConfiguration : IEntityTypeConfiguration<Le
         b.ToTable("lecturer_profiles", "curriculum"); b.HasKey(x => x.UserId); b.Property(x => x.UserId).ValueGeneratedNever();
         b.Property(x => x.LecturerCode).HasMaxLength(30).IsRequired();
         b.Property(x => x.AcademicTitle).HasMaxLength(10); b.Property(x => x.Degree).HasMaxLength(10);
-        b.HasIndex(x => x.LecturerCode).IsUnique();
+        b.Property<long?>("SchoolId").HasColumnName("school_id");
+        b.HasIndex("SchoolId",nameof(LecturerProfile.LecturerCode)).IsUnique();
         b.HasOne<OrgUnit>().WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Restrict);
     }
 }

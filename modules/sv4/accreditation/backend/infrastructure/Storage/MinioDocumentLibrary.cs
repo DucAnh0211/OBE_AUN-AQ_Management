@@ -8,7 +8,7 @@ using ObeAunQa.Modules.Accreditation.Domain.Entities;
 
 namespace ObeAunQa.Modules.Accreditation.Infrastructure;
 
-public sealed class MinioDocumentLibrary(AccreditationDbContext db, IOptions<DocumentStorageOptions> options) : IDocumentLibrary
+public sealed class MinioDocumentLibrary(AccreditationDbContext db, IOptions<DocumentStorageOptions> options, ObeAunQa.SharedKernel.IAcademicStaffDirectory? staff = null) : IDocumentLibrary
 {
     public const int MaxBytes = 20 * 1024 * 1024;
     private static readonly Dictionary<string, string> Types = new(StringComparer.OrdinalIgnoreCase) {
@@ -23,9 +23,14 @@ public sealed class MinioDocumentLibrary(AccreditationDbContext db, IOptions<Doc
             .WithCredentials(o.AccessKey, o.SecretKey).WithSSL(endpoint.Scheme == "https").Build();
     }
     private static SourceDocumentInfo Info(SourceDocument d) => new(d.Id, d.Title, d.FileName, d.ContentType,
-        d.Size, d.Sha256, d.CreatedBy, d.CreatedAt, d.DisabledAt);
-    public async Task<SourceDocumentInfo> UploadAsync(string title, string fileName, byte[] bytes, long actor, CancellationToken ct)
+        d.Size, d.Sha256, d.CreatedBy, d.CreatedAt, d.DisabledAt,d.AccessScope,d.OwnerUserId);
+    public async Task<SourceDocumentInfo> UploadAsync(string title, string fileName, byte[] bytes, long actor, CancellationToken ct, DocumentAccess? access = null)
     {
+        access ??= new DocumentAccess("school");
+        if(access.Scope is not ("school" or "staff" or "personal") || access.Scope != "personal" && access.OwnerUserId != null)
+            throw new DocumentException(400, "Invalid document audience.");
+        if(access.Scope == "personal" && (access.OwnerUserId == null || staff == null || await staff.FindAccountAsync(access.OwnerUserId.Value,"student",ct) == null))
+            throw new DocumentException(400, "Personal documents require a student in the current school.");
         title = title.Trim();
         fileName = Path.GetFileName(fileName.Replace('\\', '/'));
         if (title.Length is < 1 or > 200 || fileName.Length is < 1 or > 240 || fileName.Any(char.IsControl))
@@ -34,7 +39,7 @@ public sealed class MinioDocumentLibrary(AccreditationDbContext db, IOptions<Doc
             throw new DocumentException(400, "Chỉ hỗ trợ PDF, DOCX, TXT và Markdown.");
         if (bytes.Length is 0 or > MaxBytes) throw new DocumentException(400, "File phải có dữ liệu và không vượt quá 20 MB.");
         var d = new SourceDocument { Id = Guid.NewGuid(), Title = title, FileName = fileName, Size = bytes.Length,
-            ContentType = contentType, Sha256 = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant(),
+            AccessScope=access.Scope, OwnerUserId=access.OwnerUserId, ContentType = contentType, Sha256 = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant(),
             Bucket = options.Value.Bucket, CreatedBy = actor, CreatedAt = DateTime.UtcNow };
         d.ObjectKey = $"knowledge/{d.Id:N}/original{Path.GetExtension(fileName).ToLowerInvariant()}";
         using var client = Client();

@@ -123,7 +123,7 @@ export function PloListPage() {
     finally { setLoading(false); }
   }, [versionId]);
   useEffect(() => { void load(); }, [load]);
-  const editable = user?.role === "admin" && version?.status === "draft";
+  const editable = ((user?.role === "admin" || user?.role === "school_admin")) && version?.status === "draft";
   async function save(draft: PloDraft) {
     setBusy(true); setError("");
     try {
@@ -195,7 +195,7 @@ export function CoursePloMatrixPage() {
   const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
   const load = useCallback(async () => { setLoading(true); setError(""); try { setData(await loadMatrixData(versionId)); } catch (caught) { setError(messageOf(caught, "Không tải được ma trận học phần–PLO.")); } finally { setLoading(false); } }, [versionId]);
   useEffect(() => { void load(); }, [load]);
-  const editable = user?.role === "admin" && data?.version.status === "draft";
+  const editable = ((user?.role === "admin" || user?.role === "school_admin")) && data?.version.status === "draft";
   async function save(input: { weightCode: string; progressionCode: string; fit: string | null; fitReason: string | null }) {
     if (!editor) return; setBusy(true); setError("");
     try { if (editor.mapping) await curriculumApi.updateCoursePloMapping(versionId, editor.course.id, editor.mapping.id, input); else await curriculumApi.addCoursePloMapping(versionId, editor.course.id, { ploId: editor.plo.id, ...input }); setEditor(null); await load(); }
@@ -230,7 +230,7 @@ export function CloPloMatrixPage() {
   }, [versionId]);
   useEffect(() => { void load(); }, [load]);
   const rows = useMemo(() => data?.courses.flatMap((course) => (data.clos[course.id] ?? []).map((clo) => ({ course, clo }))) ?? [], [data]);
-  const editable = data?.version.status === "draft" && (user?.role === "admin" || user?.role === "lecturer");
+  const editable = data?.version.status === "draft" && ((user?.role === "admin" || user?.role === "school_admin"));
   async function toggle(course: ProgramCourse, clo: Clo, plo: Plo) {
     if (!data || !editable) return;
     const courseMapping = data.courseMappings[course.id]?.find((item) => item.ploId === plo.id); if (!courseMapping) return;

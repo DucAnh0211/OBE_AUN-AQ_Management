@@ -12,6 +12,8 @@ public interface IChatThreadRepository
     Task CompleteAsync(ChatExchange run, ChatAnswer answer, CancellationToken ct);
     Task FailAsync(ChatExchange run, string error, CancellationToken ct);
     Task DemandLeaseAsync(Guid threadId, Guid runId, Guid lease, CancellationToken ct);
+    Task<long?> SchoolAsync(Guid threadId, CancellationToken ct);
+    Task<string> OwnerRoleAsync(Guid threadId, CancellationToken ct);
     Task<long> OwnerAsync(Guid threadId, CancellationToken ct);
     Task<CheckpointDetail?> CheckpointAsync(Guid runId, string? checkpointId, CancellationToken ct);
     Task PutCheckpointAsync(Guid runId, Guid lease, CheckpointEnvelope value, CancellationToken ct);

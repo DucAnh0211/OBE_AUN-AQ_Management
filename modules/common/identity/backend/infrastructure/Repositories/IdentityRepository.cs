@@ -8,15 +8,15 @@ using ObeAunQa.Modules.Identity.Domain.Entities;
 
 namespace ObeAunQa.Modules.Identity;
 
-public sealed class IdentityRepository(IdentityDbContext db) : IIdentityRepository, IAssignmentCloneService
+public sealed class IdentityRepository(IdentityDbContext db, ICurrentUser currentUser) : IIdentityRepository, IAssignmentCloneService
 {
-    private static readonly Expression<Func<User, SecurityUser>> UserDto = u => new(u.Id,u.Email,u.NormalizedEmail,u.FullName,u.PasswordHash,u.Role,u.Status,u.MustChangePassword,u.TokenVersion,u.FailedLoginCount,u.LockedUntil,u.LastLoginAt,u.CreatedAt,u.UpdatedAt);
-    public Task<SecurityUser?> FindByEmailAsync(string email,CancellationToken ct) => db.Users.AsNoTracking().Where(u=>u.NormalizedEmail==email).Select(UserDto).SingleOrDefaultAsync(ct);
-    public Task<SecurityUser?> FindByIdAsync(long id,CancellationToken ct) => db.Users.AsNoTracking().Where(u=>u.Id==id).Select(UserDto).SingleOrDefaultAsync(ct);
+    private static readonly Expression<Func<User, SecurityUser>> UserDto = u => new(u.Id,u.Email,u.NormalizedEmail,u.FullName,u.PasswordHash,u.Role,u.Status,u.MustChangePassword,u.TokenVersion,u.FailedLoginCount,u.LockedUntil,u.LastLoginAt,u.CreatedAt,u.UpdatedAt,u.UniversityId);
+    public Task<SecurityUser?> FindByEmailAsync(string email,CancellationToken ct) => db.Users.IgnoreQueryFilters().AsNoTracking().Where(u=>u.NormalizedEmail==email).Select(UserDto).SingleOrDefaultAsync(ct);
+    public Task<SecurityUser?> FindByIdAsync(long id,CancellationToken ct) => db.Users.IgnoreQueryFilters().AsNoTracking().Where(u=>u.Id==id).Select(UserDto).SingleOrDefaultAsync(ct);
     public Task<long> CountActiveAdminsAsync(CancellationToken ct) => db.Users.LongCountAsync(u=>u.Role=="admin" && u.Status=="active",ct);
-    public async Task<SecurityUser> CreateUserAsync(string email,string normalizedEmail,string fullName,string passwordHash,string role,bool mustChangePassword,CancellationToken ct)
+    public async Task<SecurityUser> CreateUserAsync(string email,string normalizedEmail,string fullName,string passwordHash,string role,bool mustChangePassword,CancellationToken ct,long? universityId=null)
     {
-        var user=new User { Email=email,NormalizedEmail=normalizedEmail,FullName=fullName,PasswordHash=passwordHash,Role=role,Status="active",MustChangePassword=mustChangePassword };
+        var user=new User { Email=email,NormalizedEmail=normalizedEmail,FullName=fullName,PasswordHash=passwordHash,Role=role,Status="active",MustChangePassword=mustChangePassword,UniversityId=universityId };
         db.Users.Add(user);
         try { await db.SaveChangesAsync(ct); }
         catch(DbUpdateException e) when(e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
@@ -52,7 +52,7 @@ public sealed class IdentityRepository(IdentityDbContext db) : IIdentityReposito
         var q=db.Users.AsNoTracking().Where(u=>search==null || EF.Functions.ILike(u.Email,"%"+search+"%") || EF.Functions.ILike(u.FullName,"%"+search+"%"));
         var count=await q.LongCountAsync(ct);
         var rows=await q.OrderBy(u=>u.FullName).ThenBy(u=>u.Id).Skip((page-1)*pageSize).Take(pageSize)
-            .Select(u=>new UserProfile(u.Id,u.Email,u.FullName,u.Role,u.Status,u.MustChangePassword,u.LastLoginAt,u.CreatedAt)).ToListAsync(ct);
+            .Select(u=>new UserProfile(u.Id,u.Email,u.FullName,u.Role,u.Status,u.MustChangePassword,u.LastLoginAt,u.CreatedAt,u.UniversityId)).ToListAsync(ct);
         return new(rows,page,pageSize,count,(int)Math.Ceiling(count/(double)pageSize));
     }
     public async Task<SecurityUser?> UpdateUserAsync(long id,string fullName,string role,string status,CancellationToken ct)
@@ -68,7 +68,7 @@ public sealed class IdentityRepository(IdentityDbContext db) : IIdentityReposito
     public async Task SetPasswordAsync(long id,string passwordHash,bool mustChange,CancellationToken ct)
     {
         await using var tx=await db.Database.BeginTransactionAsync(ct);
-        await db.Users.Where(u=>u.Id==id).ExecuteUpdateAsync(s=>s.SetProperty(u=>u.PasswordHash,passwordHash).SetProperty(u=>u.MustChangePassword,mustChange)
+        await db.Users.IgnoreQueryFilters().Where(u=>u.Id==id).ExecuteUpdateAsync(s=>s.SetProperty(u=>u.PasswordHash,passwordHash).SetProperty(u=>u.MustChangePassword,mustChange)
             .SetProperty(u=>u.TokenVersion,u=>u.TokenVersion+1).SetProperty(u=>u.FailedLoginCount,0).SetProperty(u=>u.LockedUntil,(DateTime?)null).SetProperty(u=>u.UpdatedAt,DateTime.UtcNow),ct);
         await RevokeTokens(id,ct);await tx.CommitAsync(ct);
     }
@@ -113,6 +113,8 @@ public sealed class IdentityRepository(IdentityDbContext db) : IIdentityReposito
     public async Task WriteAuditAsync(long? actor,string action,string targetType,string? targetId,object? details,string? ip,CancellationToken ct)
     {
         db.AuditLogs.Add(new AuditLog{ActorUserId=actor,Action=action,TargetType=targetType,TargetId=targetId,Details=JsonSerializer.Serialize(details??new{}),IpAddress=ip});
+        db.Entry(db.AuditLogs.Local.Last()).Property("SchoolId").CurrentValue=currentUser.UniversityId
+            ?? (targetType=="user" && long.TryParse(targetId,out var targetUser) ? (await FindByIdAsync(targetUser,ct))?.UniversityId : null);
         await db.SaveChangesAsync(ct);
     }
     public async Task<PagedAuditLogs> GetAuditLogsAsync(int page,int pageSize,CancellationToken ct)
@@ -122,5 +124,9 @@ public sealed class IdentityRepository(IdentityDbContext db) : IIdentityReposito
             .Select(a=>new AuditLogResponse(a.Id,a.ActorUserId,a.Action,a.TargetType,a.TargetId,a.Details,a.IpAddress,a.CreatedAt)).ToListAsync(ct);
         return new(rows,page,pageSize,count,(int)Math.Ceiling(count/(double)pageSize));
     }
-    public Task<bool> IsUserTokenValidAsync(long id,int tokenVersion,CancellationToken ct) => db.Users.AnyAsync(u=>u.Id==id && u.Status=="active" && u.TokenVersion==tokenVersion,ct);
+    public Task<bool> IsUserTokenValidAsync(long id,int tokenVersion,CancellationToken ct) => db.Users.IgnoreQueryFilters().AnyAsync(u=>u.Id==id && u.Status=="active" && u.TokenVersion==tokenVersion
+        && (u.Role==SystemRoles.Admin || u.UniversityId!=null && db.Set<UniversityAccessRow>().IgnoreQueryFilters().Any(s=>s.Id==u.UniversityId && s.ArchivedAt==null)),ct);
+    public Task<bool> IsUniversityActiveAsync(long id,CancellationToken ct) => db.Set<UniversityAccessRow>().AnyAsync(u=>u.Id==id && u.ArchivedAt==null,ct);
+    public Task<string?> SchoolNameAsync(long id,CancellationToken ct) => db.Set<UniversityAccessRow>().Where(u=>u.Id==id).Select(u=>u.Name).SingleOrDefaultAsync(ct);
+
 }

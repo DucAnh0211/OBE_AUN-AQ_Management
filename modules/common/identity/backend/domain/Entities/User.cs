@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ObeAunQa.Modules.Identity.Domain.Entities;
@@ -6,6 +6,8 @@ namespace ObeAunQa.Modules.Identity.Domain.Entities;
 public partial class User
 {
     public long Id { get; set; }
+
+    public long? UniversityId { get; set; }
 
     public string Email { get; set; } = null!;
 

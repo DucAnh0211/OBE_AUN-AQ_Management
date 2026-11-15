@@ -23,6 +23,10 @@ export function KnowledgeBasePage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [audience,setAudience]=useState("school");
+  const [students,setStudents]=useState<{id:number;fullName:string;email:string}[]>([]);
+  useEffect(()=>{apiJson<{items:{id:number;fullName:string;email:string;role:string}[]}>("/api/admin/users?pageSize=100")
+    .then(r=>setStudents(r.items.filter(u=>u.role==="student"))).catch(e=>setError(message(e)));},[]);
   const [forceOcr, setForceOcr] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Item | null>(null);
@@ -112,6 +116,9 @@ export function KnowledgeBasePage() {
       <h2>Thêm tài liệu</h2>
       <label><span>Tên tài liệu</span><input name="title" required maxLength={200} placeholder="Ví dụ: Hướng dẫn đánh giá AUN-QA 4.0" disabled={busy} /></label>
       <label><span>File gốc · tối đa 20 MB</span><input name="file" type="file" required accept=".pdf,.docx,.txt,.md" disabled={busy} /></label>
+        <label><span>Ai được sử dụng tài liệu</span><select aria-label="Ai được sử dụng tài liệu" name="accessScope" value={audience} disabled={busy} onChange={e=>setAudience(e.target.value)}>
+          <option value="school">Toàn trường</option><option value="staff">Nội bộ giảng viên và admin trường</option><option value="personal">Riêng một sinh viên và giảng viên</option></select></label>
+        {audience==="personal"&&<label><span>Sinh viên sở hữu</span><select aria-label="Sinh viên sở hữu" name="ownerUserId" required disabled={busy} defaultValue=""><option value="" disabled>Chọn sinh viên trong trường</option>{students.map(s=><option key={s.id} value={s.id}>{s.fullName} · {s.email}</option>)}</select></label>}
       <p className="muted-text">PDF (cả bản scan), DOCX, TXT và Markdown UTF-8. PDF scan được OCR tiếng Việt/Anh. Mỗi lần tải lên tạo một tài liệu độc lập.</p>
       <label className="kb-checkbox"><input name="process" type="checkbox" defaultChecked disabled={busy} /><span>Chunking và tạo embedding sau khi tải lên</span></label>
       <label className="kb-checkbox"><input type="checkbox" checked={forceOcr} disabled={busy} onChange={(e) => setForceOcr(e.target.checked)} /><span>OCR toàn bộ trang PDF (dùng khi lớp chữ có sẵn bị lỗi hoặc thiếu nội dung)</span></label>

@@ -35,6 +35,6 @@ internal sealed class EfCoursePloMappingRepository(CurriculumDbContext db, Curri
         await writes.DraftAsync(versionId, ct);
         if (!await Scope(versionId, courseId).AnyAsync(m => m.Id == id, ct)) return false;
         if (await db.CloPlos.AnyAsync(m => m.CoursePloId == id, ct)) throw new CurriculumConflictException("course_plo_has_clo_mappings", "Không thể xóa mapping học phần-PLO đang được CLO sử dụng.");
-        return await Scope(versionId, courseId).Where(m => m.Id == id).ExecuteDeleteAsync(ct) == 1;
+        return await writes.DeleteAsync(Scope(versionId, courseId).Where(m => m.Id == id),ct) == 1;
     }, ct);
 }

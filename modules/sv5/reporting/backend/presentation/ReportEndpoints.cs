@@ -12,6 +12,11 @@ internal static class ReportEndpoints
     public static void MapReports(this RouteGroupBuilder module)
     {
         var group = module.MapGroup("").RequireAuthorization("Reporting");
+        group.MapGet("/outcome-source/{versionId:long:min(1)}/{snapshotId:guid}", async (long versionId, Guid snapshotId, OutcomeReportSource source, ClaimsPrincipal user, CancellationToken ct) => {
+            var snapshot = await source.ReadAsync(versionId,snapshotId,ct);
+            ReportPermissions.Demand(user,snapshot.Result.Input.ProgramId);
+            return Results.Ok(snapshot);
+        });
         group.MapGet("/session", (ClaimsPrincipal user) => Results.Ok(new {
             userId = user.FindFirstValue(ClaimTypes.NameIdentifier), programIds = ReportPermissions.Programs(user), canGenerate = ReportPermissions.CanGenerate(user)
         }));

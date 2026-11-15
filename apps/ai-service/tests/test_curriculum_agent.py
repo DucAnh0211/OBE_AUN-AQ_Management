@@ -12,6 +12,12 @@ from modules.sv5.knowledge.ai.errors import PipelineError
 
 
 class CurriculumAgentTests(unittest.TestCase):
+    def test_personal_transcript_tool_has_no_other_student_selector(self):
+        query = dict(tool='my_transcript', versionId=None, courseId=None, programId=None, cloId=None, search=None, page=1)
+        self.assertEqual(CurriculumToolCall(**query).tool, 'my_transcript')
+        with self.assertRaises(ValidationError):
+            CurriculumToolCall(**query, studentId=999)
+
     def test_database_route_uses_tool_and_server_sources_without_document_search(self):
         calls = []
         query = CurriculumToolCall(tool='course_plo', versionId=1, courseId=2, programId=None, cloId=None, search=None, page=1)

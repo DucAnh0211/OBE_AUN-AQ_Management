@@ -2,6 +2,7 @@ namespace ObeAunQa.Modules.Curriculum.Application;
 
 public interface ICourseOfferingRepository
 {
+    Task<bool> CanTeachAsync(long offeringId,long userId,CancellationToken ct);
     Task<IReadOnlyList<string>> PeriodsAsync(long versionId, long? lecturerId, CancellationToken ct);
     Task<PagedResult<CourseOfferingInfo>> OfferingsAsync(long versionId, string period, int page, string? search, long? lecturerId, CancellationToken ct);
     Task<PagedResult<CourseOfferingInfo>> SubjectOfferingsAsync(long versionId, long courseId, int page, string? search, long? lecturerId, CancellationToken ct);

@@ -24,7 +24,7 @@ def sql(query):
     if url:
         import psycopg
         with psycopg.connect(url) as conn: return str(conn.execute(query).fetchone()[0])
-    r=subprocess.run(['docker','exec','-i','obe-academic-test-db','psql','-v','ON_ERROR_STOP=1','-U','academic_test','-d','academic_legacy_test','-At'],input=query,text=True,capture_output=True)
+    r=subprocess.run(['docker','exec','-i',os.environ.get('SMOKE_DATABASE_CONTAINER','obe-academic-test-db'),'psql','-v','ON_ERROR_STOP=1','-U',os.environ.get('SMOKE_DATABASE_USER','academic_test'),'-d',os.environ.get('SMOKE_DATABASE_NAME','academic_legacy_test'),'-At'],input=query,text=True,capture_output=True)
     assert r.returncode==0,r.stderr
     return r.stdout.strip()
 def check(r,status=200): assert r.status_code==status,(r.request.method,str(r.request.url),r.status_code,r.text); return r.json() if r.content else None

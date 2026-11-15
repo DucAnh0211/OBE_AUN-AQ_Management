@@ -8,7 +8,7 @@ using ObeAunQa.Modules.Knowledge.Application;
 using ObeAunQa.SharedKernel;
 namespace ObeAunQa.Modules.Knowledge.Infrastructure;
 
-public sealed class CurriculumChatSource(CurriculumService curriculum, IIdentityRepository users, IdentityDbContext identityDb) : ICurriculumChatSource
+public sealed class CurriculumChatSource(CurriculumService curriculum, IIdentityRepository users, HttpCurrentUser currentUser, IAccessControlService access, StudentDirectoryService students) : ICurriculumChatSource
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     public async Task<CurriculumToolResult> ReadAsync(long ownerId, CurriculumToolRequest query, CancellationToken ct)
@@ -17,9 +17,9 @@ public sealed class CurriculumChatSource(CurriculumService curriculum, IIdentity
             || query.ProgramId <= 0 || query.VersionId <= 0 || query.CourseId <= 0 || query.CloId <= 0)
             throw new KnowledgeException(400, "Tham số tra cứu chương trình không hợp lệ.");
         var user = await users.FindByIdAsync(ownerId, ct);
-        if (user is null || user.Status != "active" || user.MustChangePassword || user.Role is not (SystemRoles.Admin or SystemRoles.Lecturer))
+        if (user is null || user.Status != "active" || user.MustChangePassword || user.Role is not (SystemRoles.Admin or SystemRoles.SchoolAdmin or SystemRoles.Lecturer or SystemRoles.Student))
             throw new KnowledgeException(403, "Tài khoản không còn quyền sử dụng công cụ tra cứu.");
-        var access = new AccessControlService(identityDb, new ChatCurrentUser(user.Id, user.Role));
+        using var execution=currentUser.ExecuteAs(user.Id,user.Role,user.UniversityId ?? currentUser.UniversityId);
         object data;
         string title, url;
         bool Match(string value) => string.IsNullOrWhiteSpace(query.Search) || value.Contains(query.Search.Trim(), StringComparison.OrdinalIgnoreCase);
@@ -27,13 +27,17 @@ public sealed class CurriculumChatSource(CurriculumService curriculum, IIdentity
             var all = rows.ToArray();
             return new { items = all.Skip((query.Page - 1) * 25).Take(25), page = query.Page, pageSize = 25, totalItems = all.Length, hasMore = query.Page * 25 < all.Length };
         }
-        if (query.Tool == "programs")
+        if (query.Tool == "my_transcript") {
+            if(user.Role!=SystemRoles.Student) throw Denied();
+            data=await students.MyTranscriptAsync(ct); title="B?ng ?i?m c? nh?n ?? c?ng b?";url="/me/transcript";
+        }
+        else if (query.Tool == "programs")
         {
             var allowed = (await access.GetReadableProgramIdsAsync(ct)).ToHashSet();
             var programs = new List<ProgramResponse>();
             for (var page = 1; ; page++) {
                 var batch = await curriculum.GetProgramsAsync(page, 100, query.Search, false, ct);
-                programs.AddRange(batch.Items.Where(p => user.Role == SystemRoles.Admin || allowed.Contains(p.Id)));
+                programs.AddRange(batch.Items.Where(p => SystemRoles.IsAdmin(user.Role) || allowed.Contains(p.Id)));
                 if (page >= batch.TotalPages) break;
             }
             data = Page(programs.OrderBy(p => p.Id)); title = "Danh mục chương trình đào tạo"; url = "/curriculum";
@@ -60,7 +64,7 @@ public sealed class CurriculumChatSource(CurriculumService curriculum, IIdentity
                     var courses = new List<ProgramCourseResponse>();
                     for (var page = 1; ; page++) {
                         var batch = await curriculum.GetProgramCoursesAsync(versionId, page, 100, query.Search, null, false, ct);
-                        courses.AddRange(batch.Items.Where(c => user.Role == SystemRoles.Admin || allowed.Contains(c.Id)));
+                        courses.AddRange(batch.Items.Where(c => SystemRoles.IsAdmin(user.Role) || allowed.Contains(c.Id)));
                         if (page >= batch.TotalPages) break;
                     }
                     data = Page(courses.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Id)); break;

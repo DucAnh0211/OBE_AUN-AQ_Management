@@ -11,7 +11,7 @@ public sealed class EfDocumentCatalog(AccreditationDbContext db) : IDocumentCata
         foreach (var term in terms)
             query = query.Where(x => x.Title.ToLower().Contains(term) || x.FileName.ToLower().Contains(term));
         var rows = await query.OrderBy(x => x.Title).ThenBy(x => x.Id).Take(101).Select(x => new SourceDocumentInfo(x.Id, x.Title, x.FileName, x.ContentType,
-                x.Size, x.Sha256, x.CreatedBy, x.CreatedAt, x.DisabledAt)).ToArrayAsync(ct);
+                x.Size, x.Sha256, x.CreatedBy, x.CreatedAt, x.DisabledAt,x.AccessScope,x.OwnerUserId)).ToArrayAsync(ct);
         if (rows.Length > 100) throw new DocumentException(422, "Có hơn 100 tài liệu khớp. Hãy nhập từ khóa cụ thể hơn.");
         return rows;
     }

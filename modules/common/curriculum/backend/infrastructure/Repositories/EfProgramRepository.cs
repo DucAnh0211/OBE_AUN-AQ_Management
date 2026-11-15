@@ -32,6 +32,5 @@ internal sealed class EfProgramRepository(CurriculumDbContext db, CurriculumWrit
         return await GetProgramAsync(id, ct);
     }
     public async Task<bool> ArchiveProgramAsync(long id, CancellationToken ct) =>
-        await db.Programs.Where(p => p.Id == id && p.ArchivedAt == null).ExecuteUpdateAsync(s => s
-            .SetProperty(p => p.ArchivedAt, DateTime.UtcNow).SetProperty(p => p.UpdatedAt, DateTime.UtcNow), ct) == 1;
+        await writes.UpdateAsync(db.Programs.Where(p=>p.Id==id&&p.ArchivedAt==null),p=>{p.ArchivedAt=DateTime.UtcNow;p.UpdatedAt=DateTime.UtcNow;},ct)==1;
 }

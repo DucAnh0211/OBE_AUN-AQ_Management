@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { curriculumApi } from "../../../../modules/common/curriculum/frontend/api";
-import { apiJson, type AuthUser, type UserRole } from "../../../../shared/frontend/auth-client";
+import { apiJson, getCurrentUser, getSelectedSchool, type AuthUser, type UserRole } from "../../../../shared/frontend/auth-client";
 import { DialogFrame, useConfirmDialog, useInputDialog } from "../components/Dialogs";
 
 type UserPage = { items: AuthUser[]; page: number; pageSize: number; totalItems: number; totalPages: number };
@@ -15,7 +15,7 @@ type AssignmentState = {
   error: string;
 };
 
-const roleLabels: Record<UserRole, string> = { admin: "Quản trị viên", lecturer: "Giảng viên", student: "Sinh viên" };
+const roleLabels: Record<UserRole, string> = { admin: "Admin tổng", school_admin: "Admin trường", lecturer: "Giảng viên", student: "Sinh viên" };
 
 async function loadAssignmentOptions(user: AuthUser): Promise<{ current: number[]; options: AssignmentOption[] }> {
   const kind = user.role === "lecturer" ? "course" : "program";
@@ -47,6 +47,7 @@ async function loadAssignmentOptions(user: AuthUser): Promise<{ current: number[
 }
 
 export function AdminUsersPage() {
+  const globalAdmin=getCurrentUser()?.role === "admin";
   const [data, setData] = useState<UserPage | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -54,7 +55,7 @@ export function AdminUsersPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<UserRole>("lecturer");
+  const [role, setRole] = useState<UserRole>(getCurrentUser()?.role === "admin" ? "school_admin" : "lecturer");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [assignment, setAssignment] = useState<AssignmentState | null>(null);
@@ -75,7 +76,7 @@ export function AdminUsersPage() {
   async function create(event: FormEvent) {
     event.preventDefault(); setBusy(true); setError(""); setSuccess("");
     try {
-      await apiJson("/api/admin/users", { method: "POST", body: JSON.stringify({ email, fullName, role, temporaryPassword: password }) });
+      await apiJson("/api/admin/users", { method: "POST", body: JSON.stringify({ email, fullName, role, temporaryPassword: password, universityId: getSelectedSchool() }) });
       setEmail(""); setFullName(""); setPassword(""); setShowCreate(false);
       setSuccess(`Đã tạo tài khoản cho ${fullName}.`); await load();
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Không thể tạo tài khoản."); }
@@ -156,7 +157,7 @@ export function AdminUsersPage() {
       <form className="admin-form admin-form--grid" onSubmit={create}>
         <label><span>Họ và tên</span><input required value={fullName} onChange={(event) => setFullName(event.target.value)} /></label>
         <label><span>Email</span><input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-        <label><span>Vai trò</span><select value={role} onChange={(event) => setRole(event.target.value as UserRole)}><option value="lecturer">Giảng viên</option><option value="student">Sinh viên</option><option value="admin">Quản trị viên</option></select></label>
+        <label><span>Vai trò</span><select aria-label="Vai trò" value={role} onChange={(event) => setRole(event.target.value as UserRole)}><option value="lecturer">Giảng viên</option><option value="student">Sinh viên</option>{globalAdmin && <><option value="school_admin">Admin trường</option><option value="admin">Admin tổng</option></>}</select></label>
         <label><span>Mật khẩu tạm</span><input type="password" minLength={10} required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Tối thiểu 10 ký tự" /></label>
         <div className="dialog__actions form-wide"><button className="button button--ghost" type="button" onClick={() => setShowCreate(false)}>Hủy</button><button className="button button--primary" disabled={busy}>{busy ? "Đang tạo…" : "Tạo tài khoản"}</button></div>
       </form>
@@ -164,7 +165,7 @@ export function AdminUsersPage() {
 
     <div className="list-toolbar"><div><strong>Danh sách người dùng</strong><span>{data?.totalItems ?? 0} tài khoản</span></div><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm họ tên, email hoặc vai trò" aria-label="Tìm người dùng" /></div>
     <div className="data-table-wrap"><table className="data-table"><thead><tr><th>Người dùng</th><th>Vai trò</th><th>Trạng thái</th><th>Mật khẩu</th><th className="align-right">Thao tác</th></tr></thead><tbody>
-      {users.map((user) => <tr key={user.id}><td><strong>{user.fullName}</strong><div className="muted-text">{user.email}</div></td><td><select aria-label={`Vai trò của ${user.fullName}`} value={user.role} onChange={(event) => void update(user, { role: event.target.value as UserRole })}><option value="admin">Quản trị viên</option><option value="lecturer">Giảng viên</option><option value="student">Sinh viên</option></select></td><td><span className={`status status--${user.status}`}>{user.status === "active" ? "Hoạt động" : "Đã khóa"}</span></td><td>{user.mustChangePassword ? <span className="status status--draft">Chờ đổi mật khẩu</span> : <span className="muted-text">Đã thiết lập</span>}</td><td><div className="table-actions">{user.role !== "admin" && <button className="button button--small button--ghost" type="button" onClick={() => void openAssignments(user)}>Phân công</button>}<button className="button button--small button--ghost" type="button" onClick={() => void reset(user)}>Đặt lại mật khẩu</button><button className={`button button--small ${user.status === "active" ? "button--danger" : "button--secondary"}`} type="button" onClick={() => void changeStatus(user)}>{user.status === "active" ? "Khóa" : "Mở khóa"}</button></div></td></tr>)}
+      {users.map((user) => <tr key={user.id}><td><strong>{user.fullName}</strong><div className="muted-text">{user.email}</div></td><td><select aria-label={`Vai trò của ${user.fullName}`} disabled={!globalAdmin && user.role === "school_admin"} value={user.role} onChange={(event) => void update(user, { role: event.target.value as UserRole })}>{!globalAdmin && user.role === "school_admin" && <option value="school_admin">Admin trường</option>}{globalAdmin && <><option value="school_admin">Admin trường</option><option value="admin">Admin tổng</option></>}<option value="lecturer">Giảng viên</option><option value="student">Sinh viên</option></select></td><td><span className={`status status--${user.status}`}>{user.status === "active" ? "Hoạt động" : "Đã khóa"}</span></td><td>{user.mustChangePassword ? <span className="status status--draft">Chờ đổi mật khẩu</span> : <span className="muted-text">Đã thiết lập</span>}</td><td><div className="table-actions">{(user.role === "lecturer" || user.role === "student") && <button className="button button--small button--ghost" type="button" onClick={() => void openAssignments(user)}>Phân công</button>}{(globalAdmin || user.role === "lecturer" || user.role === "student") && <><button className="button button--small button--ghost" type="button" onClick={() => void reset(user)}>Đặt lại mật khẩu</button><button className={`button button--small ${user.status === "active" ? "button--danger" : "button--secondary"}`} type="button" onClick={() => void changeStatus(user)}>{user.status === "active" ? "Khóa" : "Mở khóa"}</button></>}</div></td></tr>)}
     </tbody></table>{!users.length && <div className="table-empty">{search ? "Không tìm thấy tài khoản phù hợp." : "Chưa có tài khoản."}</div>}</div>
 
     {assignment && <DialogFrame title={assignment.user.role === "lecturer" ? "Phân công học phần" : "Gán chương trình đào tạo"} description={`${assignment.user.fullName} · ${assignment.user.email}`} onClose={() => setAssignment(null)}>
